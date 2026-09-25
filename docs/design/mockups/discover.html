@@ -1,0 +1,310 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+:root{--bg:#0B0C0E;--surf:#0F1113;--pop:#15171A;--line:#1C1F23;--line2:#15171A;--text:#E7E9EC;--mut:#7D848E;--dim:#4A5059;--up:#2EBD85;--dn:#F0506E;--acc:#E7E9EC;--accbg:#1A1D21;--hov:#16191C;--ema1:#C9CDD3;--ema2:#6B727C;--draw:#6EA8FE;--amber:#F59E0B;--sans:Inter;--mono:JBM}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 13px/16px var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;overflow:hidden}
+.num,.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+.app{display:grid;height:100vh}
+.rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;margin:4px 0 16px;background:var(--acc);color:var(--bg);font:600 13px var(--sans)}
+.ri{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--mut);position:relative}
+.ri svg{width:20px;height:20px}
+.ri.on{color:var(--text);background:var(--accbg)}
+.ri.on::before{content:"";position:absolute;left:-8px;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--acc)}
+.spacer{flex:1}
+.hd{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.hd h1{font:600 15px var(--sans);letter-spacing:-.01em}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:var(--accbg);color:var(--text);font-size:12px}
+.chip.o{background:none;box-shadow:0 0 0 1px var(--line) inset;color:var(--mut)}
+.chip svg{width:14px;height:14px}
+.fill{flex:1}
+.btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;font-weight:500;font-size:12px;color:var(--text);box-shadow:0 0 0 1px var(--line) inset;flex:none}
+.btn svg{width:16px;height:16px}
+.btn.p{background:var(--acc);color:var(--bg);box-shadow:none;font-weight:600}
+.btn.g{box-shadow:none;color:var(--mut)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;color:var(--mut)}
+.ic svg{width:16px;height:16px}
+.seg{display:flex;gap:2px;padding:2px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px}
+.seg span{font:500 12px var(--sans);color:var(--mut);padding:5px 10px;border-radius:6px}
+.seg span.on{background:var(--accbg);color:var(--text)}
+.sec{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* list panel */
+.lp{border-right:1px solid var(--line);display:grid;grid-template-rows:56px auto 1fr;min-height:0;background:var(--surf)}
+.search{margin:12px 16px 8px;height:36px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut);background:var(--bg)}
+.search svg{width:16px;height:16px}
+.si{padding:10px 16px;display:grid;gap:4px;position:relative}
+.si b{font-weight:500}
+.si .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
+.si .dot{width:6px;height:6px;border-radius:50%}
+.si.on{background:var(--accbg)}
+.si.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--acc)}
+/* editor */
+.ed{display:grid;grid-template-rows:56px 1fr;min-width:0;min-height:0}
+.eb{padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;overflow:hidden}
+.card{background:var(--surf);border-radius:10px;box-shadow:0 0 0 1px var(--line) inset}
+.ch{height:44px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.ch b{font-weight:600}
+.ch .mut{font-size:12px}
+.cb{padding:10px 16px}
+.bdot{width:8px;height:8px;border-radius:2px}
+.params{display:flex;flex-wrap:wrap;gap:8px}
+.pm{display:flex;align-items:center;height:32px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.pm span{padding:0 10px;color:var(--mut);font-size:12px}
+.pm em{font:500 12px var(--mono);font-style:normal;padding:0 10px;height:100%;display:flex;align-items:center;background:var(--bg);border-left:1px solid var(--line)}
+.pm i{font-style:normal;color:var(--dim);padding:0 6px;height:100%;display:flex;align-items:center;border-left:1px solid var(--line)}
+.pm i svg{width:12px;height:12px}
+.cond{display:grid;grid-template-columns:24px auto auto auto 1fr 28px;align-items:center;gap:8px;height:36px}
+.cond .n{font:400 11px var(--mono);color:var(--dim)}
+.tok{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:500 12px var(--mono)}
+.tok.op{font-family:var(--sans);color:var(--mut);background:none}
+.tok svg{width:12px;height:12px;color:var(--dim)}
+.tok .k{width:8px;height:2px;border-radius:1px}
+.cond .del{color:var(--dim);display:grid;place-items:center}
+.cond .del svg{width:14px;height:14px}
+.add{display:flex;gap:16px;padding:8px 0 4px 32px;color:var(--mut);font-size:12px;font-weight:500}
+.add span{display:flex;align-items:center;gap:6px}
+.add svg{width:14px;height:14px}
+.logic{font:500 11px var(--sans);color:var(--mut);padding:2px 0 2px 32px;letter-spacing:.04em}
+.exits{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.ex{background:var(--surf);padding:12px 16px;display:grid;gap:6px}
+.ex i{font-style:normal;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:space-between}
+.ex em{font:500 13px var(--mono);font-style:normal}
+.ex.off em{color:var(--dim)}
+.tg{width:28px;height:16px;border-radius:8px;background:var(--dim);position:relative}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--bg)}
+.tg.on{background:var(--up)}
+.tg.on::after{left:14px}
+.code{overflow:hidden;text-overflow:ellipsis;font:400 12px/20px var(--mono);color:var(--mut);padding:12px 16px;border-top:1px solid var(--line);white-space:pre}
+.code b{color:var(--text);font-weight:500}.code .kw{color:var(--draw)}.code .c{color:var(--dim)}
+/* run panel */
+.rp{border-left:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.rb{padding:4px 16px;overflow:hidden}
+.rs{padding:12px 0 4px}
+.rr{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px}
+.rr>span:first-child{color:var(--mut)}
+.val{font:500 12px var(--mono);display:flex;align-items:center;gap:6px}
+.val svg{width:12px;height:12px;color:var(--dim)}
+.auto{font:600 10px var(--sans);color:var(--up);letter-spacing:.04em;background:color-mix(in srgb,var(--up) 14%,transparent);padding:2px 6px;border-radius:4px}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.dt{height:40px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:4px 10px;display:grid}
+.dt i{font-style:normal;font-size:10px;color:var(--mut)}
+.dt em{font:500 12px var(--mono);font-style:normal}
+.presets{display:flex;gap:4px;margin:4px 0 2px}
+.presets span{font:500 11px var(--sans);color:var(--mut);padding:4px 8px;border-radius:4px}
+.presets span.on{background:var(--accbg);color:var(--text)}
+.rdiv{height:1px;background:var(--line);margin:8px 0 0}
+.rf{padding:16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.rf .btn{justify-content:center;height:40px}
+.rf small{font-size:11px;color:var(--mut);text-align:center}
+/* results */
+.rm{display:grid;grid-template-rows:56px 44px 1fr;min-width:0;min-height:0}
+.tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);align-items:stretch}
+.tabs span{display:flex;align-items:center;color:var(--mut);font-weight:500;position:relative}
+.tabs span.on{color:var(--text)}
+.tabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acc)}
+.body{padding:24px;display:grid;gap:16px;min-height:0;overflow:hidden}
+.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.kp{background:var(--surf);padding:12px 16px;display:grid;gap:4px}
+.kp i{font-style:normal;color:var(--mut);font-size:11px}
+.kp em{font:500 18px/22px var(--mono);font-style:normal;letter-spacing:-.01em}
+.kp small{font:400 11px var(--mono);color:var(--mut)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;min-height:0}
+.cv{position:relative}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%}
+.lg{display:flex;gap:16px;font-size:11px;color:var(--mut);align-items:center}
+.lg .k{display:inline-block;width:12px;height:2px;margin-right:6px;vertical-align:middle}
+.tbl{width:100%;border-collapse:collapse}
+.tbl td,.tbl th{height:28px;padding:0 16px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2)}
+.tbl th{font:500 11px var(--sans);color:var(--mut);height:30px}
+.tbl td:first-child,.tbl th:first-child{text-align:left;font-family:var(--sans);color:var(--mut)}
+.tbl tr.b td{font-weight:500;color:var(--text)}
+.tbl tr.b td:first-child{color:var(--text);font-weight:500}
+.tbl tr.hl td{background:color-mix(in srgb,var(--dn) 8%,transparent)}
+.tbl tr.me td{background:var(--accbg)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;min-height:0}
+/* trades */
+.tt{width:100%;border-collapse:collapse}
+.tt th{position:sticky;top:0;background:var(--surf);font:500 11px var(--sans);color:var(--mut);height:36px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tt td{height:36px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.tt th:nth-child(-n+3),.tt td:nth-child(-n+3){text-align:left}
+.tt td.s{font-family:var(--sans);color:var(--mut)}
+.tt tr.on td{background:var(--accbg)}
+.tt tr.on td:first-child{box-shadow:2px 0 0 var(--acc) inset}
+.side{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:500}
+.side i{width:6px;height:6px;border-radius:50%}
+.liqb{font:600 10px var(--sans);color:#111;background:var(--amber);padding:1px 5px;border-radius:3px;margin-left:6px}
+.flt{display:flex;gap:8px;align-items:center}
+</style><style>
+.cols3{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:16px}
+.srow{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;height:40px;padding:0 16px;border-bottom:1px solid var(--line2)}
+.srow:last-child{border-bottom:0}
+.srow b{font-weight:500}
+.srow .d{font-size:11px;color:var(--mut)}
+.sg{font:600 10px var(--sans);letter-spacing:.04em;padding:2px 6px;border-radius:4px}
+.sgA{background:rgba(125,132,142,.18);color:#AEB4BC}.sgB{background:rgba(110,168,254,.16);color:#8DB8FF}.sgC{background:rgba(217,178,106,.16);color:#E2C07F}
+.lk{width:10px;height:2px;border-radius:1px;display:inline-block;margin-right:8px;vertical-align:middle}
+.note{padding:10px 16px;font-size:11px;color:var(--mut);border-top:1px solid var(--line);line-height:16px}
+.mx{display:grid;grid-template-columns:56px repeat(4,1fr);grid-template-rows:24px;grid-auto-rows:38px;gap:4px;padding:10px 16px 8px}
+.mx .h{display:flex;align-items:center;justify-content:center;font:500 11px var(--sans);color:var(--mut)}
+.mx .h.l{justify-content:flex-start}
+.mx .c{border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:500 12px var(--mono);box-shadow:0 0 0 1px var(--line) inset}
+.mx .c small{font:400 10px var(--sans);color:var(--mut)}
+.mx .c.u{background:var(--accbg)}
+.mx .c.lv{background:rgba(110,168,254,.12);box-shadow:0 0 0 1px rgba(110,168,254,.35) inset}
+.mx .c.dv{background:rgba(217,178,106,.10);box-shadow:0 0 0 1px rgba(217,178,106,.30) inset}
+.mx .c.na{color:var(--dim)}
+.mx .c.mir{opacity:.35}
+.mleg{display:flex;gap:12px;padding:0 16px 12px;font-size:11px;color:var(--mut);white-space:nowrap}
+.mleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.fn{padding:6px 16px 12px}
+.fr2{display:grid;grid-template-columns:1fr auto;align-items:center;min-height:42px;border-bottom:1px solid var(--line2);gap:8px}
+.fr2 span{color:var(--mut);font-size:12px;line-height:16px}
+.fr2 span small{display:block;font-size:11px;color:var(--dim)}
+.fr2 em{font:500 15px var(--mono);font-style:normal}
+.fr2.k em{color:var(--text)}
+.bar2{height:4px;border-radius:2px;background:var(--accbg);margin-top:4px;overflow:hidden}
+.bar2 i{display:block;height:100%;background:var(--mut)}
+.ft{width:100%;border-collapse:collapse}
+.ft th{font:500 11px var(--sans);color:var(--mut);height:32px;text-align:left;padding:0 16px;border-bottom:1px solid var(--line)}
+.ft td{height:31px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px;white-space:nowrap}
+.ft td.w{white-space:normal;color:var(--mut);line-height:15px}
+.ft td.n,.ft th.n{text-align:right;font-family:var(--mono)}
+.ft tr.t td{font-weight:600;border-bottom:0}
+.ty{font:600 10px var(--sans);letter-spacing:.04em;padding:2px 6px;border-radius:4px}
+.ty.f{background:rgba(125,132,142,.18);color:#AEB4BC}
+.ty.e{background:rgba(46,189,133,.14);color:#4FD19E}
+.st{font:400 11px var(--mono);color:var(--text)}
+.dbar{display:flex;align-items:center;gap:12px;height:64px;padding:0 24px;border-top:1px solid var(--line);background:var(--surf)}
+.pchips{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--mut)}
+.pc{height:28px;display:inline-flex;align-items:center;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.pc span{padding:0 8px;font-size:11px;color:var(--mut)}
+.pc em{font:500 11px var(--mono);font-style:normal;padding:0 8px;height:100%;display:flex;align-items:center;background:var(--bg);border-left:1px solid var(--line);color:var(--text)}
+/* results */
+.fun{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.fun .kp em{font-size:20px}
+.warn{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:10px;background:rgba(245,158,11,.08);box-shadow:0 0 0 1px rgba(245,158,11,.25) inset;font-size:12px;line-height:18px;color:#E9C98C}
+.warn svg{width:16px;height:16px;margin-top:1px;color:var(--amber)}
+.rt{width:100%;border-collapse:collapse;table-layout:fixed}
+.rt th{font:500 11px var(--sans);color:var(--mut);height:36px;text-align:right;padding:0 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.rt td{height:52px;padding:6px 8px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.rt th:nth-child(-n+2),.rt td:nth-child(-n+2){text-align:left}
+.rt td.r{font-family:var(--sans);white-space:normal}
+.rt tr.x td{opacity:.42}
+.rt .tk{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:5px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:500 11px var(--mono);margin:2px 2px 2px 0}
+.rt .and{font:500 10px var(--sans);color:var(--dim);margin:0 4px}
+.rt .rl{display:block;font:400 11px var(--sans);color:var(--mut);margin-top:2px}
+.okb{font:600 10px var(--sans);padding:2px 6px;border-radius:4px;letter-spacing:.03em}
+.okb.y{background:rgba(46,189,133,.14);color:#4FD19E}.okb.n{background:rgba(240,80,110,.14);color:#F37A92}
+.addb{height:28px;padding:0 10px;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset;display:inline-flex;align-items:center;gap:6px;font:500 11px var(--sans);color:var(--text)}
+.addb svg{width:12px;height:12px}
+</style>
+
+</head><body><div class="app" id="app"></div><script>
+const S=(location.hash||'#d1').slice(1);
+const I={
+ chart:'<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+ strat:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/>',
+ fwd:'<path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 5v14"/>',
+ res:'<path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>',
+ alert:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ bot:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+ user:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/>',
+ more:'<circle cx="5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="19" cy="12" r=".9"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',cdn:'<path d="M6 9l6 6 6-6"/>',back:'<path d="M15 6l-6 6 6 6"/>',
+ play:'<path d="M7 5l12 7-12 7z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ tune:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ re:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+ code:'<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>',grp:'<path d="M8 4H5v16h3M16 4h3v16h-3"/>',
+ flt:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+};
+Object.assign(I,{info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>'});
+const svg=k=>`<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const rail=on=>`<nav class="rail"><div class="logo">Q</div>`+['chart','strat','fwd','res','alert','bot'].map((k,i)=>`<div class="ri ${i==on?'on':''}">${svg(k)}</div>`).join('')+`<div class="spacer"></div><div class="ri">${svg('set')}</div><div class="ri">${svg('user')}</div></nav>`;
+const items=[['EMA Trend + RSI Pullback','v3 · BTCUSDT 15m','Backtested','var(--up)'],['My Indicator L1×L2','v5 · BTCUSDT 1h','Discovering…','var(--draw)',1],['Donchian Breakout 55','v1 · ETHUSDT 1h','Draft','var(--dim)'],['Funding Mean Revert','v2 · Multi · 8h','Live bot','var(--amber)'],['Bollinger Squeeze','v4 · SOLUSDT 4h','Backtested','var(--up)']];
+const list=`<aside class="lp"><div class="hd" style="justify-content:space-between"><b style="font-weight:600">Strategies</b><span class="ic">${svg('plus')}</span></div><div><div class="search">${svg('search')}<span>Search strategies</span></div></div><div>${items.map(it=>`<div class="si ${it[4]?'on':''}"><b>${it[0]}</b><span class="meta"><span class="m">${it[1]}</span></span><span class="meta"><span class="dot" style="background:${it[3]}"></span>${it[2]}</span></div>`).join('')}</div></aside>`;
+const edh=`<div class="hd"><h1>My Indicator L1×L2</h1><span class="chip">v5 draft</span><span class="chip o"><span class="lk" style="background:var(--ema1);margin-right:0"></span>My Indicator · 3 lines</span><span class="chip o">BTCUSDT · 1h</span><span class="fill"></span><div class="seg"><span>Builder</span><span>Formula</span><span class="on">${'Discover'}</span></div><span class="ic">${svg('more')}</span></div>`;
+const app=document.getElementById('app');app.style.gridTemplateColumns='56px 264px minmax(0,1fr)';
+if(S==='d1'){
+ const ser=[['Price','var(--text)','A','unbounded','75.4k – 85.5k'],['L1','var(--ema1)','B','centered at 0','−0.9 … +1.1'],['L2','#8E959E','B','centered at 0','−0.7 … +0.9'],['L3','#D9B26A','C','centered at 1.00','0.91 … 1.08']];
+ const M=[[['u','6','own'],['dv','4','diverg.'],['dv','4','diverg.'],['dv','4','diverg.']],[null,['u','10','own'],['lv','6','level'],['na','—','scale']],[null,null,['u','10','own'],['na','—','scale']],[null,null,null,['u','10','own']]];
+ const fam=[['Slope','each series','f','rising · falling',8,'Direction of each line — who has momentum right now.'],
+  ['Turning point','each series','e','turns up · turns down',8,'Earliest sign a line’s momentum is changing.'],
+  ['N-bar extreme','each series','e','new 20-bar high · low',8,'Breakout or exhaustion of a line.'],
+  ['Neutral level','L1, L2 @0 · L3 @1.00','f','above · below',6,'Bias: which side of neutral the line sits on.'],
+  ['Level cross','L1, L2, L3','e','crosses above · below',6,'The moment that bias flips.'],
+  ['Position','L1 / L2','f','L1 above · below L2',2,'Which line leads — trend regime.'],
+  ['Cross','L1 / L2','e','crosses above · below',2,'Timing of a momentum shift between fast and slow.'],
+  ['Spread','L1 / L2','f','converging · diverging',2,'Gap widening = trend strengthening; narrowing = fading.'],
+  ['Divergence','Price vs L1, L2, L3','e','regular ± · hidden ±',12,'Price and line disagree: reversal (regular) or continuation (hidden).']];
+ app.innerHTML=rail(1)+list+`<section style="display:grid;grid-template-rows:56px minmax(0,1fr) 64px;min-width:0;min-height:0;height:100vh">${edh}
+ <div style="padding:20px 24px;display:grid;gap:16px;align-content:start;overflow:hidden">
+  <div class="cols3">
+   <div class="card"><div class="ch"><b>1 · Series found</b><span class="mut">scale auto-detected</span></div>
+    ${ser.map(s=>`<div class="srow"><b><span class="lk" style="background:${s[1]}"></span>${s[0]}</b><span class="d">${s[3]}<br><span class="m">${s[4]}</span></span><span class="sg sg${s[2]}">SCALE ${s[2]}</span></div>`).join('')}
+    <div class="note">Lines on the same scale can be compared by level. Different scales are only compared by direction, extremes and divergence.</div></div>
+   <div class="card"><div class="ch"><b>2 · Relationship map</b><span class="mut">conditions per cell</span></div>
+    <div class="mx"><span></span>${['Price','L1','L2','L3'].map(n=>`<span class="h">${n}</span>`).join('')}
+     ${['Price','L1','L2','L3'].map((n,r)=>`<span class="h l">${n}</span>`+[0,1,2,3].map(c=>{let v=M[r][c];let mir=false;if(!v){v=M[c][r];mir=true}return `<span class="c ${v[0]} ${mir?'mir':''}">${v[1]}<small>${v[2]}</small></span>`}).join('')).join('')}
+    </div>
+    <div class="mleg"><span><i style="background:var(--accbg);box-shadow:0 0 0 1px var(--line) inset"></i>Own</span><span><i style="background:rgba(110,168,254,.35)"></i>Level</span><span><i style="background:rgba(217,178,106,.35)"></i>Divergence</span><span>— no level compare</span></div></div>
+   <div class="card"><div class="ch"><b>3 · How many cases</b></div>
+    <div class="fn">
+     <div class="fr2 k"><span>Conditions found<small>18 filters (states) · 36 triggers (events)</small></span><em>54</em></div>
+     <div class="fr2"><span>Every combination of up to 3<small>before any cleaning</small></span><em class="mut">26,289</em></div>
+     <div class="fr2 k"><span>Valid rules<small>36 · 616 · 4,672 (1, 2 and 3 conditions)</small></span><em>5,324</em></div>
+     <div class="fr2 k"><span>Tests to run<small>× long / short × 4 horizons</small></span><em>42,592</em></div>
+     <div class="fr2" style="border:0"><span style="color:var(--amber)">Expected false hits at p &lt; 0.05<small>even if no rule worked at all</small></span><em style="color:var(--amber)">≈2,130</em></div>
+    </div></div>
+  </div>
+  <div class="card" style="overflow:hidden"><div class="ch"><b>4 · What is compared, and why</b><span class="mut">Filters describe a state; triggers fire once. A rule = one trigger, optionally narrowed by up to two filters.</span></div>
+   <table class="ft"><tr><th>Family</th><th>Applies to</th><th>Type</th><th>States</th><th class="n">Count</th><th>Why it matters</th></tr>
+   ${fam.map(f=>`<tr><td style="font-weight:500">${f[0]}</td><td class="m" style="color:var(--mut);font-size:11px">${f[1]}</td><td><span class="ty ${f[2]}">${f[2]=='f'?'FILTER':'TRIGGER'}</span></td><td><span class="st">${f[3]}</span></td><td class="n">${f[4]}</td><td class="w">${f[5]}</td></tr>`).join('')}
+   <tr class="t"><td>Total</td><td></td><td class="m" style="color:var(--mut);font-weight:400;font-size:11px">18 F · 36 T</td><td></td><td class="n">54</td><td class="w">Contradictions and duplicates are removed automatically.</td></tr></table></div>
+ </div>
+ <div class="dbar"><div class="pchips"><span class="pc"><span>Slope</span><em>3 bars</em></span><span class="pc"><span>Extreme</span><em>20 bars</em></span><span class="pc"><span>Pivots</span><em>5 / 5</em></span><span class="pc"><span>Horizons</span><em>1 · 4 · 12 · 24</em></span><span class="pc"><span>Split</span><em>70% in · 30% out</em></span></div><span class="fill"></span><span class="btn p">${svg('play')}Run discovery · 42,592 tests</span></div>
+ </section>`;
+}
+if(S==='d2'){
+ const R=[
+  [['L1 crosses above L2'],['L3 above 1.00'],'Long','12h',142,58.5,0.41,0.008,0.33,1,'Momentum shift while bias is positive'],
+  [['Regular bull. div · Price/L1'],[],'Long','1d',38,63.2,0.92,0.021,0.71,1,'Price makes a lower low, L1 doesn’t — seller exhaustion'],
+  [['L3 crosses above 1.00'],['L1 above L2','Spread diverging'],'Long','12h',67,61.2,0.55,0.019,0.38,1,'Bias flips up inside a strengthening trend'],
+  [['L1 crosses below 0'],['L2 falling'],'Short','4h',211,55.9,0.18,0.031,0.12,1,'Frequent, but the edge barely covers costs'],
+  [['Hidden bull. div · Price/L2'],['L1 above 0'],'Long','1d',29,65.5,0.88,0.047,0.61,1,'Trend continuation after a pullback · small sample'],
+  [['Price new 20-bar high'],['L3 falling'],'Short','12h',54,61.1,0.47,0.044,-0.09,0,'Worked in-sample only — rejected'],
+  [['L3 turns up'],['L1 below L2'],'Long','4h',188,54.8,0.16,0.049,0.02,0,'No edge after costs out-of-sample — rejected']];
+ const cost=0.16;
+ app.innerHTML=rail(1)+list+`<section style="display:grid;grid-template-rows:56px minmax(0,1fr);min-width:0;min-height:0;height:100vh">${edh}
+ <div style="padding:20px 24px;display:grid;gap:16px;align-content:start;overflow:hidden">
+  <div class="fun">
+   <div class="kp"><i>Tests run</i><em>42,592</em><small>5,324 rules × 2 sides × 4</small></div>
+   <div class="kp"><i>Raw p &lt; 0.05</i><em style="color:var(--amber)">2,418</em><small>≈2,130 expected by chance alone</small></div>
+   <div class="kp"><i>Pass FDR 5%</i><em>37</em><small>Benjamini–Hochberg correction</small></div>
+   <div class="kp"><i>Confirmed out-of-sample</i><em class="up">11</em><small>same sign, last 30% of data</small></div>
+  </div>
+  <div class="warn">${svg('warn')}<span>Most raw “hits” are noise: with 42,592 tests, about 2,130 look significant by pure luck. Only rules that survive the correction <b>and</b> hold up on unseen data are marked usable. Returns are shown before and after Bitunix costs (taker 0.06% × 2 + slippage ≈ ${cost.toFixed(2)}% per round trip).</span></div>
+  <div class="card" style="overflow:hidden"><div class="ch"><b>Top rules</b><span class="mut">sorted by q-value · in-sample 70% / out-of-sample 30%</span><span class="fill"></span><div class="seg"><span>Confirmed</span><span class="on">All 37</span><span>Rejected</span></div></div>
+   <table class="rt"><colgroup><col style="width:32px"><col style="width:392px"><col style="width:64px"><col style="width:48px"><col style="width:60px"><col style="width:60px"><col style="width:68px"><col style="width:72px"><col style="width:56px"><col style="width:140px"><col style="width:72px"></colgroup><tr><th>#</th><th>Rule</th><th>Side</th><th>Horizon</th><th>Signals</th><th>Hit rate</th><th>Avg return</th><th>After costs</th><th>q-value</th><th style="text-align:left">Out-of-sample</th><th></th></tr>
+   ${R.map((r,i)=>`<tr class="${r[9]?'':'x'}"><td style="color:var(--dim)">${i+1}</td><td class="r"><span class="tk">${r[0][0]}</span>${r[1].map(f=>`<span class="and">AND</span><span class="tk" style="color:var(--mut)">${f}</span>`).join('')}<span class="rl">${r[10]}</span></td>
+    <td style="font-family:var(--sans)"><span class="side"><i style="background:var(${r[2]=='Long'?'--up':'--dn'})"></i>${r[2]}</span></td><td style="color:var(--mut)">${r[3]}</td><td>${r[4]}</td><td>${r[5].toFixed(1)}%</td><td class="up">+${r[6].toFixed(2)}%</td>
+    <td class="${r[6]-cost>0.05?'up':''}" style="${r[6]-cost<=0.05?'color:var(--mut)':''}">${r[6]-cost>=0?'+':'−'}${Math.abs(r[6]-cost).toFixed(2)}%</td><td>${r[7].toFixed(3)}</td>
+    <td style="text-align:left"><span style="margin-right:8px" class="${r[8]>0?'up':'dn'}">${r[8]>=0?'+':'−'}${Math.abs(r[8]).toFixed(2)}%</span><span class="okb ${r[9]?'y':'n'}">${r[9]?'CONFIRMED':'FAILED'}</span></td>
+    <td>${r[9]?`<span class="addb">${svg('plus')}Add</span>`:''}</td></tr>`).join('')}
+   </table></div>
+ </div></section>`;
+}
+document.fonts.ready.then(()=>document.body.dataset.ready=1);
+</script></body></html>

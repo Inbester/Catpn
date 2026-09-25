@@ -1,0 +1,420 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+:root{--bg:#0B0C0E;--surf:#0F1113;--pop:#15171A;--line:#1C1F23;--line2:#15171A;--text:#E7E9EC;--mut:#7D848E;--dim:#4A5059;--up:#2EBD85;--dn:#F0506E;--acc:#E7E9EC;--accbg:#1A1D21;--hov:#16191C;--ema1:#C9CDD3;--ema2:#6B727C;--draw:#6EA8FE;--amber:#F59E0B;--sans:Inter;--mono:JBM}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 13px/16px var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;overflow:hidden}
+.num,.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+.app{display:grid;height:100vh}
+.rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;margin:4px 0 16px;background:var(--acc);color:var(--bg);font:600 13px var(--sans)}
+.ri{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--mut);position:relative}
+.ri svg{width:20px;height:20px}
+.ri.on{color:var(--text);background:var(--accbg)}
+.ri.on::before{content:"";position:absolute;left:-8px;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--acc)}
+.spacer{flex:1}
+.hd{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.hd h1{font:600 15px var(--sans);letter-spacing:-.01em}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:var(--accbg);color:var(--text);font-size:12px}
+.chip.o{background:none;box-shadow:0 0 0 1px var(--line) inset;color:var(--mut)}
+.chip svg{width:14px;height:14px}
+.fill{flex:1}
+.btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;font-weight:500;font-size:12px;color:var(--text);box-shadow:0 0 0 1px var(--line) inset;flex:none}
+.btn svg{width:16px;height:16px}
+.btn.p{background:var(--acc);color:var(--bg);box-shadow:none;font-weight:600}
+.btn.g{box-shadow:none;color:var(--mut)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;color:var(--mut)}
+.ic svg{width:16px;height:16px}
+.seg{display:flex;gap:2px;padding:2px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px}
+.seg span{font:500 12px var(--sans);color:var(--mut);padding:5px 10px;border-radius:6px}
+.seg span.on{background:var(--accbg);color:var(--text)}
+.sec{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* list panel */
+.lp{border-right:1px solid var(--line);display:grid;grid-template-rows:56px auto 1fr;min-height:0;background:var(--surf)}
+.search{margin:12px 16px 8px;height:36px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut);background:var(--bg)}
+.search svg{width:16px;height:16px}
+.si{padding:10px 16px;display:grid;gap:4px;position:relative}
+.si b{font-weight:500}
+.si .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
+.si .dot{width:6px;height:6px;border-radius:50%}
+.si.on{background:var(--accbg)}
+.si.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--acc)}
+/* editor */
+.ed{display:grid;grid-template-rows:56px 1fr;min-width:0;min-height:0}
+.eb{padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;overflow:hidden}
+.card{background:var(--surf);border-radius:10px;box-shadow:0 0 0 1px var(--line) inset}
+.ch{height:44px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.ch b{font-weight:600}
+.ch .mut{font-size:12px}
+.cb{padding:10px 16px}
+.bdot{width:8px;height:8px;border-radius:2px}
+.params{display:flex;flex-wrap:wrap;gap:8px}
+.pm{display:flex;align-items:center;height:32px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.pm span{padding:0 10px;color:var(--mut);font-size:12px}
+.pm em{font:500 12px var(--mono);font-style:normal;padding:0 10px;height:100%;display:flex;align-items:center;background:var(--bg);border-left:1px solid var(--line)}
+.pm i{font-style:normal;color:var(--dim);padding:0 6px;height:100%;display:flex;align-items:center;border-left:1px solid var(--line)}
+.pm i svg{width:12px;height:12px}
+.cond{display:grid;grid-template-columns:24px auto auto auto 1fr 28px;align-items:center;gap:8px;height:36px}
+.cond .n{font:400 11px var(--mono);color:var(--dim)}
+.tok{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:500 12px var(--mono)}
+.tok.op{font-family:var(--sans);color:var(--mut);background:none}
+.tok svg{width:12px;height:12px;color:var(--dim)}
+.tok .k{width:8px;height:2px;border-radius:1px}
+.cond .del{color:var(--dim);display:grid;place-items:center}
+.cond .del svg{width:14px;height:14px}
+.add{display:flex;gap:16px;padding:8px 0 4px 32px;color:var(--mut);font-size:12px;font-weight:500}
+.add span{display:flex;align-items:center;gap:6px}
+.add svg{width:14px;height:14px}
+.logic{font:500 11px var(--sans);color:var(--mut);padding:2px 0 2px 32px;letter-spacing:.04em}
+.exits{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.ex{background:var(--surf);padding:12px 16px;display:grid;gap:6px}
+.ex i{font-style:normal;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:space-between}
+.ex em{font:500 13px var(--mono);font-style:normal}
+.ex.off em{color:var(--dim)}
+.tg{width:28px;height:16px;border-radius:8px;background:var(--dim);position:relative}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--bg)}
+.tg.on{background:var(--up)}
+.tg.on::after{left:14px}
+.code{overflow:hidden;text-overflow:ellipsis;font:400 12px/20px var(--mono);color:var(--mut);padding:12px 16px;border-top:1px solid var(--line);white-space:pre}
+.code b{color:var(--text);font-weight:500}.code .kw{color:var(--draw)}.code .c{color:var(--dim)}
+/* run panel */
+.rp{border-left:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.rb{padding:4px 16px;overflow:hidden}
+.rs{padding:12px 0 4px}
+.rr{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px}
+.rr>span:first-child{color:var(--mut)}
+.val{font:500 12px var(--mono);display:flex;align-items:center;gap:6px}
+.val svg{width:12px;height:12px;color:var(--dim)}
+.auto{font:600 10px var(--sans);color:var(--up);letter-spacing:.04em;background:color-mix(in srgb,var(--up) 14%,transparent);padding:2px 6px;border-radius:4px}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.dt{height:40px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:4px 10px;display:grid}
+.dt i{font-style:normal;font-size:10px;color:var(--mut)}
+.dt em{font:500 12px var(--mono);font-style:normal}
+.presets{display:flex;gap:4px;margin:4px 0 2px}
+.presets span{font:500 11px var(--sans);color:var(--mut);padding:4px 8px;border-radius:4px}
+.presets span.on{background:var(--accbg);color:var(--text)}
+.rdiv{height:1px;background:var(--line);margin:8px 0 0}
+.rf{padding:16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.rf .btn{justify-content:center;height:40px}
+.rf small{font-size:11px;color:var(--mut);text-align:center}
+/* results */
+.rm{display:grid;grid-template-rows:56px 44px 1fr;min-width:0;min-height:0}
+.tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);align-items:stretch}
+.tabs span{display:flex;align-items:center;color:var(--mut);font-weight:500;position:relative}
+.tabs span.on{color:var(--text)}
+.tabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acc)}
+.body{padding:24px;display:grid;gap:16px;min-height:0;overflow:hidden}
+.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.kp{background:var(--surf);padding:12px 16px;display:grid;gap:4px}
+.kp i{font-style:normal;color:var(--mut);font-size:11px}
+.kp em{font:500 18px/22px var(--mono);font-style:normal;letter-spacing:-.01em}
+.kp small{font:400 11px var(--mono);color:var(--mut)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;min-height:0}
+.cv{position:relative}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%}
+.lg{display:flex;gap:16px;font-size:11px;color:var(--mut);align-items:center}
+.lg .k{display:inline-block;width:12px;height:2px;margin-right:6px;vertical-align:middle}
+.tbl{width:100%;border-collapse:collapse}
+.tbl td,.tbl th{height:28px;padding:0 16px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2)}
+.tbl th{font:500 11px var(--sans);color:var(--mut);height:30px}
+.tbl td:first-child,.tbl th:first-child{text-align:left;font-family:var(--sans);color:var(--mut)}
+.tbl tr.b td{font-weight:500;color:var(--text)}
+.tbl tr.b td:first-child{color:var(--text);font-weight:500}
+.tbl tr.hl td{background:color-mix(in srgb,var(--dn) 8%,transparent)}
+.tbl tr.me td{background:var(--accbg)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;min-height:0}
+/* trades */
+.tt{width:100%;border-collapse:collapse}
+.tt th{position:sticky;top:0;background:var(--surf);font:500 11px var(--sans);color:var(--mut);height:36px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tt td{height:36px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.tt th:nth-child(-n+3),.tt td:nth-child(-n+3){text-align:left}
+.tt td.s{font-family:var(--sans);color:var(--mut)}
+.tt tr.on td{background:var(--accbg)}
+.tt tr.on td:first-child{box-shadow:2px 0 0 var(--acc) inset}
+.side{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:500}
+.side i{width:6px;height:6px;border-radius:50%}
+.liqb{font:600 10px var(--sans);color:#111;background:var(--amber);padding:1px 5px;border-radius:3px;margin-left:6px}
+.flt{display:flex;gap:8px;align-items:center}
+
+.cfg{border-right:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.cb2{padding:4px 16px;overflow:hidden}
+.blk{padding:14px 0 10px;border-bottom:1px solid var(--line)}
+.blk:last-child{border-bottom:0}
+.blk .sec{margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.pick{border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:10px 12px;display:grid;gap:4px}
+.pick b{font-weight:500;display:flex;align-items:center;gap:8px}
+.pick small{font:400 11px var(--mono);color:var(--mut)}
+.pick.ref{box-shadow:0 0 0 1px var(--line) inset}
+.pick.fw{box-shadow:0 0 0 1px rgba(110,168,254,.45) inset;background:rgba(110,168,254,.06)}
+.pdot{width:8px;height:8px;border-radius:2px}
+.plist{display:grid;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips span{font:500 11px var(--sans);color:var(--mut);padding:5px 8px;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset}
+.chips span.on{color:var(--text);background:var(--accbg);box-shadow:none}
+.lockrow{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px;color:var(--mut)}
+.lockrow b{font:500 12px var(--mono);color:var(--text);display:flex;align-items:center;gap:6px}
+.lockrow b svg{width:12px;height:12px;color:var(--dim)}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;padding:16px 20px}
+.vs{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:8px;font:600 12px var(--sans);letter-spacing:.02em}
+.vs.ok{background:rgba(46,189,133,.14);color:#4FD19E}
+.vt b{font-weight:600;font-size:14px;display:block}
+.vt span{font-size:12px;color:var(--mut);display:block;margin-top:4px;line-height:17px}
+.vt .checks{display:flex;gap:8px;margin-top:12px}.vt .checks .ck{display:inline-flex;margin-top:0;color:var(--text)}
+.ck{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font-size:11px;white-space:nowrap}
+.ck svg{width:12px;height:12px}
+.ck.y svg{color:var(--up)}.ck.w svg{color:var(--amber)}.ck.n svg{color:var(--dn)}
+.cmp{width:100%;border-collapse:collapse}
+.cmp th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cmp td{height:28px;padding:0 10px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-family:var(--sans)}
+.cmp td:first-child{color:var(--mut)}
+.band{display:inline-block;position:relative;width:64px;height:10px;vertical-align:middle;margin-left:8px}
+.band i{position:absolute;top:4px;height:2px;background:var(--dim);border-radius:1px}
+.band b{position:absolute;top:1px;width:2px;height:8px;border-radius:1px}
+.reg{display:grid;grid-template-columns:repeat(4,1fr) 1.25fr;gap:1px;background:var(--line)}
+.rg{background:var(--surf);padding:12px 16px;display:grid;gap:8px}
+.rg i{font-style:normal;font-size:11px;color:var(--mut)}
+.pair{white-space:nowrap;display:grid;grid-template-columns:40px 1fr 64px;align-items:center;gap:8px;font:400 11px var(--mono)}
+.pair span:first-child{color:var(--mut)}
+.pair .br{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.pair .br b{position:absolute;top:0;bottom:0;border-radius:3px}
+.pair em{font-style:normal;text-align:right}
+.why{padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--mut);line-height:18px}
+.why b{color:var(--text);font-weight:500}
+/* walk forward */
+.wft{width:100%;border-collapse:collapse;table-layout:fixed}
+.wft th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line)}
+.wft td{height:26px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.wft th:nth-child(-n+2),.wft td:nth-child(-n+2){text-align:left}
+.wft td.tl{padding:0 8px;position:relative}
+.gantt{position:relative;height:12px}
+.gantt i{position:absolute;top:0;height:12px;border-radius:3px}
+.gantt i.is{background:rgba(125,132,142,.28)}
+.gantt i.oos{background:rgba(110,168,254,.7)}
+.gantt i.neg{background:rgba(240,80,110,.7)}
+.gscale{display:flex;justify-content:space-between;font:400 10px var(--sans);color:var(--dim);padding:0 8px}
+/* paper */
+.live{display:flex;align-items:center;gap:16px;padding:0 20px;height:64px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:6px;background:rgba(46,189,133,.12);color:#4FD19E;font:600 11px var(--sans);letter-spacing:.04em}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(46,189,133,.25)}
+.lstat{display:flex;flex-direction:column;gap:2px}
+.lstat i{font-style:normal;font-size:11px;color:var(--mut)}
+.lstat em{font:500 13px var(--mono);font-style:normal}
+.vd{width:1px;height:32px;background:var(--line)}
+.cl{display:grid;gap:0}
+.cli{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;min-height:44px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px}
+.cli svg{width:14px;height:14px}
+.cli small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+.cli em{font:500 12px var(--mono);font-style:normal}
+.cli.y>svg{color:var(--up)}.cli.w>svg{color:var(--amber)}
+.promo{padding:12px 16px;display:grid;gap:8px}
+.promo .btn{justify-content:center;height:36px;opacity:.5}
+.promo small{font-size:11px;color:var(--mut);text-align:center}
+.lg{white-space:nowrap}.ch{white-space:nowrap}</style>
+</head><body><div class="app" id="app"></div>
+<script src="btdata.js"></script>
+<script>
+const S=(location.hash||'#f1').slice(1);
+const I={
+ chart:'<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+ strat:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/>',
+ fwd:'<path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 5v14"/>',
+ res:'<path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>',
+ alert:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ bot:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+ user:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/>',
+ more:'<circle cx="5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="19" cy="12" r=".9"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',cdn:'<path d="M6 9l6 6 6-6"/>',back:'<path d="M15 6l-6 6 6 6"/>',
+ play:'<path d="M7 5l12 7-12 7z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ tune:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ re:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+ code:'<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>',grp:'<path d="M8 4H5v16h3M16 4h3v16h-3"/>',
+ flt:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+};
+Object.assign(I,{check:'<path d="M5 12.5l4.5 4.5L19 7"/>',warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',pause:'<path d="M9 6v12M15 6v12"/>',bot2:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01"/>'});
+const svg=k=>`<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const rail=on=>`<nav class="rail"><div class="logo">Q</div>`+['chart','strat','fwd','res','alert','bot'].map((k,i)=>`<div class="ri ${i==on?'on':''}">${svg(k)}</div>`).join('')+`<div class="spacer"></div><div class="ri">${svg('set')}</div><div class="ri">${svg('user')}</div></nav>`;
+const app=document.getElementById('app');
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const f2=(v,d=2)=>v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pc=(v,d=2)=>(v>=0?'+':'−')+Math.abs(v*100).toFixed(d)+'%';
+function setup(id){const cv=document.getElementById(id);const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);return [x,r.width,r.height]}
+
+function ddPane(id,series,n,opt){opt=opt||{};const [x,w,h]=setup(id);const pl=52,pr=16,pt=6,pb=8;const lines=opt.lines||[];let mn=Math.min(...series.flatMap(s=>s.v),...lines.map(l=>l.v),...(opt.band||[0]))*1.12;const X=i=>pl+(w-pl-pr)*i/n,Y=v=>pt+(v/mn)*(h-pt-pb);
+ x.strokeStyle=css('--line');x.beginPath();x.moveTo(pl,pt+.5);x.lineTo(w-pr,pt+.5);x.stroke();
+ if(opt.band){const st=opt.bandStep||1;x.beginPath();x.moveTo(X(0),Y(0));opt.band.forEach((v,i)=>x.lineTo(X(i*st),Y(v)));x.lineTo(X((opt.band.length-1)*st),Y(0));x.closePath();x.fillStyle='rgba(125,132,142,.16)';x.fill()}
+ lines.forEach(l=>{const y=Math.round(Y(l.v))+.5;x.setLineDash([4,3]);x.strokeStyle=l.c;x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.setLineDash([]);x.fillStyle=l.c;x.font=`400 10px ${css('--mono')}`;x.textAlign='right';x.textBaseline='bottom';x.fillText(l.label,w-pr-2,y-3)});
+ series.forEach(s=>{const st=s.step||1;if(s.fill){x.beginPath();x.moveTo(X(0),Y(0));s.v.forEach((v,i)=>x.lineTo(X(i*st),Y(v)));x.lineTo(X((s.v.length-1)*st),Y(0));x.closePath();x.fillStyle=s.fill;x.fill()}x.strokeStyle=s.c;x.lineWidth=s.lw||1.25;x.beginPath();s.v.forEach((v,i)=>i?x.lineTo(X(i*st),Y(v)):x.moveTo(X(i*st),Y(v)));x.stroke()});
+ x.font=`400 11px ${css('--mono')}`;x.fillStyle=css('--mut');x.textAlign='right';x.textBaseline='middle';x.fillText('0%',pl-8,pt+3);const m2=mn/1.12;x.fillText((m2*100).toFixed(0)+'%',pl-8,Math.min(h-pb-4,Y(m2)));}
+const durDD=(R,D)=>{let pk=R.curve[0],pkT=D.B[R.rows[0].e].t,m=0;R.rows.forEach(r=>{const t=D.B[r.x].t;if(r.eq>=pk){pk=r.eq;pkT=t}else m=Math.max(m,t-pkT)});return m/864e5};
+const DA=BT.gen(123),A=BT.sim(DA,10);
+const K2=[[0,71200],[150,69800],[300,72100],[420,68400],[560,66900],[720,66500]];
+const DB=BT.gen(21,K2,Date.UTC(2026,2,21)),B=BT.sim(DB,10);
+let seed=5;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function mcPaths(rows,n,it){const paths=[];for(let k=0;k<it;k++){let eq=1,pk=1,md=0;const p=[1];for(let i=0;i<n;i++){eq*=1+rows[Math.floor(rnd()*rows.length)].pct;pk=Math.max(pk,eq);md=Math.min(md,eq/pk-1);p.push(eq)}p.md=md;paths.push(p)}return paths}
+const q=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor(p*(s.length-1))]};
+const hdr=(tab)=>`<div class="hd"><h1>Forward test</h1><span class="chip">EMA Trend + RSI Pullback · v3 ${svg('lock')}<span class="m" style="color:var(--mut)">7f3a·c91</span></span><span class="chip o">parameters frozen</span><span class="fill"></span><span class="btn g">${svg('dl')}Export</span><span class="btn p">${svg('plus')}New forward test</span></div>
+<div class="tabs">${['Period vs period','Walk-forward','Paper trading'].map(t=>`<span class="${t===tab?'on':''}">${t}</span>`).join('')}</div>`;
+
+if(S==='f1'){
+ app.style.gridTemplateColumns='56px 296px minmax(0,1fr)';
+ const paths=mcPaths(A.rows,B.n,3000);const nets=paths.map(p=>p[p.length-1]-1),dds=paths.map(p=>p.md);
+ const n5=q(nets,.05),n95=q(nets,.95),d5=q(dds,.05);
+ const bhA=DA.B[719].c/DA.B[0].c-1,bhB=DB.B[719].c/DB.B[0].c-1;
+ const vol=D=>{const r=[];for(let i=1;i<D.B.length;i++)r.push(Math.log(D.B[i].c/D.B[i-1].c));const m=r.reduce((a,b)=>a+b,0)/r.length;return Math.sqrt(r.reduce((a,b)=>a+(b-m)**2,0)/r.length)*Math.sqrt(24*365)};
+ const eff=D=>{let s=0;for(let i=1;i<D.B.length;i++)s+=Math.abs(D.B[i].c-D.B[i-1].c);return Math.abs(D.B[D.B.length-1].c-D.B[0].c)/s};
+ const rng=D=>D.B.reduce((a,b)=>a+(b.h-b.l)/b.c,0)/D.B.length;
+ const netL=R=>R.longs.reduce((a,r)=>a+r.net,0),netS=R=>R.shorts.reduce((a,r)=>a+r.net,0);
+ window._m={n5,n95,d5};
+ const rows=[['Net profit',A.netPct,B.netPct,'p',[n5,n95]],['Max drawdown',A.mdd,B.mdd,'p',[d5,0]],['Longest drawdown',durDD(A,DA),durDD(B,DB),'d'],['Profit factor',A.pf,B.pf,'n'],['Win rate',A.win,B.win,'w'],['Trades',A.n,B.n,'i'],['Avg trade',A.net/A.n,B.net/B.n,'u'],['Sharpe',A.sharpe,B.sharpe,'n'],['Costs (fees+fund.+slip.)',-(A.fees+A.slip+A.fundPaid-A.fundRecv),-(B.fees+B.slip+B.fundPaid-B.fundRecv),'u'],['Liquidations',A.liq,B.liq,'i']];
+ const fmt=(v,t)=>t==='d'?v.toFixed(1)+' d':t==='p'?pc(v):t==='w'?(v*100).toFixed(1)+'%':t==='i'?String(v):t==='u'?(v>=0?'+':'−')+f2(Math.abs(v)):v.toFixed(2);
+ const dlt=(a,b,t)=>{if(t==='d')return (b-a>=0?'+':'−')+Math.abs(b-a).toFixed(1)+' d';if(t==='i')return (b-a>=0?'+':'−')+Math.abs(b-a);if(t==='p'||t==='w')return ((b-a)>=0?'+':'−')+Math.abs((b-a)*100).toFixed(2)+' pt';if(t==='u')return ((b-a)>=0?'+':'−')+f2(Math.abs(b-a));return ((b-a)>=0?'+':'−')+Math.abs(b-a).toFixed(2)};
+ const band=(v,[lo,hi])=>{const mn=Math.min(lo,v)-.02,mx=Math.max(hi,v)+.02;const X=u=>(u-mn)/(mx-mn)*64;const inside=v>=lo&&v<=hi;return `<span class="band"><i style="left:${X(lo)}px;width:${X(hi)-X(lo)}px"></i><b style="left:${X(v)-1}px;background:${inside?'var(--up)':'var(--dn)'}"></b></span>`};
+ app.innerHTML=rail(2)+`<aside class="cfg"><div class="hd"><b style="font-weight:600">Setup</b></div><div class="cb2">
+  <div class="blk"><div class="sec">Strategy</div><div class="lockrow"><span>Version</span><b>v3 ${svg('lock')}</b></div><div class="lockrow"><span>Market</span><b>BTCUSDT · 15m</b></div><div class="lockrow"><span>Leverage · sizing</span><b>10× · 10%</b></div><div class="lockrow"><span>Costs model</span><b>VIP 0 · Bitunix</b></div></div>
+  <div class="blk"><div class="sec">Reference<span style="text-transform:none;letter-spacing:0;font-weight:400">backtest</span></div>
+   <div class="pick ref"><b><span class="pdot" style="background:var(--mut)"></span>Farvardin 1404</b><small>21 Mar – 20 Apr 2025 · net ${pc(A.netPct)}</small></div></div>
+  <div class="blk"><div class="sec">Test on<span style="text-transform:none;letter-spacing:0;font-weight:400">unseen data</span></div>
+   <div class="plist"><div class="pick fw"><b><span class="pdot" style="background:var(--draw)"></span>Farvardin 1405</b><small>21 Mar – 20 Apr 2026 · 30 days</small></div>
+   <div class="pick" style="color:var(--mut);box-shadow:none;border:1px dashed var(--line);background:none"><b style="font-weight:400">${svg('plus').replace('<svg','<svg style="width:14px;height:14px"')}Add period</b></div></div>
+   <div class="chips"><span class="on">Same month · this year</span><span>Same month · every year</span><span>Next month</span><span>Custom</span></div></div>
+  <div class="blk"><div class="sec">Expected range</div><div class="lockrow"><span>Method</span><b>Monte Carlo · 3,000 runs</b></div><div class="lockrow"><span>Band</span><b>90%</b></div></div>
+ </div><div class="rf"><span class="btn p">${svg('play')}Run forward test</span></div></aside>
+ <section class="rm">${hdr('Period vs period')}
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr) auto">
+  <div class="card verdict"><span class="vs ok">${svg('check').replace('<svg','<svg style="width:14px;height:14px"')}HOLDS UP · WEAKER</span>
+   <span class="vt"><b>Farvardin 1405 made ${pc(B.netPct)} vs ${pc(A.netPct)} last year — inside the expected range.</b><span>A single month is noisy: with ${B.n} trades, anything from ${pc(n5,1)} to ${pc(n95,1)} was plausible for this exact strategy. Profit factor fell, mostly on long trades.</span><span class="checks"><span class="ck y">${svg('check')}Net in band</span><span class="ck y">${svg('check')}Drawdown in band</span><span class="ck y">${svg('check')}Trade count similar</span><span class="ck w">${svg('warn')}Profit factor ${A.pf.toFixed(2)} → ${B.pf.toFixed(2)}</span></span></span></div>
+  <div class="row2" style="grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Side by side</b><span class="mut">same version, same costs</span></div>
+    <table class="cmp"><tr><th>Metric</th><th><span class="pdot" style="display:inline-block;background:var(--mut);margin-right:6px"></span>1404 · ref</th><th><span class="pdot" style="display:inline-block;background:var(--draw);margin-right:6px"></span>1405 · test</th><th>Change</th><th style="text-align:left">Expected 90%</th></tr>
+    ${rows.map(r=>`<tr><td>${r[0]}</td><td>${fmt(r[1],r[3])}</td><td style="color:var(--text)">${fmt(r[2],r[3])}</td><td class="${(r[2]-r[1])*(r[0]==='Costs (fees+fund.+slip.)'?1:1)>=0?'':'dn'}" style="color:${r[0]==='Trades'||r[0]==='Liquidations'?'var(--mut)':''}">${dlt(r[1],r[2],r[3])}</td><td style="text-align:left">${r[4]?`<span class="m" style="color:var(--mut);font-size:11px">${pc(r[4][0],1)} … ${pc(r[4][1],1)}</span>${band(r[2],r[4])}`:'<span style="color:var(--dim)">—</span>'}</td></tr>`).join('')}</table></div>
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr) 92px"><div class="ch"><b>Equity · drawdown</b><span class="mut">by trade #</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:var(--mut)"></span>1404</span><span><span class="k" style="background:var(--draw)"></span>1405</span><span><span class="k" style="background:rgba(125,132,142,.35);height:8px"></span>90% range</span></span></div><div class="cv"><canvas id="eqc"></canvas></div><div class="cv" style="border-top:1px solid var(--line2)"><canvas id="ddf1"></canvas></div></div>
+  </div>
+  <div class="card" style="overflow:hidden"><div class="ch"><b>Market regime</b><span class="mut">why the result changed</span></div>
+   <div class="reg">
+    ${[['BTC over period',bhA,bhB,v=>pc(v,1),'s'],['Volatility (ann.)',vol(DA),vol(DB),v=>(v*100).toFixed(0)+'%','m'],['Trend efficiency',eff(DA),eff(DB),v=>v.toFixed(3),'m'],['Avg candle range',rng(DA),rng(DB),v=>(v*100).toFixed(2)+'%','m'],['Long / short net',netL(A)+netS(A),0,v=>'','ls']].map(g=>{
+      if(g[4]==='ls'){return `<div class="rg"><i>Long vs short net (USDT)</i><div class="pair" style="grid-template-columns:40px 1fr"><span>1404</span><span class="m" style="font-size:11px"><span class="${netL(A)>=0?'up':'dn'}">L ${netL(A)>=0?'+':'−'}${f2(Math.abs(netL(A)),0)}</span> · <span class="${netS(A)>=0?'up':'dn'}">S ${netS(A)>=0?'+':'−'}${f2(Math.abs(netS(A)),0)}</span></span></div><div class="pair" style="grid-template-columns:40px 1fr"><span>1405</span><span class="m" style="font-size:11px"><span class="${netL(B)>=0?'up':'dn'}">L ${netL(B)>=0?'+':'−'}${f2(Math.abs(netL(B)),0)}</span> · <span class="${netS(B)>=0?'up':'dn'}">S ${netS(B)>=0?'+':'−'}${f2(Math.abs(netS(B)),0)}</span></span></div></div>`}
+      const mx=Math.max(Math.abs(g[1]),Math.abs(g[2]))*1.1;const w=v=>Math.abs(v)/mx*100;
+      return `<div class="rg"><i>${g[0]}</i><div class="pair"><span>1404</span><span class="br"><b style="left:0;width:${w(g[1])}%;background:var(--mut)"></b></span><em>${g[3](g[1])}</em></div><div class="pair"><span>1405</span><span class="br"><b style="left:0;width:${w(g[2])}%;background:var(--draw)"></b></span><em>${g[3](g[2])}</em></div></div>`}).join('')}
+   </div>
+   <div class="why"><b>Reading:</b> Farvardin 1405 was a steady downtrend (BTC ${pc(bhB,1)}, trend efficiency ~10× last year). Shorts did better (${netS(B)>=0?'+':'−'}${f2(Math.abs(netS(B)),0)} vs ${netS(A)>=0?'+':'−'}${f2(Math.abs(netS(A)),0)} USDT) but longs lost ${netL(B)>=0?'+':'−'}${f2(Math.abs(netL(B)),0)} — the long rule keeps buying pullbacks in a falling market. <b>Idea to test:</b> a higher-timeframe trend filter for longs. One month can't prove the strategy works; run <b>Same month · every year</b> or <b>Walk-forward</b> for a stronger answer.</div></div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{const [x,w,h]=setup('eqc');const pl=52,pr=16,pt=12,pb=24;const n=Math.max(A.n,B.n);
+  const cone=[];for(let i=0;i<=B.n;i++){const v=paths.map(p=>p[i]);cone.push([q(v,.05),q(v,.5),q(v,.95)])}
+  const ca=A.curve.map(v=>v/10000),cb=B.curve.map(v=>v/10000);
+  const all=[...ca,...cb,...cone.flat()];const lo=Math.min(...all)-.01,hi=Math.max(...all)+.01;
+  const X=i=>pl+(w-pl-pr)*i/n,Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb);
+  x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';
+  for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4;const y=Math.round(Y(v))+.5;x.strokeStyle=css('--line2');x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillStyle=css('--mut');x.textAlign='right';x.fillText(pc(v-1,0),pl-8,y)}
+  x.beginPath();cone.forEach((c,i)=>i?x.lineTo(X(i),Y(c[2])):x.moveTo(X(i),Y(c[2])));for(let i=cone.length-1;i>=0;i--)x.lineTo(X(i),Y(cone[i][0]));x.closePath();x.fillStyle='rgba(125,132,142,.16)';x.fill();
+  x.setLineDash([2,3]);x.strokeStyle=css('--dim');x.beginPath();cone.forEach((c,i)=>i?x.lineTo(X(i),Y(c[1])):x.moveTo(X(i),Y(c[1])));x.stroke();x.setLineDash([]);
+  [[ca,css('--mut'),1.25],[cb,css('--draw'),1.75]].forEach(([c,col,lw])=>{x.strokeStyle=col;x.lineWidth=lw;x.beginPath();c.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.stroke()});
+  x.fillStyle=css('--mut');x.textAlign='center';[0,25,50,75].forEach(t=>x.fillText('#'+t,X(t),h-pb/2+4));
+  ddPane('ddf1',[{v:A.ddc,c:css('--mut')},{v:B.ddc,c:css('--draw'),lw:1.5,fill:'rgba(110,168,254,.14)'}],n,{lines:[{v:window._m.d5,c:css('--dim'),label:'90% worst case '+pc(window._m.d5,1)}]});
+  document.body.dataset.ready=1});
+}
+
+if(S==='f2'){
+ app.style.gridTemplateColumns='56px minmax(0,1fr)';
+ const months=['Mehr 1404','Aban 1404','Azar 1404','Dey 1404','Bahman 1404','Esfand 1404','Farvardin 1405','Ordibehesht 1405','Khordad 1405','Tir 1405','Mordad 1405','Shahrivar 1405'];
+ const isr=[14.2,11.8,16.5,9.4,12.9,18.1,10.7,13.3,15.6,8.9,12.2,14.8],oos=[3.1,-1.8,4.6,2.2,-2.9,5.8,1.4,3.9,-0.7,2.6,4.1,3.0];
+ const wdd=[-2.1,-4.3,-1.8,-2.6,-5.1,-1.2,-3.4,-1.9,-3.8,-2.2,-1.6,-2.4];const prm=[[20,50],[22,50],[18,45],[20,55],[24,50],[20,50],[18,50],[20,45],[22,55],[20,50],[24,55],[20,50]];
+ const eqs=[1];oos.forEach(r=>eqs.push(eqs[eqs.length-1]*(1+r/100)));const tot=eqs[12]-1;
+ const mIS=isr.reduce((a,b)=>a+b,0)/12/3,mO=oos.reduce((a,b)=>a+b,0)/12;const wfe=mO/mIS;const pos=oos.filter(v=>v>0).length;
+ window._wf={eqs};
+ app.innerHTML=rail(2)+`<section class="rm">${hdr('Walk-forward')}
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr) 232px">
+  <div class="kpis" style="grid-template-columns:repeat(5,1fr)">
+   <div class="kp"><i>Windows</i><em>12</em><small>3-month optimise → 1-month test</small></div>
+   <div class="kp"><i>Out-of-sample net</i><em class="up">${pc(tot,1)}</em><small>12 unseen months, chained</small></div>
+   <div class="kp"><i>Walk-forward efficiency</i><em>${(wfe*100).toFixed(0)}%</em><small>unseen ÷ optimised, per month</small></div>
+   <div class="kp"><i>Profitable windows</i><em>${pos} / 12</em><small>worst ${Math.min(...oos).toFixed(1)}% · deepest DD ${Math.min(...wdd).toFixed(1)}%</small></div>
+   <div class="kp"><i>Parameter stability</i><em>High</em><small>fast 18–24 · slow 45–55</small></div>
+  </div>
+  <div class="card" style="overflow:hidden"><div class="ch"><b>Windows</b><span class="mut">each month is tested with parameters chosen only from the 3 months before it</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:rgba(125,132,142,.5);height:8px"></span>Optimise</span><span><span class="k" style="background:rgba(110,168,254,.8);height:8px"></span>Test (gain)</span><span><span class="k" style="background:rgba(240,80,110,.8);height:8px"></span>Test (loss)</span></span></div>
+   <table class="wft"><colgroup><col style="width:40px"><col style="width:150px"><col><col style="width:104px"><col style="width:104px"><col style="width:96px"><col style="width:90px"><col style="width:70px"></colgroup>
+   <tr><th>#</th><th>Test month</th><th style="text-align:left;padding-left:8px">Timeline · Tir 1404 → Shahrivar 1405</th><th>Params</th><th>Optimised 3m</th><th>Unseen 1m</th><th>Max DD</th><th>WFE</th></tr>
+   ${months.map((m,i)=>{const tot=15;const u=100/tot;return `<tr><td style="color:var(--dim)">${i+1}</td><td style="font-family:var(--sans)">${m}</td><td class="tl"><div class="gantt"><i class="is" style="left:${i*u}%;width:${3*u-0.4}%"></i><i class="${oos[i]>=0?'oos':'neg'}" style="left:${(i+3)*u}%;width:${u-0.4}%"></i></div></td><td>${prm[i][0]} / ${prm[i][1]}</td><td style="color:var(--mut)">+${isr[i].toFixed(1)}%</td><td class="${oos[i]>=0?'up':'dn'}">${oos[i]>=0?'+':'−'}${Math.abs(oos[i]).toFixed(1)}%</td><td class="dn">${wdd[i].toFixed(1)}%</td><td>${(oos[i]/(isr[i]/3)*100).toFixed(0)}%</td></tr>`}).join('')}
+   </table></div>
+  <div class="row2" style="grid-template-columns:minmax(0,1fr) 420px">
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr) 60px"><div class="ch"><b>Chained unseen months</b><span class="mut">equity and drawdown if you had re-optimised every month</span></div><div class="cv"><canvas id="wfc"></canvas></div><div class="cv" style="border-top:1px solid var(--line2)"><canvas id="wfdd"></canvas></div></div>
+   <div class="card"><div class="ch"><b>How to read this</b></div><div class="why" style="border:0;padding-top:10px">Optimised results always look better than the future. Unseen months kept <b>${(wfe*100).toFixed(0)}%</b> of the optimised monthly return — just under the common ~50% rule of thumb. The edge looks real but thinner than the backtest: plan on roughly half. Parameters stayed close together, so it doesn't hinge on one lucky setting.</div></div>
+  </div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{const [x,w,h]=setup('wfc');const pl=52,pr=16,pt=10,pb=22;const e=window._wf.eqs;const lo=Math.min(...e)-.01,hi=Math.max(...e)+.01;const X=i=>pl+(w-pl-pr)*i/12,Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb);
+  x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';for(let k=0;k<=3;k++){const v=lo+(hi-lo)*k/3;const y=Math.round(Y(v))+.5;x.strokeStyle=css('--line2');x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillStyle=css('--mut');x.textAlign='right';x.fillText(pc(v-1,0),pl-8,y)}
+  for(let i=0;i<12;i++){x.fillStyle=e[i+1]>=e[i]?'rgba(110,168,254,.10)':'rgba(240,80,110,.10)';x.fillRect(X(i)+1,pt,X(i+1)-X(i)-2,h-pt-pb)}
+  x.strokeStyle=css('--draw');x.lineWidth=1.75;x.beginPath();e.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.stroke();
+  e.forEach((v,i)=>{x.fillStyle=css('--draw');x.beginPath();x.arc(X(i),Y(v),2.5,0,7);x.fill()});
+  x.fillStyle=css('--mut');x.textAlign='center';['Mehr','Dey','Farvardin','Tir','Shahrivar'].forEach((m,k)=>x.fillText(m,X([0,3,6,9,11][k])+ (X(1)-X(0))/2,h-pb/2+3));
+  let pk=1;const dd=e.map(v=>{pk=Math.max(pk,v);return v/pk-1});ddPane('wfdd',[{v:dd,c:css('--dn'),fill:'rgba(240,80,110,.22)'}],12,{lines:[{v:-0.051,c:css('--dim'),label:'month-end values · deepest intramonth −5.1%'}]});
+  document.body.dataset.ready=1});
+}
+
+if(S==='f3'){
+ app.style.gridTemplateColumns='56px minmax(0,1fr)';
+ const days=21,H=30,tpd=A.n/30;const pathsN=Math.round(H*tpd);
+ const paths=mcPaths(A.rows,pathsN,3000);
+ const cone=[],ddb=[];const rdd=paths.map(p=>{let pk=1;return p.map(v=>{pk=Math.max(pk,v);return v/pk-1})});for(let d=0;d<=H;d++){const k=Math.round(d*tpd);const v=paths.map(p=>p[k]);cone.push([q(v,.05),q(v,.5),q(v,.95)]);ddb.push(q(rdd.map(r=>r[k]),.05))}
+ seed=77;let eq=1;const live=[1];const liveTrades=[];for(let d=1;d<=days;d++){const k=2+Math.floor(rnd()*3);for(let j=0;j<k;j++){const r=A.rows[Math.floor(rnd()*A.rows.length)].pct-0.0001;eq*=1+r;liveTrades.push(r)}live.push(eq)}
+ let pk=1,mdd=0;live.forEach(v=>{pk=Math.max(pk,v);mdd=Math.min(mdd,v/pk-1)});
+ window._pp={cone,live,days,H,ddb};
+ const inside=live[days]>=cone[days][0]&&live[days]<=cone[days][2];
+ app.innerHTML=rail(2)+`<section class="rm">${hdr('Paper trading')}
+ <div class="body" style="grid-template-rows:64px minmax(0,1fr) 236px">
+  <div class="card live"><span class="pill">LIVE PAPER</span>
+   <span class="lstat"><i>Running since</i><em>1405/06/13 · ${days} days</em></span><span class="vd"></span>
+   <span class="lstat"><i>Feed</i><em>Bitunix live · BTCUSDT 15m</em></span><span class="vd"></span>
+   <span class="lstat"><i>Paper equity</i><em class="${eq>=1?'up':'dn'}">${f2(10000*eq)} USDT</em></span><span class="vd"></span>
+   <span class="lstat"><i>Open position</i><em><span class="up">Long 0.12</span> · +38.20</em></span><span class="vd"></span>
+   <span class="lstat"><i>Next bar closes in</i><em>11:13</em></span>
+   <span class="fill"></span><span class="btn">${svg('pause')}Pause</span></div>
+  <div class="row2" style="grid-template-columns:minmax(0,1fr) 380px">
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr) 100px"><div class="ch"><b>Live vs expected</b><span class="mut">cone = what the backtest says is normal for this many days</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:var(--up)"></span>Paper</span><span><span class="k" style="background:var(--dim)"></span>Median</span><span><span class="k" style="background:rgba(125,132,142,.35);height:8px"></span>90% range · drawdown below</span></span></div><div class="cv"><canvas id="pc"></canvas></div><div class="cv" style="border-top:1px solid var(--line2)"><canvas id="pdd"></canvas></div></div>
+   <div class="card" style="display:grid;grid-template-rows:44px 1fr auto"><div class="ch"><b>Ready for a live bot?</b><span class="mut">4 of 5</span></div>
+    <div class="cl">
+     <div class="cli y">${svg('check')}<span>Running at least 14 days<small>covers weekends and funding cycles</small></span><em>${days} d</em></div>
+     <div class="cli y">${svg('check')}<span>At least 30 trades<small>enough to judge</small></span><em>${liveTrades.length}</em></div>
+     <div class="cli ${inside?'y':'w'}">${svg(inside?'check':'warn')}<span>Equity inside expected range<small>90% Monte Carlo cone</small></span><em>${pc(live[days]-1,1)}</em></div>
+     <div class="cli y">${svg('check')}<span>Drawdown under your limit<small>limit −8.0%</small></span><em>${pc(mdd,1)}</em></div>
+     <div class="cli w">${svg('warn')}<span>Execution drift under 0.025%<small>live fills vs backtest model</small></span><em>0.031%</em></div>
+    </div>
+    <div class="promo"><span class="btn p">${svg('bot2')}Promote to Trading bot</span><small>Unlocks when all checks pass · you can override with 2FA</small></div></div>
+  </div>
+  <div class="row2" style="grid-template-columns:420px minmax(0,1fr)">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Execution quality</b><span class="mut">what the backtest can't see</span></div>
+    <table class="cmp"><tr><th>Measure</th><th>Model</th><th>Live</th></tr>
+     <tr><td>Signal → order latency</td><td>—</td><td style="color:var(--text)">180 ms</td></tr>
+     <tr><td>Slippage per side</td><td>0.020%</td><td class="dn">0.031%</td></tr>
+     <tr><td>Funding paid</td><td>−11.85</td><td style="color:var(--text)">−12.40</td></tr>
+     <tr><td>Missed signals</td><td>0</td><td style="color:var(--text)">0</td></tr>
+     <tr><td>Fills from live order book</td><td>—</td><td style="color:var(--text)">top 20 levels</td></tr></table></div>
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Latest paper trades</b><span class="mut">Tehran time</span></div>
+    <table class="cmp"><tr><th>Side</th><th>Entry → exit</th><th>Model fill</th><th>Live fill</th><th>Drift</th><th>P&amp;L</th></tr>
+     ${[['Long','25 Sep 11:15 → 13:45','64,021.5','64,041.8','+0.032%','+31.40'],['Short','25 Sep 06:00 → 08:30','64,388.0','64,369.1','+0.029%','+18.75'],['Long','24 Sep 22:45 → 23:30','63,902.2','63,925.0','+0.036%','−22.10'],['Short','24 Sep 17:15 → 20:00','64,450.9','64,436.3','+0.023%','+44.90']].map(r=>`<tr><td style="color:var(--text)"><span class="side"><i style="background:var(${r[0]=='Long'?'--up':'--dn'})"></i>${r[0]}</span></td><td>${r[1]}</td><td style="color:var(--mut)">${r[2]}</td><td>${r[3]}</td><td class="dn">${r[4]}</td><td class="${r[5][0]=='+'?'up':'dn'}">${r[5]}</td></tr>`).join('')}</table></div>
+  </div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{const [x,w,h]=setup('pc');const {cone,live,days,H}=window._pp;const pl=52,pr=16,pt=12,pb=24;
+  const all=[...cone.flat(),...live];const lo=Math.min(...all)-.005,hi=Math.max(...all)+.005;const X=d=>pl+(w-pl-pr)*d/H,Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb);
+  x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4;const y=Math.round(Y(v))+.5;x.strokeStyle=css('--line2');x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillStyle=css('--mut');x.textAlign='right';x.fillText(pc(v-1,0),pl-8,y)}
+  x.beginPath();cone.forEach((c,i)=>i?x.lineTo(X(i),Y(c[2])):x.moveTo(X(i),Y(c[2])));for(let i=cone.length-1;i>=0;i--)x.lineTo(X(i),Y(cone[i][0]));x.closePath();x.fillStyle='rgba(125,132,142,.16)';x.fill();
+  x.setLineDash([2,3]);x.strokeStyle=css('--dim');x.beginPath();cone.forEach((c,i)=>i?x.lineTo(X(i),Y(c[1])):x.moveTo(X(i),Y(c[1])));x.stroke();x.setLineDash([]);
+  const tx=Math.round(X(days))+.5;x.strokeStyle=css('--line');x.beginPath();x.moveTo(tx,pt);x.lineTo(tx,h-pb);x.stroke();x.fillStyle=css('--mut');x.textAlign='left';x.fillText('today',tx+6,pt+6);
+  x.strokeStyle=css('--up');x.lineWidth=1.75;x.beginPath();live.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.stroke();x.fillStyle=css('--up');x.beginPath();x.arc(X(days),Y(live[days]),3,0,7);x.fill();
+  {let pk=1;const ldd=live.map(v=>{pk=Math.max(pk,v);return v/pk-1});ddPane('pdd',[{v:ldd,c:css('--up'),lw:1.5,fill:'rgba(46,189,133,.14)'}],H,{band:window._pp.ddb,lines:[{v:-0.08,c:css('--dn'),label:'your limit −8%'}]});}
+  x.fillStyle=css('--mut');x.textAlign='center';[0,7,14,21,30].forEach(d=>{x.textAlign=d===0?'left':d===30?'right':'center';x.fillText('day '+d,X(d),h-pb/2+4)});
+  document.body.dataset.ready=1});
+}
+</script><script src="jobs.js"></script><script src="setups.js"></script></body></html>

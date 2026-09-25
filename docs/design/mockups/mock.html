@@ -1,0 +1,219 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Plex;src:url(node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Plex;src:url(node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Plex;src:url(node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:PlexMono;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:PlexMono;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2);font-weight:500}
+
+:root{--rail:56px;--side:320px;--sans:Inter;--mono:JBM}
+.a{--bg:#0B0C0E;--surf:#0F1113;--line:#1C1F23;--line2:#15171A;--text:#E7E9EC;--mut:#7D848E;--dim:#4A5059;--up:#2EBD85;--dn:#F0506E;--acc:#E7E9EC;--accbg:#1A1D21;--ema1:#C9CDD3;--ema2:#6B727C;--l3:#D9B26A}
+.b{--bg:#F7F7F5;--surf:#FFFFFF;--line:#E6E5E1;--line2:#EFEEEB;--text:#16181B;--mut:#6F737A;--dim:#A3A6AB;--up:#0E9F6E;--dn:#D83A4A;--acc:#16181B;--accbg:#F0EFEC;--ema1:#16181B;--ema2:#A3A6AB;--l3:#B7791F}
+.c{--rail:208px;--sans:Plex;--mono:PlexMono;--bg:#0D1117;--surf:#121821;--line:#212A37;--line2:#18202B;--text:#D8DEE8;--mut:#71809A;--dim:#445066;--up:#26A69A;--dn:#EF5350;--acc:#4C8DFF;--accbg:#172338;--ema1:#4C8DFF;--ema2:#8E7CFF;--l3:#E0B04F}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 13px/16px var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;overflow:hidden}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr) var(--side);height:100vh}
+
+/* rail */
+.rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px;background:var(--bg)}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;margin:4px 0 16px;background:var(--acc);color:var(--bg);font:600 13px var(--sans)}
+.ri{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--mut);position:relative}
+.ri svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ri.on{color:var(--text);background:var(--accbg)}
+.a .ri.on::before,.b .ri.on::before{content:"";position:absolute;left:-8px;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--acc)}
+.spacer{flex:1}
+.c .rail{align-items:stretch;padding:12px}
+.c .brand{display:flex;align-items:center;gap:8px;height:32px;margin-bottom:24px;padding:0 4px}
+.c .brand .logo{margin:0;width:24px;height:24px;border-radius:6px;font-size:11px}
+.c .brand b{font-weight:600;font-size:14px;letter-spacing:-.01em}
+.c .ri{width:auto;height:36px;display:flex;justify-content:flex-start;gap:12px;padding:0 10px;font-size:13px;font-weight:500}
+.c .ri.on{background:var(--accbg);color:var(--text)}
+.c .ri.on svg{color:var(--acc)}
+.c .ri small{margin-left:auto;font:500 11px var(--mono);color:var(--mut);background:var(--line2);padding:1px 6px;border-radius:4px}
+.c .sec{font:500 11px var(--sans);color:var(--dim);letter-spacing:.06em;text-transform:uppercase;padding:16px 10px 8px}
+
+/* main */
+.main{display:grid;grid-template-rows:56px 1fr 120px 120px 32px;min-width:0;border-right:1px solid var(--line)}
+.bar{white-space:nowrap;overflow:hidden;display:flex;align-items:center;gap:24px;padding:0 16px;border-bottom:1px solid var(--line)}
+.sym{display:flex;align-items:baseline;gap:8px}
+.sym b{font:600 16px var(--sans);letter-spacing:-.01em}
+.sym span{color:var(--mut);font-size:12px}
+.px{display:flex;align-items:baseline;gap:12px}
+.px .p{font:500 16px var(--mono)}
+.up{color:var(--up)}.dn{color:var(--dn)}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat i{font-style:normal;color:var(--mut);font-size:11px;line-height:12px}
+.stat em{font:400 12px/14px var(--mono);font-style:normal}
+.seg{display:flex;gap:2px;margin-left:auto;padding:2px;border:1px solid var(--line);border-radius:8px}
+.seg span{font:500 12px var(--sans);color:var(--mut);padding:4px 8px;border-radius:6px}
+.seg span.on{background:var(--accbg);color:var(--text)}
+.btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:8px;font-weight:500;font-size:12px;color:var(--text)}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
+.live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mut)}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px color-mix(in srgb,var(--up) 20%,transparent)}
+.pane{position:relative;border-bottom:1px solid var(--line);min-height:0}
+.pane canvas{position:absolute;inset:0;width:100%;height:100%}
+.leg{position:absolute;left:16px;top:10px;display:flex;gap:12px;align-items:center;font-size:11px;color:var(--mut);z-index:2}
+.leg b{color:var(--text);font-weight:500}
+.leg .k{display:inline-block;width:8px;height:2px;border-radius:1px;margin-right:4px;vertical-align:middle}
+.leg .x{color:var(--dim)}
+.foot{display:flex;align-items:center;gap:16px;padding:0 16px;font-size:11px;color:var(--mut)}
+.foot .r{margin-left:auto}
+
+/* side */
+.side{display:grid;grid-template-rows:56px auto 1fr auto;min-height:0;background:var(--surf)}
+.b .side{background:var(--surf)}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line)}
+.sh b{font-weight:600;font-size:13px}
+.ic{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;color:var(--mut)}
+.ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
+.search{margin:12px 16px 8px;height:36px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut);background:var(--bg)}
+.search svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
+.search .t{color:var(--text)}
+.search .caret{width:1px;height:16px;background:var(--acc);margin-left:-6px}
+.search kbd{margin-left:auto;font:500 11px var(--mono);border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--mut)}
+.cols{display:grid;grid-template-columns:1fr 96px 64px;padding:8px 16px;font-size:11px;color:var(--dim)}
+.cols span:not(:first-child){text-align:right}
+.list{overflow:hidden}
+.row{display:grid;grid-template-columns:1fr 96px 64px;align-items:center;height:40px;padding:0 16px;position:relative}
+.row span:not(:first-child){text-align:right}
+.row .s b{font-weight:500}
+.row .s i{font-style:normal;color:var(--dim);font-size:11px;margin-left:4px}
+.row.on{background:var(--accbg)}
+.row.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;background:var(--acc)}
+.row mark{background:none;color:var(--acc);text-decoration:underline;text-underline-offset:3px}
+.a .row mark{color:var(--text);text-decoration-color:var(--mut)}
+.chg{font:500 12px var(--mono)}
+.card{border-top:1px solid var(--line);padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px 16px}
+.card h4{grid-column:1/-1;font-size:12px;font-weight:600;display:flex;justify-content:space-between}
+.card h4 span{font-weight:400;color:var(--mut)}
+.kv i{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-bottom:4px}
+.kv em{font:400 13px var(--mono);font-style:normal}
+.c{--side:296px}.c .cols,.c .row{grid-template-columns:1fr 88px 64px}.c .bar{gap:20px}.c .bar .stat:nth-of-type(5),.c .live{display:none}.c .sym span{display:none}
+</style></head>
+<body>
+<div class="app" id="app">
+  <nav class="rail" id="rail"></nav>
+  <section class="main">
+    <div class="bar">
+      <div class="sym"><b>BTCUSDT</b><span>Perp · Bitunix</span></div>
+      <div class="px"><span class="p num up" id="last">64,218.4</span><span class="chg up">+2.14%</span></div>
+      <div class="stat"><i>Mark</i><em class="num">64,221.9</em></div>
+      <div class="stat"><i>Funding / 8h</i><em class="num up">0.0100%</em></div>
+      <div class="stat"><i>Next</i><em class="num">03:41:12</em></div>
+      <div class="seg"><span>1m</span><span>5m</span><span class="on">15m</span><span>1h</span><span>4h</span><span>1D</span></div>
+      <div class="btn"><svg viewBox="0 0 16 16"><path d="M2 12l4-4 3 3 5-6"/></svg>Indicators</div>
+      <span class="live">Live</span>
+    </div>
+    <div class="pane" id="p0"><div class="leg"><b>BTCUSDT · 15m</b><span>O <span class="num" style="color:var(--text)">64,102.0</span></span><span>H <span class="num" style="color:var(--text)">64,260.5</span></span><span>L <span class="num" style="color:var(--text)">64,088.1</span></span><span>C <span class="num up">64,218.4</span></span><span><span class="k" style="background:var(--ema1)"></span>EMA 20</span><span><span class="k" style="background:var(--ema2)"></span>EMA 50</span></div><canvas id="c0"></canvas></div>
+    <div class="pane" id="p1"><div class="leg"><b>RSI</b><span class="num">14</span><span class="num" style="color:var(--text)" id="rv"></span><span class="x">⌃ ⌄ ✕</span></div><canvas id="c1"></canvas></div>
+    <div class="pane" id="p2"><div class="leg"><b>My Indicator</b><span class="num">L1 · L2 · L3</span><span><span class="k" style="background:var(--ema1)"></span><span class="num" style="color:var(--text)" id="v1"></span></span><span><span class="k" style="background:var(--ema2)"></span><span class="num" style="color:var(--text)" id="v2"></span></span><span><span class="k" style="background:var(--l3)"></span><span class="num" style="color:var(--text)" id="v3"></span></span><span class="x">⌃ ⌄ ✕</span></div><canvas id="c2"></canvas></div>
+    <div class="foot"><span>UTC+3:30</span><span class="num">14:18:47</span><span>Last price · Mark price</span><span class="r">Latency <span class="num">42 ms</span></span></div>
+  </section>
+  <aside class="side">
+    <div class="sh"><b>Watchlist</b><div style="display:flex;gap:4px"><span class="ic"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></span><span class="ic"><svg viewBox="0 0 16 16"><circle cx="3" cy="8" r=".8"/><circle cx="8" cy="8" r=".8"/><circle cx="13" cy="8" r=".8"/></svg></span></div></div>
+    <div>
+      <div class="search"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><span class="t" id="q"></span><span class="caret"></span><kbd>⌘K</kbd></div>
+      <div class="cols"><span>Symbol</span><span>Last</span><span>24h</span></div>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="card">
+      <h4>BTCUSDT <span>Perpetual</span></h4>
+      <div class="kv"><i>24h volume</i><em>2.81B</em></div>
+      <div class="kv"><i>Open interest</i><em>1.12B</em></div>
+      <div class="kv"><i>24h high</i><em>64,590.0</em></div>
+      <div class="kv"><i>24h low</i><em>62,811.3</em></div>
+      <div class="kv"><i>Max leverage</i><em>200×</em></div>
+      <div class="kv"><i>Taker / Maker</i><em>0.06 / 0.02%</em></div>
+    </div>
+  </aside>
+</div>
+<script>
+const V=(location.hash||'#a').slice(1);document.body.className=V;
+const I={
+ chart:'<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+ strat:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/>',
+ fwd:'<path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 5v14"/>',
+ res:'<path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>',
+ alert:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ bot:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+ user:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>'};
+const items=[['chart','Chart'],['strat','Strategy'],['fwd','Forward test'],['res','Research'],['alert','Alerts','3'],['bot','Trading bot','1']];
+const svg=k=>`<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const rail=document.getElementById('rail');
+if(V==='c'){
+ rail.innerHTML=`<div class="brand"><div class="logo">Q</div><b>Quanta</b></div><div class="sec">Workspace</div>`+
+ items.map((x,i)=>`<div class="ri ${i==0?'on':''}">${svg(x[0])}${x[1]}${x[2]?`<small>${x[2]}</small>`:''}</div>`).join('')+
+ `<div class="spacer"></div><div class="ri">${svg('set')}Settings</div><div class="ri">${svg('user')}Account</div>`;
+}else{
+ rail.innerHTML=`<div class="logo">Q</div>`+items.map((x,i)=>`<div class="ri ${i==0?'on':''}">${svg(x[0])}</div>`).join('')+`<div class="spacer"></div><div class="ri">${svg('set')}</div><div class="ri">${svg('user')}</div>`;
+}
+// watchlist
+const W=[['BTC','64,218.4',2.14],['ETH','3,412.77',1.62],['SOL','148.305',-0.84],['BNB','582.10',0.37],['XRP','0.5871',-1.92],['DOGE','0.12944',3.05],['TON','5.218',-0.41],['AVAX','27.64',0.92],['LINK','13.482',-0.18],['ADA','0.3921',1.11],['SUI','1.0842',4.27],['ARB','0.6613',-2.36]];
+let rows=W;
+if(V==='b'){document.getElementById('q').textContent='bt';rows=[['BTC','64,218.4',2.14],['BTCDOM','1,942.6',-0.22],['BTT','0.00000071',0.88]];}
+document.getElementById('list').innerHTML=rows.map((r,i)=>{const s=V==='b'?r[0].replace(/^BT/,'<mark>BT</mark>'):r[0];return `<div class="row ${i==0?'on':''}"><span class="s"><b>${s}</b><i>USDT</i></span><span class="num">${r[1]}</span><span class="chg ${r[2]>=0?'up':'dn'}">${r[2]>=0?'+':''}${r[2].toFixed(2)}%</span></div>`}).join('')+(V==='b'?`<div style="padding:16px;color:var(--mut);font-size:12px;border-top:1px solid var(--line2);margin-top:8px">3 results · <span style="color:var(--text)">↵</span> to add · <span style="color:var(--text)">↑↓</span> to navigate</div>`:'');
+
+// data
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const N=150;const D=[];let p=61800;
+for(let i=0;i<N;i++){const drift=Math.sin(i/11)*38+Math.sin(i/29)*22+(i>110?30:0);const o=p;const c=o+drift+(rnd()-.5)*300;const h=Math.max(o,c)+rnd()*110;const l=Math.min(o,c)-rnd()*110;D.push({o,h,l,c,v:200+rnd()*800+(Math.abs(c-o)*3)});p=c;}
+const sc=64218.4/D[N-1].c;D.forEach(d=>{d.o*=sc;d.h*=sc;d.l*=sc;d.c*=sc});
+const ema=(a,n)=>{const k=2/(n+1);let e=a[0];return a.map(x=>e=x*k+e*(1-k))};
+const C=D.map(d=>d.c),E1=ema(C,20),E2=ema(C,50);
+const rsi=(()=>{let g=0,l=0;const out=[];for(let i=0;i<N;i++){if(i==0){out.push(50);continue}const ch=C[i]-C[i-1];g=(g*13+Math.max(ch,0))/14;l=(l*13+Math.max(-ch,0))/14;out.push(100-100/(1+g/(l||1e-9)))}return out})();
+const L1=ema(C.map((c,i)=>(c-E2[i])/E2[i]*100),8),L2=ema(L1,12),L3=C.map((c,i)=>1+Math.sin(i/14)*.08+(E1[i]-E2[i])/E2[i]*6);
+const css=v=>getComputedStyle(document.body).getPropertyValue(v).trim();
+function setup(id){const cv=document.getElementById(id);const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);return [x,r.width,r.height]}
+const AX=72; // price axis width
+function grid(x,w,h,top,bot,nx){x.strokeStyle=css('--line2');x.lineWidth=1;for(let i=1;i<nx;i++){const X=Math.round((w-AX)/nx*i)+.5;x.beginPath();x.moveTo(X,top);x.lineTo(X,h-bot);x.stroke()}x.strokeStyle=css('--line');x.beginPath();x.moveTo(w-AX+.5,0);x.lineTo(w-AX+.5,h);x.stroke()}
+function tag(x,w,y,txt,bg,fg){x.fillStyle=bg;x.fillRect(w-AX+1,y-9,AX-1,18);x.fillStyle=fg;x.font=`500 11px ${css('--mono')}`;x.textBaseline='middle';x.fillText(txt,w-AX+8,y)}
+function main(){const [x,w,h]=setup('c0');const top=40,bot=24,volH=56;const cw=w-AX;const step=cw/(N+6);
+ const hi=Math.max(...D.map(d=>d.h)),lo=Math.min(...D.map(d=>d.l));const pad=(hi-lo)*.06;const H=hi+pad,L=lo-pad;
+ const Y=v=>top+(H-v)/(H-L)*(h-top-bot-volH);
+ // horizontal grid + labels
+ x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';
+ const ticks=6;for(let i=0;i<=ticks;i++){const v=L+(H-L)*i/ticks;const y=Math.round(Y(v))+.5;x.strokeStyle=css('--line2');x.beginPath();x.moveTo(0,y);x.lineTo(cw,y);x.stroke();x.fillStyle=css('--mut');if(Math.abs(y-Y(C[N-1]))>16)x.fillText(v.toLocaleString('en-US',{maximumFractionDigits:0}),cw+8,y)}
+ grid(x,w,h,0,bot,6);
+ // volume
+ const vmax=Math.max(...D.map(d=>d.v));
+ D.forEach((d,i)=>{const X=step*(i+.5);const vh=d.v/vmax*volH*.9;x.fillStyle=(d.c>=d.o?css('--up'):css('--dn'))+'38';x.fillRect(Math.round(X-step*.35),h-bot-vh,Math.max(1,Math.round(step*.7)),vh)});
+ // emas
+ [[E1,'--ema1'],[E2,'--ema2']].forEach(([a,c])=>{x.strokeStyle=css(c);x.lineWidth=1.25;x.globalAlpha=.85;x.beginPath();a.forEach((v,i)=>{const X=step*(i+.5);i?x.lineTo(X,Y(v)):x.moveTo(X,Y(v))});x.stroke();x.globalAlpha=1});
+ // candles
+ D.forEach((d,i)=>{const X=Math.round(step*(i+.5))+.5;const up=d.c>=d.o;const col=css(up?'--up':'--dn');x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1;x.beginPath();x.moveTo(X,Y(d.h));x.lineTo(X,Y(d.l));x.stroke();const bw=Math.max(1,Math.round(step*.64));const y1=Y(Math.max(d.o,d.c)),y2=Y(Math.min(d.o,d.c));x.fillRect(Math.round(X-bw/2),Math.round(y1),bw,Math.max(1,Math.round(y2-y1)))});
+ // last price line
+ const ly=Math.round(Y(C[N-1]))+.5;x.setLineDash([2,3]);x.strokeStyle=css('--up');x.beginPath();x.moveTo(0,ly);x.lineTo(cw,ly);x.stroke();x.setLineDash([]);
+ tag(x,w,ly,'64,218.4',css('--up'),'#fff');
+ // time axis
+ x.strokeStyle=css('--line');x.beginPath();x.moveTo(0,h-bot+.5);x.lineTo(w,h-bot+.5);x.stroke();
+ x.fillStyle=css('--mut');x.font=`400 11px ${css('--mono')}`;['09:00','15:00','21:00','Sep 25','09:00','12:00'].forEach((t,i)=>x.fillText(t,(cw/6)*i+8,h-bot/2));
+ // trade markers (strategy signals)
+ const lows=[],highs=[];for(let i=5;i<N-5;i++){const w=D.slice(i-5,i+6);if(D[i].l===Math.min(...w.map(d=>d.l)))lows.push(i);if(D[i].h===Math.max(...w.map(d=>d.h)))highs.push(i)}
+ const sig=[];let pos=0;for(let i=0;i<N;i++){if(!pos&&lows.includes(i)&&i>20){sig.push([i,'L']);pos=1}else if(pos&&highs.includes(i)&&i>sig[sig.length-1][0]+6){sig.push([i,'X']);pos=0}}
+ x.font=`500 10px ${css('--sans')}`;x.textAlign='center';
+ sig.slice(0,7).forEach(([i,t])=>{const d=D[i];const X=step*(i+.5);const isL=t==='L';const col=css(isL?'--up':'--text');const y=isL?Y(d.l)+10:Y(d.h)-10;x.fillStyle=col;x.beginPath();if(isL){x.moveTo(X,y);x.lineTo(X-4,y+6);x.lineTo(X+4,y+6)}else{x.moveTo(X,y);x.lineTo(X-4,y-6);x.lineTo(X+4,y-6)}x.fill();x.fillText(isL?'Long':'Exit',X,isL?y+16:y-14)});
+ x.textAlign='left';
+}
+function sub(id,series,rng,lines){const [x,w,h]=setup(id);const top=32,bot=8;const cw=w-AX;const step=cw/(N+6);const [L,H]=rng;const Y=v=>top+(H-v)/(H-L)*(h-top-bot);
+ grid(x,w,h,0,0,6);x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';
+ (lines||[]).forEach(v=>{const y=Math.round(Y(v))+.5;x.setLineDash([2,3]);x.strokeStyle=css('--dim');x.beginPath();x.moveTo(0,y);x.lineTo(cw,y);x.stroke();x.setLineDash([]);x.fillStyle=css('--mut');if(Math.abs(y-Y(series[0][0][N-1]))>14)x.fillText(String(v),cw+8,y)});
+ series.forEach(([a,c,wd])=>{x.strokeStyle=css(c);x.lineWidth=wd||1.25;x.beginPath();a.forEach((v,i)=>{if(i<15)return;const X=step*(i+.5);i>15?x.lineTo(X,Y(v)):x.moveTo(X,Y(v))});x.stroke()});
+ const last=series[0][0][N-1];tag(x,w,Y(last),last.toFixed(id==='c1'?2:3),css(series[0][1]),css('--bg'));
+}
+function draw(){rv.textContent=rsi[N-1].toFixed(2);v1.textContent=L1[N-1].toFixed(3);v2.textContent=L2[N-1].toFixed(3);v3.textContent=L3[N-1].toFixed(2);main();sub('c1',[[rsi,'--ema1']],[0,100],[30,70]);
+ const mn=Math.min(...L1,...L2),mx=Math.max(...L1,...L2);const L3s=L3.map(v=>mn+(v-.9)/.2*(mx-mn));
+ sub('c2',[[L1,'--ema1'],[L2,'--ema2'],[L3s,'--l3',1]],[mn-(mx-mn)*.1,mx+(mx-mn)*.1],[]);}
+document.fonts.ready.then(()=>{draw();document.body.dataset.ready=1});
+</script>
+</body></html>

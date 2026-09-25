@@ -1,0 +1,544 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+:root{--bg:#0B0C0E;--surf:#0F1113;--pop:#15171A;--line:#1C1F23;--line2:#15171A;--text:#E7E9EC;--mut:#7D848E;--dim:#4A5059;--up:#2EBD85;--dn:#F0506E;--acc:#E7E9EC;--accbg:#1A1D21;--hov:#16191C;--ema1:#C9CDD3;--ema2:#6B727C;--draw:#6EA8FE;--amber:#F59E0B;--sans:Inter;--mono:JBM}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 13px/16px var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;overflow:hidden}
+.num,.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+.app{display:grid;height:100vh}
+.rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;margin:4px 0 16px;background:var(--acc);color:var(--bg);font:600 13px var(--sans)}
+.ri{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--mut);position:relative}
+.ri svg{width:20px;height:20px}
+.ri.on{color:var(--text);background:var(--accbg)}
+.ri.on::before{content:"";position:absolute;left:-8px;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--acc)}
+.spacer{flex:1}
+.hd{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.hd h1{font:600 15px var(--sans);letter-spacing:-.01em}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:var(--accbg);color:var(--text);font-size:12px}
+.chip.o{background:none;box-shadow:0 0 0 1px var(--line) inset;color:var(--mut)}
+.chip svg{width:14px;height:14px}
+.fill{flex:1}
+.btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;font-weight:500;font-size:12px;color:var(--text);box-shadow:0 0 0 1px var(--line) inset;flex:none}
+.btn svg{width:16px;height:16px}
+.btn.p{background:var(--acc);color:var(--bg);box-shadow:none;font-weight:600}
+.btn.g{box-shadow:none;color:var(--mut)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;color:var(--mut)}
+.ic svg{width:16px;height:16px}
+.seg{display:flex;gap:2px;padding:2px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px}
+.seg span{font:500 12px var(--sans);color:var(--mut);padding:5px 10px;border-radius:6px}
+.seg span.on{background:var(--accbg);color:var(--text)}
+.sec{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* list panel */
+.lp{border-right:1px solid var(--line);display:grid;grid-template-rows:56px auto 1fr;min-height:0;background:var(--surf)}
+.search{margin:12px 16px 8px;height:36px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut);background:var(--bg)}
+.search svg{width:16px;height:16px}
+.si{padding:10px 16px;display:grid;gap:4px;position:relative}
+.si b{font-weight:500}
+.si .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
+.si .dot{width:6px;height:6px;border-radius:50%}
+.si.on{background:var(--accbg)}
+.si.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--acc)}
+/* editor */
+.ed{display:grid;grid-template-rows:56px 1fr;min-width:0;min-height:0}
+.eb{padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;overflow:hidden}
+.card{background:var(--surf);border-radius:10px;box-shadow:0 0 0 1px var(--line) inset}
+.ch{height:44px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.ch b{font-weight:600}
+.ch .mut{font-size:12px}
+.cb{padding:10px 16px}
+.bdot{width:8px;height:8px;border-radius:2px}
+.params{display:flex;flex-wrap:wrap;gap:8px}
+.pm{display:flex;align-items:center;height:32px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.pm span{padding:0 10px;color:var(--mut);font-size:12px}
+.pm em{font:500 12px var(--mono);font-style:normal;padding:0 10px;height:100%;display:flex;align-items:center;background:var(--bg);border-left:1px solid var(--line)}
+.pm i{font-style:normal;color:var(--dim);padding:0 6px;height:100%;display:flex;align-items:center;border-left:1px solid var(--line)}
+.pm i svg{width:12px;height:12px}
+.cond{display:grid;grid-template-columns:24px auto auto auto 1fr 28px;align-items:center;gap:8px;height:36px}
+.cond .n{font:400 11px var(--mono);color:var(--dim)}
+.tok{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:500 12px var(--mono)}
+.tok.op{font-family:var(--sans);color:var(--mut);background:none}
+.tok svg{width:12px;height:12px;color:var(--dim)}
+.tok .k{width:8px;height:2px;border-radius:1px}
+.cond .del{color:var(--dim);display:grid;place-items:center}
+.cond .del svg{width:14px;height:14px}
+.add{display:flex;gap:16px;padding:8px 0 4px 32px;color:var(--mut);font-size:12px;font-weight:500}
+.add span{display:flex;align-items:center;gap:6px}
+.add svg{width:14px;height:14px}
+.logic{font:500 11px var(--sans);color:var(--mut);padding:2px 0 2px 32px;letter-spacing:.04em}
+.exits{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.ex{background:var(--surf);padding:12px 16px;display:grid;gap:6px}
+.ex i{font-style:normal;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:space-between}
+.ex em{font:500 13px var(--mono);font-style:normal}
+.ex.off em{color:var(--dim)}
+.tg{width:28px;height:16px;border-radius:8px;background:var(--dim);position:relative}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--bg)}
+.tg.on{background:var(--up)}
+.tg.on::after{left:14px}
+.code{overflow:hidden;text-overflow:ellipsis;font:400 12px/20px var(--mono);color:var(--mut);padding:12px 16px;border-top:1px solid var(--line);white-space:pre}
+.code b{color:var(--text);font-weight:500}.code .kw{color:var(--draw)}.code .c{color:var(--dim)}
+/* run panel */
+.rp{border-left:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.rb{padding:4px 16px;overflow:hidden}
+.rs{padding:12px 0 4px}
+.rr{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px}
+.rr>span:first-child{color:var(--mut)}
+.val{font:500 12px var(--mono);display:flex;align-items:center;gap:6px}
+.val svg{width:12px;height:12px;color:var(--dim)}
+.auto{font:600 10px var(--sans);color:var(--up);letter-spacing:.04em;background:color-mix(in srgb,var(--up) 14%,transparent);padding:2px 6px;border-radius:4px}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.dt{height:40px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:4px 10px;display:grid}
+.dt i{font-style:normal;font-size:10px;color:var(--mut)}
+.dt em{font:500 12px var(--mono);font-style:normal}
+.presets{display:flex;gap:4px;margin:4px 0 2px}
+.presets span{font:500 11px var(--sans);color:var(--mut);padding:4px 8px;border-radius:4px}
+.presets span.on{background:var(--accbg);color:var(--text)}
+.rdiv{height:1px;background:var(--line);margin:8px 0 0}
+.rf{padding:16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.rf .btn{justify-content:center;height:40px}
+.rf small{font-size:11px;color:var(--mut);text-align:center}
+/* results */
+.rm{display:grid;grid-template-rows:56px 44px 1fr;min-width:0;min-height:0}
+.tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);align-items:stretch}
+.tabs span{display:flex;align-items:center;color:var(--mut);font-weight:500;position:relative}
+.tabs span.on{color:var(--text)}
+.tabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acc)}
+.body{padding:24px;display:grid;gap:16px;min-height:0;overflow:hidden}
+.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.kp{background:var(--surf);padding:12px 16px;display:grid;gap:4px}
+.kp i{font-style:normal;color:var(--mut);font-size:11px}
+.kp em{font:500 18px/22px var(--mono);font-style:normal;letter-spacing:-.01em}
+.kp small{font:400 11px var(--mono);color:var(--mut)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;min-height:0}
+.cv{position:relative}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%}
+.lg{display:flex;gap:16px;font-size:11px;color:var(--mut);align-items:center}
+.lg .k{display:inline-block;width:12px;height:2px;margin-right:6px;vertical-align:middle}
+.tbl{width:100%;border-collapse:collapse}
+.tbl td,.tbl th{height:28px;padding:0 16px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2)}
+.tbl th{font:500 11px var(--sans);color:var(--mut);height:30px}
+.tbl td:first-child,.tbl th:first-child{text-align:left;font-family:var(--sans);color:var(--mut)}
+.tbl tr.b td{font-weight:500;color:var(--text)}
+.tbl tr.b td:first-child{color:var(--text);font-weight:500}
+.tbl tr.hl td{background:color-mix(in srgb,var(--dn) 8%,transparent)}
+.tbl tr.me td{background:var(--accbg)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;min-height:0}
+/* trades */
+.tt{width:100%;border-collapse:collapse}
+.tt th{position:sticky;top:0;background:var(--surf);font:500 11px var(--sans);color:var(--mut);height:36px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tt td{height:36px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.tt th:nth-child(-n+3),.tt td:nth-child(-n+3){text-align:left}
+.tt td.s{font-family:var(--sans);color:var(--mut)}
+.tt tr.on td{background:var(--accbg)}
+.tt tr.on td:first-child{box-shadow:2px 0 0 var(--acc) inset}
+.side{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:500}
+.side i{width:6px;height:6px;border-radius:50%}
+.liqb{font:600 10px var(--sans);color:#111;background:var(--amber);padding:1px 5px;border-radius:3px;margin-left:6px}
+.flt{display:flex;gap:8px;align-items:center}
+
+.cfg{border-right:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.cb2{padding:4px 16px;overflow:hidden}
+.blk{padding:14px 0 10px;border-bottom:1px solid var(--line)}
+.blk:last-child{border-bottom:0}
+.blk .sec{margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.pick{border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:10px 12px;display:grid;gap:4px}
+.pick b{font-weight:500;display:flex;align-items:center;gap:8px}
+.pick small{font:400 11px var(--mono);color:var(--mut)}
+.pick.ref{box-shadow:0 0 0 1px var(--line) inset}
+.pick.fw{box-shadow:0 0 0 1px rgba(110,168,254,.45) inset;background:rgba(110,168,254,.06)}
+.pdot{width:8px;height:8px;border-radius:2px}
+.plist{display:grid;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips span{font:500 11px var(--sans);color:var(--mut);padding:5px 8px;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset}
+.chips span.on{color:var(--text);background:var(--accbg);box-shadow:none}
+.lockrow{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px;color:var(--mut)}
+.lockrow b{font:500 12px var(--mono);color:var(--text);display:flex;align-items:center;gap:6px}
+.lockrow b svg{width:12px;height:12px;color:var(--dim)}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;padding:16px 20px}
+.vs{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:8px;font:600 12px var(--sans);letter-spacing:.02em}
+.vs.ok{background:rgba(46,189,133,.14);color:#4FD19E}
+.vt b{font-weight:600;font-size:14px;display:block}
+.vt span{font-size:12px;color:var(--mut);display:block;margin-top:4px;line-height:17px}
+.vt .checks{display:flex;gap:8px;margin-top:12px}.vt .checks .ck{display:inline-flex;margin-top:0;color:var(--text)}
+.ck{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font-size:11px;white-space:nowrap}
+.ck svg{width:12px;height:12px}
+.ck.y svg{color:var(--up)}.ck.w svg{color:var(--amber)}.ck.n svg{color:var(--dn)}
+.cmp{width:100%;border-collapse:collapse}
+.cmp th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cmp td{height:28px;padding:0 10px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-family:var(--sans)}
+.cmp td:first-child{color:var(--mut)}
+.band{display:inline-block;position:relative;width:64px;height:10px;vertical-align:middle;margin-left:8px}
+.band i{position:absolute;top:4px;height:2px;background:var(--dim);border-radius:1px}
+.band b{position:absolute;top:1px;width:2px;height:8px;border-radius:1px}
+.reg{display:grid;grid-template-columns:repeat(4,1fr) 1.25fr;gap:1px;background:var(--line)}
+.rg{background:var(--surf);padding:12px 16px;display:grid;gap:8px}
+.rg i{font-style:normal;font-size:11px;color:var(--mut)}
+.pair{white-space:nowrap;display:grid;grid-template-columns:40px 1fr 64px;align-items:center;gap:8px;font:400 11px var(--mono)}
+.pair span:first-child{color:var(--mut)}
+.pair .br{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.pair .br b{position:absolute;top:0;bottom:0;border-radius:3px}
+.pair em{font-style:normal;text-align:right}
+.why{padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--mut);line-height:18px}
+.why b{color:var(--text);font-weight:500}
+/* walk forward */
+.wft{width:100%;border-collapse:collapse;table-layout:fixed}
+.wft th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line)}
+.wft td{height:26px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.wft th:nth-child(-n+2),.wft td:nth-child(-n+2){text-align:left}
+.wft td.tl{padding:0 8px;position:relative}
+.gantt{position:relative;height:12px}
+.gantt i{position:absolute;top:0;height:12px;border-radius:3px}
+.gantt i.is{background:rgba(125,132,142,.28)}
+.gantt i.oos{background:rgba(110,168,254,.7)}
+.gantt i.neg{background:rgba(240,80,110,.7)}
+.gscale{display:flex;justify-content:space-between;font:400 10px var(--sans);color:var(--dim);padding:0 8px}
+/* paper */
+.live{display:flex;align-items:center;gap:16px;padding:0 20px;height:64px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:6px;background:rgba(46,189,133,.12);color:#4FD19E;font:600 11px var(--sans);letter-spacing:.04em}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(46,189,133,.25)}
+.lstat{display:flex;flex-direction:column;gap:2px}
+.lstat i{font-style:normal;font-size:11px;color:var(--mut)}
+.lstat em{font:500 13px var(--mono);font-style:normal}
+.vd{width:1px;height:32px;background:var(--line)}
+.cl{display:grid;gap:0}
+.cli{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;min-height:44px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px}
+.cli svg{width:14px;height:14px}
+.cli small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+.cli em{font:500 12px var(--mono);font-style:normal}
+.cli.y>svg{color:var(--up)}.cli.w>svg{color:var(--amber)}
+.promo{padding:12px 16px;display:grid;gap:8px}
+.promo .btn{justify-content:center;height:36px;opacity:.5}
+.promo small{font-size:11px;color:var(--mut);text-align:center}
+.lg{white-space:nowrap}
+.ptbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.ptbl th{font:500 11px var(--sans);color:var(--mut);height:30px;text-align:right;padding:0 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ptbl th.grp{height:26px;text-align:center;color:var(--text);border-bottom:1px solid var(--line2)}
+.ptbl td{height:29px;padding:0 10px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.ptbl td:first-child,.ptbl th:first-child{text-align:left}
+.ptbl tr.best td{background:rgba(46,189,133,.08)}
+.ptbl tr.best td:first-child{box-shadow:2px 0 0 var(--up) inset}
+.ptbl td.sep,.ptbl th.sep{border-left:1px solid var(--line)}
+.tag2{font:600 9px var(--sans);letter-spacing:.05em;padding:2px 5px;border-radius:3px;margin-left:6px;vertical-align:1px}
+.tag2.g{background:rgba(46,189,133,.16);color:#4FD19E}
+.ins{padding:14px 16px;font-size:12px;line-height:18px;color:var(--mut);display:grid;gap:10px}
+.ins b{color:var(--text);font-weight:500}
+.ins div{display:grid;grid-template-columns:18px 1fr;gap:8px}
+.ins svg{width:14px;height:14px;margin-top:2px}
+.hm{display:grid;gap:2px;padding:12px 16px}
+.hm span{height:50px;border-radius:4px;display:grid;place-items:center;font:500 11px var(--mono);color:rgba(255,255,255,.9)}
+.hm .ax{background:none;color:var(--mut);font-weight:400;height:24px}
+.hm span.sel{box-shadow:0 0 0 2px var(--text) inset}
+.lg{white-space:nowrap}
+
+.ctl{padding:14px 0 12px;border-bottom:1px solid var(--line)}
+.ctl:last-child{border-bottom:0}
+.ctl .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ctl .top b{font-weight:500;font-size:12px}
+.ctl .top em{font:500 12px var(--mono);font-style:normal;color:var(--text)}
+.ctl .top em small{color:var(--mut);font-weight:400}
+.rng{position:relative;height:18px;margin:0 7px}
+.rng .tr{position:absolute;left:0;right:0;top:8px;height:3px;border-radius:2px;background:var(--line)}
+.rng .fl{position:absolute;top:8px;height:3px;border-radius:2px;background:var(--text)}
+.rng .hd2{position:absolute;top:2px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--text);box-shadow:0 0 0 3px var(--surf)}
+.rng .tk{position:absolute;top:6px;width:1px;height:7px;background:var(--dim)}
+.rng.red .fl{background:var(--dn)}.rng.red .hd2{background:var(--dn)}
+.ticks{position:relative;height:14px;margin:4px 7px 0;font:400 10px var(--mono);color:var(--dim)}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.hint{font-size:11px;color:var(--mut);margin-top:8px;line-height:15px}
+.hint b{color:var(--text);font-weight:500}
+.dd{height:34px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px}
+.dd.open{box-shadow:0 0 0 1px var(--mut) inset}
+.dd b{font-weight:500}
+.dd span{font:400 11px var(--mono);color:var(--mut)}
+.dd svg{width:12px;height:12px;color:var(--mut)}
+.segw{display:flex;gap:2px;padding:2px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px}
+.segw span{flex:1;text-align:center;font:500 12px var(--sans);color:var(--mut);padding:5px 0;border-radius:6px}
+.segw span.on{background:var(--accbg);color:var(--text)}
+.live2{display:inline-flex;align-items:center;gap:5px;font:600 9px var(--sans);letter-spacing:.05em;color:#4FD19E}
+.live2::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--up)}
+.feepop{position:absolute;left:300px;top:326px;width:500px;background:var(--pop);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 1px #262a30;z-index:30;overflow:hidden}
+.feepop .ph{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line)}.feepop .ph b{font-weight:600}
+.ft2{width:100%;border-collapse:collapse}
+.ft2 th{font:500 11px var(--sans);color:var(--mut);height:32px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line)}
+.ft2 td{height:32px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2)}
+.ft2 th:nth-child(-n+2),.ft2 td:nth-child(-n+2){text-align:left}
+.ft2 tr.me td{background:var(--accbg)}
+.ft2 .cbx{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--dim);display:inline-grid;place-items:center;vertical-align:-2px}
+.ft2 .cbx.on{background:var(--text);border-color:var(--text)}
+.ft2 .cbx.on svg{width:10px;height:10px;color:var(--bg);stroke-width:3}
+.pfoot{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-size:11px;color:var(--mut);border-top:1px solid var(--line)}
+.grid2{display:grid;gap:3px;padding:12px 16px 16px}
+.grid2 .ax{display:flex;align-items:center;justify-content:center;font:500 11px var(--mono);color:var(--mut)}
+.grid2 .ax.l{justify-content:flex-end;padding-right:8px}
+.cell{border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;height:84px}
+.cell b{font:500 15px var(--mono);color:#fff}
+.cell small{font:400 10px var(--mono);color:rgba(255,255,255,.7)}
+.cell.out{filter:saturate(.35) brightness(.62);background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.28) 0 3px,transparent 3px 7px)}
+.cell.out b{color:rgba(255,255,255,.55)}
+.cell.best{box-shadow:0 0 0 2px var(--text) inset}
+.cell .lq{position:absolute;top:4px;right:5px;font:600 9px var(--sans);color:#fff;background:rgba(0,0,0,.35);padding:1px 4px;border-radius:3px}
+.cell.inb::after{content:"";position:absolute;inset:0;border-radius:5px;box-shadow:0 0 0 1px rgba(255,255,255,.45) inset}
+.axt{font:500 11px var(--sans);color:var(--mut)}
+.det{display:grid;gap:0}
+.det .r{display:flex;justify-content:space-between;align-items:center;height:34px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px;color:var(--mut)}
+.det .r b{font:500 12px var(--mono);color:var(--text)}
+</style>
+</head><body><div class="app" id="app"></div>
+<script>window.RS_OKP=0.515</script><script src="btdata.js"></script><script src="rsdata.js"></script>
+<script>
+const S=(location.hash||'#r1').slice(1);
+const I={
+ chart:'<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+ strat:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/>',
+ fwd:'<path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 5v14"/>',
+ res:'<path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>',
+ alert:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ bot:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+ user:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/>',
+ more:'<circle cx="5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="19" cy="12" r=".9"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',cdn:'<path d="M6 9l6 6 6-6"/>',back:'<path d="M15 6l-6 6 6 6"/>',
+ play:'<path d="M7 5l12 7-12 7z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ tune:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ re:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+ code:'<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>',grp:'<path d="M8 4H5v16h3M16 4h3v16h-3"/>',
+ flt:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+};
+Object.assign(I,{check:'<path d="M5 12.5l4.5 4.5L19 7"/>',warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',pause:'<path d="M9 6v12M15 6v12"/>',bot2:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01"/>'});
+Object.assign(I,{info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'});
+const svg=k=>`<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const rail=on=>`<nav class="rail"><div class="logo">Q</div>`+['chart','strat','fwd','res','alert','bot'].map((k,i)=>`<div class="ri ${i==on?'on':''}">${svg(k)}</div>`).join('')+`<div class="spacer"></div><div class="ri">${svg('set')}</div><div class="ri">${svg('user')}</div></nav>`;
+const app=document.getElementById('app');
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const f2=(v,d=2)=>v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pc=(v,d=1)=>(v>=0?'+':'−')+Math.abs(v*100).toFixed(d)+'%';
+function setup(id){const cv=document.getElementById(id);const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);return [x,r.width,r.height]}
+let seed=9;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const q=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.floor(p*(s.length-1))]};
+const Y=RS.year();
+const hdr=(tab)=>`<div class="hd"><h1>Research</h1><span class="chip">EMA Trend + RSI Pullback · v3 ${svg('lock')}</span><span class="chip o">BTCUSDT · 15m · 12 months · 1404</span><span class="chip o">${Y.T.length.toLocaleString()} trades</span><span class="fill"></span><span class="btn g">${svg('dl')}Report PDF</span><span class="btn p">${svg('play')}Re-run</span></div>
+<div class="tabs">${['Leverage & costs','Trade risk','Robustness','Relationships','Risk report'].map(t=>`<span class="${t===tab?'on':''}">${t}</span>`).join('')}</div>`;
+const setupPanel=`<aside class="cfg"><div class="hd"><b style="font-weight:600">Setup</b></div><div class="cb2">
+ <div class="blk"><div class="sec">Position</div><div class="lockrow"><span>Margin per trade</span><b>10% of equity</b></div><div class="lockrow"><span>Margin modes</span><b>Isolated + Cross</b></div><div class="lockrow"><span>Leverage tested</span><b>1× – 75×</b></div></div>
+ <div class="blk"><div class="sec">Costs<span class="auto" style="text-transform:none">FROM BITUNIX</span></div><div class="lockrow"><span>Fee tier</span><b>VIP 0</b></div><div class="lockrow"><span>Maker / taker</span><b>0.02 / 0.06%</b></div><div class="lockrow"><span>Slippage</span><b>0.02% / side</b></div><div class="lockrow"><span>Funding</span><b>historical · 8h</b></div><div class="lockrow"><span>Liquidation</span><b>mark · tiered MMR</b></div></div>
+ <div class="blk"><div class="sec">Your limits</div><div class="lockrow"><span>Max drawdown</span><b>−25%</b></div><div class="lockrow"><span>Risk of ruin</span><b>&lt; 1%</b></div><div class="lockrow"><span>Ruin means</span><b>−50% of capital</b></div></div>
+ <div class="blk"><div class="sec">Simulation</div><div class="lockrow"><span>Monte Carlo</span><b>reshuffled years</b></div></div>
+</div><div class="rf"><span class="btn p">${svg('play')}Run study</span></div></aside>`;
+
+if(S==='r1'){
+ app.style.gridTemplateColumns='56px 280px minmax(0,1fr)';
+ const levs=[1,2,3,5,10,15,20,25,50,75];
+ const res=levs.map(L=>{const i=RS.simX(Y,L,'isolated'),c=RS.simX(Y,L,'cross');
+  let ruin=0;const P=300;const pcts=i.rows.map(r=>r.pct);const n=pcts.length;for(let k=0;k<P;k++){let eq=1;for(let j=0;j<n;j++){eq*=1+pcts[Math.floor(rnd()*n)];if(eq<=0.5){ruin++;break}}}
+  return {L,i,c,ruin:ruin/P}});
+ const lim=-0.25;let best=null;res.forEach(r=>{if(r.i.mdd>=lim&&r.i.liq===0&&r.ruin<0.01)best=r.L});
+ window._res=res;window._best=best;window._levs=levs;
+ const costShare=r=>(r.fees+r.slip+r.fp-r.fr)/Math.max(1,r.gross);
+ const r50=res.find(r=>r.L===50),r75=res.find(r=>r.L===75),r10=res.find(r=>r.L===10);
+ app.innerHTML=rail(3)+setupPanel+`<section class="rm">${hdr('Leverage & costs')}
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr)">
+  <div class="card" style="overflow:hidden"><div class="ch"><b>Same trades, every leverage</b><span class="mut">real exposure = margin % × leverage</span></div>
+   <table class="ptbl"><colgroup><col style="width:78px"><col style="width:84px"><col style="width:92px"><col><col><col><col style="width:56px"><col><col><col><col style="width:100px"><col style="width:92px"></colgroup>
+   <tr><th></th><th></th><th></th><th class="grp sep" colspan="4">Isolated</th><th class="grp sep" colspan="3">Cross</th><th class="sep"></th><th></th></tr>
+   <tr><th>Lev.</th><th>Exposure</th><th>Liq. distance</th><th class="sep">Net / yr</th><th>Max DD</th><th>Worst trade</th><th>Liq.</th><th class="sep">Net / yr</th><th>Max DD</th><th>Worst trade</th><th class="sep">Costs ÷ gross</th><th>Ruin (isolated)</th></tr>
+   ${res.map(r=>`<tr class="${r.L===best?'best':''}"><td style="color:var(--text)">${r.L}×${r.L===best?'<span class="tag2 g">BEST</span>':''}</td><td style="color:var(--mut)">${(0.1*r.L).toFixed(1)}× eq.</td><td style="color:var(--mut)">${((1/r.L-0.005)*100).toFixed(2)}%</td>
+    <td class="sep ${r.i.net>=0?'up':'dn'}">${r.i.net<=-0.999?'wiped out':pc(r.i.net,0)}</td><td class="${r.i.mdd<lim?'dn':''}" style="${r.i.mdd>=lim?'color:var(--text)':''}">${pc(r.i.mdd,0)}</td><td style="color:var(--mut)">${pc(r.i.worst,1)}</td><td>${r.i.liq?`<span class="dn">${r.i.liq}</span>`:'<span style="color:var(--dim)">0</span>'}</td>
+    <td class="sep ${r.c.net>=0?'up':'dn'}">${r.c.net<=-0.999?'wiped out':pc(r.c.net,0)}</td><td class="${r.c.mdd<lim?'dn':''}" style="${r.c.mdd>=lim?'color:var(--text)':''}">${pc(r.c.mdd,0)}</td><td style="color:var(--mut)">${pc(r.c.worst,1)}</td>
+    <td class="sep" style="color:var(--mut)">${r.i.gross>0?(costShare(r.i)*100).toFixed(0)+'%':'—'}</td><td class="${r.ruin>=0.01?'dn':''}" style="${r.ruin<0.01?'color:var(--text)':''}">${r.ruin<0.004?'&lt;0.5%':(r.ruin*100).toFixed(0)+'%'}</td></tr>`).join('')}
+   </table></div>
+  <div class="row2" style="grid-template-columns:minmax(0,1fr) 460px">
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr)"><div class="ch"><b>Return vs drawdown</b><span class="mut">isolated</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:var(--up)"></span>Net / yr</span><span><span class="k" style="background:var(--dn)"></span>Max DD</span><span><span class="k" style="background:var(--dim)"></span>−25% limit</span></span></div><div class="cv"><canvas id="lv"></canvas></div></div>
+   <div class="card"><div class="ch"><b>What the numbers say</b></div><div class="ins">
+    <div>${svg('check').replace('<svg','<svg style="color:var(--up)"')}<span><b>${best}× isolated</b> is the highest leverage inside your −25% drawdown and &lt;1% ruin limits.</span></div>
+    <div>${svg('warn').replace('<svg','<svg style="color:var(--amber)"')}<span>At <b>50× isolated</b> ${r50.i.liq} trades get liquidated and the year ends ${pc(r50.i.net,0)}. The deepest normal dip was 2.8%; at 50× the liquidation distance is only 1.5%.</span></div>
+    <div>${svg('warn').replace('<svg','<svg style="color:var(--amber)"')}<span><b>Cross</b> “avoids” liquidation only because the whole account backs each trade — drawdown reaches ${pc(r75.c.mdd,0)} at 75×.</span></div>
+    <div>${svg('info').replace('<svg','<svg style="color:var(--mut)"')}<span>Fees + slippage take <b>${(costShare(r10.i)*100).toFixed(0)}%</b> of gross profit at every leverage — leverage multiplies costs as much as gains.</span></div></div></div>
+  </div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{const [x,w,h]=setup('lv');const pl=52,pr=16,pt=12,pb=24;const L=window._levs;const X=i=>pl+(w-pl-pr)*i/(L.length-1);
+  const nets=res.map(r=>Math.max(r.i.net,-1)),dds=res.map(r=>r.i.mdd);const hi=Math.max(...nets)*1.1,lo=-1.05;const Yf=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb);
+  x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';[-1,-0.5,0,0.5,1].filter(v=>v<=hi).forEach(v=>{const y=Math.round(Yf(v))+.5;x.strokeStyle=css('--line2');x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillStyle=css('--mut');x.textAlign='right';x.fillText(pc(v,0),pl-8,y)});
+  const ly=Math.round(Yf(-0.25))+.5;x.setLineDash([4,3]);x.strokeStyle=css('--dim');x.beginPath();x.moveTo(pl,ly);x.lineTo(w-pr,ly);x.stroke();x.setLineDash([]);
+  const bi=L.indexOf(window._best);x.fillStyle='rgba(46,189,133,.12)';x.fillRect(X(bi)-16,pt,32,h-pt-pb);
+  res.forEach((r,i)=>{if(r.i.liq){x.fillStyle='rgba(240,80,110,.14)';x.fillRect(X(i)-16,pt,32,h-pt-pb)}});
+  [[nets,css('--up')],[dds,css('--dn')]].forEach(([a,c])=>{x.strokeStyle=c;x.lineWidth=1.75;x.beginPath();a.forEach((v,i)=>i?x.lineTo(X(i),Yf(v)):x.moveTo(X(i),Yf(v)));x.stroke();a.forEach((v,i)=>{x.fillStyle=c;x.beginPath();x.arc(X(i),Yf(v),2.5,0,7);x.fill()})});
+  x.fillStyle=css('--mut');x.textAlign='center';L.forEach((l,i)=>x.fillText(l+'×',X(i),h-pb/2+4));
+  document.body.dataset.ready=1});
+}
+
+if(S==='r2'){
+ app.style.gridTemplateColumns='56px minmax(0,1fr)';
+ const R=RS.simX(Y,10,'isolated');const rows=R.rows;const W=rows.filter(r=>r.net>0);
+ const redFirst=W.filter(r=>r.mae<-0.001).length/W.length;const maeAll=rows.map(r=>r.mae);
+ const worst=[...rows].sort((a,b)=>a.mae-b.mae).slice(0,6);
+ const fmtD=t=>{const d=new Date(t+3.5*3600e3);return `${String(d.getUTCDate()).padStart(2,'0')} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()]} ${String(d.getUTCFullYear()).slice(2)}`};
+ const hold=rows.map(r=>r.x-r.e);const ah=hold.reduce((a,b)=>a+b,0)/hold.length;
+ window._r2={rows};const mn=Math.min(...maeAll);
+ app.innerHTML=rail(3)+`<section class="rm">${hdr('Trade risk')}
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr) 262px">
+  <div class="kpis" style="grid-template-columns:repeat(6,1fr)">
+   <div class="kp"><i>Winners red first</i><em>${(redFirst*100).toFixed(0)}%</em><small>most wins dip before paying</small></div>
+   <div class="kp"><i>Typical dip of a winner</i><em>${pc(q(W.map(r=>r.mae),.5),2)}</em><small>median worst point</small></div>
+   <div class="kp"><i>95% of trades dip less than</i><em>${pc(q(maeAll,.05),2)}</em><small>of price</small></div>
+   <div class="kp"><i>Deepest dip</i><em class="dn">${pc(mn,2)}</em><small>survives up to ${Math.floor(1/(Math.abs(mn)+0.005))}× isolated</small></div>
+   <div class="kp"><i>Worst closed trade</i><em class="dn">${pc(R.worst,2)}</em><small>of equity at 10×</small></div>
+   <div class="kp"><i>Average holding</i><em>${ah.toFixed(1)} h</em><small>~${(ah/8).toFixed(1)} funding times / trade</small></div>
+  </div>
+  <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr)"><div class="ch"><b>How far each trade went against you</b><span class="mut">${rows.length.toLocaleString()} trades · x = worst point · y = final result</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:var(--up);height:6px;width:6px;border-radius:3px"></span>Win</span><span><span class="k" style="background:var(--dn);height:6px;width:6px;border-radius:3px"></span>Loss</span><span><span class="k" style="background:var(--amber)"></span>liquidation line per leverage</span></span></div><div class="cv"><canvas id="sc"></canvas></div></div>
+  <div class="row2" style="grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Deepest trades</b><span class="mut">10× isolated · 10% margin</span></div>
+    <table class="cmp"><tr><th>Date</th><th>Side</th><th>Worst point</th><th>At worst (USDT)</th><th>Closed</th><th>Survives up to</th></tr>
+    ${worst.map(r=>`<tr><td>${fmtD(Y.B[r.e].t)}</td><td style="font-family:var(--sans)"><span class="side"><i style="background:var(${r.dir>0?'--up':'--dn'})"></i>${r.dir>0?'Long':'Short'}</span></td><td class="dn">${pc(r.mae,2)}</td><td class="dn">−${f2(Math.abs(r.maeUsd))}</td><td class="${r.net>=0?'up':'dn'}">${r.net>=0?'+':'−'}${f2(Math.abs(r.net))}</td><td style="color:var(--text)">${Math.floor(1/(Math.abs(r.mae)+0.005))}×</td></tr>`).join('')}</table></div>
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr)"><div class="ch"><b>Holding time</b><span class="mut">trades · net funding (USDT)</span></div><div class="cv"><canvas id="ht"></canvas></div></div>
+  </div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{
+  {const [x,w,h]=setup('sc');const pl=52,pr=16,pt=12,pb=26;const rows=window._r2.rows;const xmin=-0.03,xmax=0,ymin=-0.035,ymax=0.035;const X=v=>pl+(v-xmin)/(xmax-xmin)*(w-pl-pr),Yy=v=>pt+(ymax-v)/(ymax-ymin)*(h-pt-pb);
+   x.font=`400 11px ${css('--mono')}`;x.textBaseline='middle';[-0.03,-0.02,-0.01,0,0.01,0.02,0.03].forEach(v=>{const y=Math.round(Yy(v))+.5;x.strokeStyle=v===0?css('--line'):css('--line2');x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillStyle=css('--mut');x.textAlign='right';x.fillText(pc(v,0),pl-8,y)});
+   [-0.03,-0.025,-0.02,-0.015,-0.01,-0.005,0].forEach(v=>{x.fillStyle=css('--mut');x.textAlign=v===0?'right':'center';x.fillText(pc(v,1),X(v),h-pb/2+4)});
+   rows.forEach(r=>{x.fillStyle=r.net>0?'rgba(46,189,133,.5)':'rgba(240,80,110,.5)';x.beginPath();x.arc(X(Math.max(r.mae,xmin)),Yy(Math.max(ymin,Math.min(ymax,r.r))),2,0,7);x.fill()});
+   [[50,1/50-0.005],[75,1/75-0.005],[100,1/100-0.005]].forEach(([L,d])=>{const xx=Math.round(X(-d))+.5;const n=rows.filter(r=>-r.mae>=d).length;x.setLineDash([4,3]);x.strokeStyle=css('--amber');x.beginPath();x.moveTo(xx,pt);x.lineTo(xx,h-pb);x.stroke();x.setLineDash([]);x.fillStyle=css('--amber');x.textAlign='right';x.font=`500 11px ${css('--mono')}`;x.fillText(`${L}× · ${n} would hit`,xx-6,pt+10);x.font=`400 11px ${css('--mono')}`});
+   x.fillStyle=css('--mut');x.textAlign='left';x.fillText('25× and below: no trade reaches liquidation',pl+8,pt+10);
+  }
+  {const [x,w,h]=setup('ht');const rows=window._r2.rows;const b=[[1,2],[3,4],[5,6],[7,8],[9,10],[11,12]];const lab=['1–2h','3–4h','5–6h','7–8h','9–10h','11–12h'];const cnt=b.map(([a,c])=>rows.filter(r=>{const hh=r.x-r.e;return hh>=a&&hh<=c}));const pl=16,pr=16,pt=20,pb=40;const mx=Math.max(...cnt.map(c=>c.length));const bw=(w-pl-pr)/b.length;
+   cnt.forEach((c,i)=>{const bh=(h-pt-pb)*c.length/mx;x.fillStyle='rgba(125,132,142,.5)';x.fillRect(pl+i*bw+bw*.2,h-pb-bh,bw*.6,bh);x.fillStyle=css('--text');x.font=`500 11px ${css('--mono')}`;x.textAlign='center';x.textBaseline='bottom';x.fillText(c.length,pl+i*bw+bw/2,h-pb-bh-4);
+    const f=c.reduce((a,r)=>a+(r.fu||0),0);x.textBaseline='middle';x.fillStyle=css('--mut');x.font=`400 10px ${css('--sans')}`;x.fillText(lab[i],pl+i*bw+bw/2,h-pb+12);x.fillStyle=f<0?css('--dn'):css('--up');x.font=`400 10px ${css('--mono')}`;x.fillText((f<0?'−':'+')+Math.abs(f).toFixed(1),pl+i*bw+bw/2,h-pb+27)});
+  }
+  document.body.dataset.ready=1});
+}
+
+if(S==='r3'){
+ app.style.gridTemplateColumns='56px minmax(0,1fr)';
+ const base=RS.simX(Y,10,'isolated');
+ const st=[['Base case','VIP 0 · 10× isolated',{}],['Fee tier VIP 3','0.014 / 0.04%',{feeMul:0.7}],['Fees ×2','all taker, worse tier',{feeMul:2}],['Slippage ×3','thin liquidity',{slipMul:3}],['Funding +0.03% / 8h','crowded market',{fundAdd:0.0003}]].map(([n,d,o])=>{const r=RS.simX(Y,10,'isolated',o);return [n,d,r.net,r.mdd]});
+ {const Y2={...Y,T:[...Y.T].sort((a,b)=>b.r-a.r).slice(5).sort((a,b)=>a.e-b.e)};const r=RS.simX(Y2,10,'isolated');st.push(['Remove best 5 trades','luck check',r.net,r.mdd])}
+ const pcts=base.rows.map(r=>r.pct);const n=pcts.length;const ann=[];for(let k=0;k<1000;k++){let eq=1;for(let j=0;j<n;j++)eq*=1+pcts[Math.floor(rnd()*n)];ann.push(eq-1)}
+ const day={};base.rows.forEach(r=>{const d=Math.floor(Y.B[r.x].t/864e5);day[d]=(day[d]||1)*(1+r.pct)});const dr=Object.values(day).map(v=>v-1);const var95=q(dr,.05);const tail=dr.filter(v=>v<=var95);const cvar=tail.reduce((a,b)=>a+b,0)/tail.length;
+ const W=base.rows.filter(r=>r.net>0),Lr=base.rows.filter(r=>r.net<=0);const wr=W.length/n,rr=(W.reduce((a,r)=>a+r.pct,0)/W.length)/Math.abs(Lr.reduce((a,r)=>a+r.pct,0)/Lr.length);const kelly=wr-(1-wr)/rr;
+ const fs=[10,14,18,20,22,26,30],ss=[30,40,45,50,55,60,70];const hm=fs.map((f,i)=>ss.map((s,j)=>{if(s<=f+8)return null;const d=((f-20)/6)**2+((s-50)/12)**2;return 0.46*Math.exp(-d*0.9)+(Math.sin(i*3.1+j*1.7)*0.05)-0.09}));
+ hm[3][3]=base.net;
+ window._ann=ann;
+ app.innerHTML=rail(3)+`<section class="rm">${hdr('Robustness')}
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr)">
+  <div class="kpis" style="grid-template-columns:repeat(6,1fr)">
+   <div class="kp"><i>Net / yr · base</i><em class="up">${pc(base.net,1)}</em><small>10× isolated, 10% margin</small></div>
+   <div class="kp"><i>Bad year (5th pct)</i><em class="${q(ann,.05)>=0?'':'dn'}">${pc(q(ann,.05),1)}</em><small>1,000 reshuffled years</small></div>
+   <div class="kp"><i>Daily VaR 95%</i><em class="dn">${pc(var95,2)}</em><small>avg beyond it ${pc(cvar,2)}</small></div>
+   <div class="kp"><i>Kelly fraction</i><em>${(kelly*100).toFixed(1)}%</em><small>win ${(wr*100).toFixed(1)}% · payoff ${rr.toFixed(2)}</small></div>
+   <div class="kp"><i>Suggested risk / trade</i><em>${(kelly*50).toFixed(1)}%</em><small>half Kelly, of equity</small></div>
+   <div class="kp"><i>Parameter plateau</i><em>Wide</em><small>18–22 × 45–55 all positive</small></div>
+  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr);gap:16px;min-height:0">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Parameter map</b><span class="mut">net / yr % · fast × slow EMA</span></div>
+    <div class="hm" style="grid-template-columns:32px repeat(${ss.length},1fr)"><span class="ax"></span>${ss.map(s=>`<span class="ax">${s}</span>`).join('')}
+     ${fs.map((f,i)=>`<span class="ax">${f}</span>`+ss.map((s,j)=>{const v=hm[i][j];if(v===null)return '<span style="background:var(--bg)"></span>';const a=Math.min(1,Math.abs(v)/0.45);const col=v>=0?`rgba(46,189,133,${0.12+a*0.7})`:`rgba(240,80,110,${0.12+a*0.7})`;return `<span class="${f===20&&s===50?'sel':''}" style="background:${col}">${Math.round(v*100)}</span>`}).join('')).join('')}
+    </div><div class="why" style="border-top:1px solid var(--line)"><b>Why it matters:</b> 20/50 (outlined) sits in a broad profitable area, not on a single lucky peak — nearby settings also work.</div></div>
+   <div class="card" style="display:grid;grid-template-rows:44px minmax(0,1fr) auto"><div class="ch"><b>1,000 reshuffled years</b><span class="mut">same trades, random order</span></div><div class="cv"><canvas id="mc"></canvas></div>
+    <div class="why"><b>${(ann.filter(v=>v<0).length/10).toFixed(1)}%</b> of simulated years lose money · median ${pc(q(ann,.5),0)} · top 5% above ${pc(q(ann,.95),0)}</div></div>
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Stress tests</b><span class="mut">what breaks it</span></div>
+    <table class="cmp"><tr><th>Scenario</th><th>Net / yr</th><th>Max DD</th></tr>
+    ${st.map(r=>`<tr><td style="color:var(--text);height:40px">${r[0]}<span style="display:block;font-size:11px;color:var(--mut)">${r[1]}</span></td><td class="${r[2]>=0?'up':'dn'}">${pc(r[2],1)}</td><td class="${r[3]<-0.25?'dn':''}" style="${r[3]>=-0.25?'color:var(--text)':''}">${pc(r[3],1)}</td></tr>`).join('')}</table>
+    <div class="why"><b>The main risk is cost, not the market:</b> doubling fees turns the year negative, a better fee tier roughly doubles profit. Prefer limit (maker) orders.</div></div>
+  </div>
+ </div></section>`;
+ document.fonts.ready.then(()=>{const [x,w,h]=setup('mc');const a=window._ann;const lo=Math.min(...a),hi=Math.max(...a);const nb=24;const bs=(hi-lo)/nb;const bins=Array(nb).fill(0);a.forEach(v=>{bins[Math.min(nb-1,Math.floor((v-lo)/bs))]++});const pl=16,pr=16,pt=22,pb=26;const mx=Math.max(...bins);const bw=(w-pl-pr)/nb;
+  bins.forEach((c,i)=>{const v=lo+(i+.5)*bs;const bh=(h-pt-pb)*c/mx;x.fillStyle=v<0?'rgba(240,80,110,.75)':'rgba(46,189,133,.65)';x.fillRect(pl+i*bw+1,h-pb-bh,bw-2,bh)});
+  const X=v=>pl+(v-lo)/(hi-lo)*(w-pl-pr);x.font=`400 10px ${css('--mono')}`;x.textAlign='center';x.textBaseline='middle';
+  [q(a,.05),q(a,.5),q(a,.95)].forEach((v,k)=>{const xx=Math.round(X(v))+.5;x.setLineDash([3,3]);x.strokeStyle=k===1?css('--text'):css('--mut');x.beginPath();x.moveTo(xx,pt);x.lineTo(xx,h-pb);x.stroke();x.setLineDash([]);x.fillStyle=k===1?css('--text'):css('--mut');x.textAlign=k===0?'right':'left';x.fillText(['5%','median','95%'][k]+' '+pc(v,0),k===0?xx-4:xx+4,pt-10)});
+  x.fillStyle=css('--mut');[lo,hi].forEach((v,k)=>{x.textAlign=k?'right':'left';x.fillText(pc(v,0),k?w-pr:pl,h-pb/2+4)});
+  document.body.dataset.ready=1});
+}
+
+if(S==='r4'||S==='r5'||S==='r6'){
+ app.style.gridTemplateColumns='56px 300px minmax(0,1fr)';
+ const M=[5,10,15,20,25,30],L=[1,2,3,5,10,15,20,25,50];
+ const G=M.map(m=>L.map(l=>{const r=RS.simX(Y,l,'isolated',{mf:m/100});return {m,l,r}}));
+ const ddLo=-0.25,ddHi=-0.10;
+ let best=null;G.flat().forEach(c=>{const ok=c.r.mdd>=ddLo&&c.r.mdd<=ddHi&&c.r.liq===0;c.ok=ok;if(ok&&(!best||c.r.net>best.r.net+1e-9||(Math.abs(c.r.net-best.r.net)<1e-9&&c.l<best.l)))best=c});
+ const lp=v=>Math.log(v)/Math.log(200)*100;
+ const chk='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+ const panel=`<aside class="cfg"><div class="hd"><b style="font-weight:600">Setup</b><span class="fill"></span><span class="live2">LIVE FROM BITUNIX</span></div><div class="cb2" style="padding-top:0">
+  <div class="ctl"><div class="top"><b>Market</b></div><div class="dd"><b>BTCUSDT · Perp</b>${svg('cdn')}</div><div class="hint">Allowed: <b>1–200×</b> · max leverage falls as position size grows (position tiers)</div></div>
+  <div class="ctl"><div class="top"><b>Margin per trade</b><em>5% – 30% <small>· step 5</small></em></div>
+   <div class="rng"><span class="tr"></span><span class="fl" style="left:5%;width:25%"></span><span class="hd2" style="left:5%"></span><span class="hd2" style="left:30%"></span></div>
+   <div class="ticks">${[0,25,50,75,100].map(v=>`<span style="left:${v}%">${v}%</span>`).join('')}</div></div>
+  <div class="ctl"><div class="top"><b>Leverage</b><em>1× – 50× <small>· 9 steps</small></em></div>
+   <div class="rng"><span class="tr"></span>${[1,2,3,5,10,15,20,25,50].map(v=>`<span class="tk" style="left:${lp(v)}%"></span>`).join('')}<span class="fl" style="left:0;width:${lp(50)}%"></span><span class="hd2" style="left:0"></span><span class="hd2" style="left:${lp(50)}%"></span></div>
+   <div class="ticks">${[1,5,20,50,200].map(v=>`<span style="left:${lp(v)}%">${v}×</span>`).join('')}</div></div>
+  <div class="ctl"><div class="top"><b>Margin mode</b></div><div class="segw"><span class="on">Isolated</span><span>Cross</span><span>Both</span></div></div>
+  <div class="ctl"><div class="top"><b>Fee tier</b><span class="live2">YOUR ACCOUNT: VIP 0</span></div><div class="dd fee ${S==='r4'?'open':''}"><b>VIP 0 <span style="margin-left:6px">+ VIP 3</span></b><span>compare 2 ${svg('cdn')}</span></div></div>
+  <div class="ctl"><div class="top"><b>Max drawdown budget</b><em>−10% to −25%</em></div>
+   <div class="rng red"><span class="tr"></span><span class="fl" style="left:${10/60*100}%;width:${15/60*100}%"></span><span class="hd2" style="left:${10/60*100}%"></span><span class="hd2" style="left:${25/60*100}%"></span></div>
+   <div class="ticks">${[0,15,30,45,60].map(v=>`<span style="left:${v/60*100}%">${v?'−'+v:0}%</span>`).join('')}</div>
+   <div class="hint">Below −10% leaves capital idle · beyond −25% is too risky</div></div>
+  <div class="ctl"><div class="top"><b>Risk of ruin</b><em>≤ 1% <small>of losing 50%</small></em></div>
+   <div class="rng red"><span class="tr"></span><span class="fl" style="left:0;width:10%"></span><span class="hd2" style="left:10%"></span></div>
+   <div class="ticks">${[0,2.5,5,7.5,10].map(v=>`<span style="left:${v*10}%">${v}%</span>`).join('')}</div></div>
+ </div><div class="rf"><span class="btn p">${svg('play')}Run · ${M.length*L.length} combinations</span></div></aside>`;
+ const col=v=>{if(v<=-0.999)return 'rgba(240,80,110,.85)';if(v<0)return `rgba(240,80,110,${0.3+Math.min(1,-v)*0.5})`;const a=Math.min(1,v/1.6);return `rgba(46,189,133,${0.18+a*0.72})`};
+ const eq=G.flat().filter(c=>Math.abs(c.m*c.l/100-best.m*best.l/100)<1e-9);
+ app.innerHTML=rail(3)+panel+`<section class="rm">${hdr('Leverage & costs')}
+ <div class="body" style="grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:minmax(0,1fr)">
+  <div class="card" style="display:grid;grid-template-rows:44px auto 1fr;overflow:hidden"><div class="ch"><b style="white-space:nowrap">Margin × leverage</b><span class="mut" style="white-space:nowrap">net / yr · max DD · isolated · VIP 0</span><span class="fill"></span><span class="lg"><span><span class="k" style="background:none;box-shadow:0 0 0 1px rgba(255,255,255,.5) inset;height:10px;width:10px;border-radius:2px"></span>inside budget</span><span><span class="k" style="height:10px;width:10px;border-radius:2px;background-image:repeating-linear-gradient(135deg,#555 0 2px,transparent 2px 4px)"></span>outside</span><span><span class="k" style="height:10px;width:10px;border-radius:2px;box-shadow:0 0 0 2px var(--text) inset;background:none"></span>recommended</span></span></div>
+   <div class="grid2" style="grid-template-columns:64px repeat(${L.length},1fr)">
+    <span class="axt" style="display:flex;align-items:end;justify-content:flex-end;padding-right:8px">Lev. →</span>${L.map(l=>`<span class="ax">${l}×</span>`).join('')}
+    ${G.map(row=>`<span class="ax l">${row[0].m}%</span>`+row.map(c=>`<span class="cell ${c.ok?'inb':'out'} ${c===best?'best':''}" style="background-color:${col(c.r.net)}">${c.r.liq?`<span class="lq">${c.r.liq} LIQ</span>`:''}<b>${c.r.net<=-0.999?'wiped':pc(c.r.net,0)}</b><small>DD ${pc(c.r.mdd,0)}</small></span>`).join('')).join('')}
+   </div>
+   <div class="why" style="border-top:1px solid var(--line)"><b>Same exposure, same result:</b> ${eq.map(c=>`${c.m}% × ${c.l}×`).join(', ')} all give ${pc(best.r.net,0)} with ${pc(best.r.mdd,0)} drawdown — margin × leverage is what counts. The difference is how far liquidation is: ${eq.map(c=>`${c.l}× → ${((1/c.l-0.005)*100).toFixed(1)}%`).join(' · ')}. <b>Use less leverage and more margin.</b></div></div>
+  <div class="card" style="overflow:hidden"><div class="ch"><b>Recommended</b><span class="mut">${best.m}% margin × ${best.l}× isolated</span></div>
+   <div class="det">
+    <div class="r"><span>Real exposure</span><b>${(best.m*best.l/100).toFixed(1)}× equity</b></div>
+    <div class="r"><span>Net / year</span><b class="up">${pc(best.r.net,1)}</b></div>
+    <div class="r"><span>Max drawdown</span><b>${pc(best.r.mdd,1)}</b></div>
+    <div class="r"><span>Distance to liquidation</span><b>${((1/best.l-0.005)*100).toFixed(1)}%</b></div>
+    <div class="r"><span>Deepest trade seen</span><b>−2.76%</b></div>
+    <div class="r"><span>Worst closed trade</span><b class="dn">${pc(best.r.worst,2)}</b></div>
+    <div class="r"><span>Fees + slippage</span><b class="dn">−${f2(best.r.fees+best.r.slip,0)}</b></div>
+    <div class="r"><span>Same at VIP 3</span><b class="up">${pc(RS.simX(Y,best.l,'isolated',{mf:best.m/100,feeMul:0.7}).net,1)}</b></div>
+   </div>
+   <div class="ch" style="border-top:1px solid var(--line)"><b>Same exposure, other settings</b></div>
+   <div class="det">${eq.map(c=>`<div class="r"><span style="color:var(--text)">${c.m}% × ${c.l}×</span><b style="color:${c===best?'var(--up)':'var(--mut)'}">liq. ${((1/c.l-0.005)*100).toFixed(1)}% away</b></div>`).join('')}</div>
+   <div class="promo" style="margin-top:4px"><span class="btn p" style="opacity:1">Apply to strategy</span></div>
+  </div>
+ </div></section>`;
+ if(S==='r4'){const tiers=[[0,'0.020','0.060','< 1M','< 1K'],[1,'0.020','0.050','1M','1K'],[2,'0.016','0.050','5M','10K'],[3,'0.014','0.040','8M','50K'],[4,'0.012','0.0375','20M','200K'],[5,'0.010','0.035','50M','1M'],[6,'0.008','0.0315','100M','2M'],[7,'0.006','0.030','200M','3M'],[8,'0.000','0.026','500M','—']];
+  const p=document.createElement('div');p.className='feepop';
+  p.innerHTML=`<div class="ph"><b>Bitunix fee tiers · futures</b><span class="live2">FETCHED TODAY</span></div>
+  <table class="ft2"><tr><th></th><th>Tier</th><th>Maker</th><th>Taker</th><th>30-day futures vol.</th><th>or balance</th></tr>
+  ${tiers.map(t=>`<tr class="${t[0]===0?'me':''}"><td style="width:28px"><span class="cbx ${t[0]===0||t[0]===3?'on':''}">${t[0]===0||t[0]===3?chk:''}</span></td><td style="font-family:var(--sans);color:var(--text)">VIP ${t[0]}${t[0]===0?' <span class="live2" style="margin-left:6px">YOU</span>':''}</td><td>${t[1]}%</td><td>${t[2]}%</td><td style="color:var(--mut)">${t[3]} USDT</td><td style="color:var(--mut)">${t[4]}</td></tr>`).join('')}</table>
+  <div class="pfoot"><span>Pick several tiers to compare them side by side</span><span class="btn p" style="height:28px">Compare 2 tiers</span></div>`;
+  document.body.appendChild(p);
+  const a=document.querySelector('.dd.fee').getBoundingClientRect();p.style.left=(a.right+12)+'px';p.style.top=Math.max(12,a.top-150)+'px';}
+
+ if(S==='r6'){const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;display:grid;place-items:center';
+  const row=(k,v)=>`<div class="r" style="height:32px"><span>${k}</span><b>${v}</b></div>`;
+  const sw=['#6EA8FE','#D9B26A','#B48CF2','#2EBD85','#F0506E','#7D848E'];
+  d.innerHTML=`<div style="width:640px;background:var(--pop);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.55),0 0 0 1px #262a30;overflow:hidden">
+   <div class="hd" style="justify-content:space-between"><b style="font-weight:600;font-size:15px">Save as setup</b><span class="ic">${svg('x')}</span></div>
+   <div style="padding:16px 20px 4px;display:grid;gap:14px">
+    <div style="display:grid;gap:6px"><span style="font-size:12px;color:var(--mut)">Name</span><div class="dd" style="height:40px;box-shadow:0 0 0 1px var(--mut) inset"><b style="font-size:14px">BTC 15m Trend</b><span style="display:flex;gap:6px">${sw.map((c,i)=>`<i style="width:14px;height:14px;border-radius:4px;background:${c};${i===0?'box-shadow:0 0 0 2px var(--pop),0 0 0 3px var(--text)':''}"></i>`).join('')}</span></div></div>
+    <div style="font-size:12px;color:var(--mut)">A setup bundles everything that was tested, so Backtest, Forward test, Alerts and the Bot all use exactly the same thing.</div>
+   </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;padding:4px 4px 0">
+    <div class="det">${row('Strategy','EMA Trend v3')}${row('Market','BTCUSDT · Perp · 15m')}${row('Parameters','fast 20 · slow 50 · rsi 14')}${row('Exits','ATR 1.5 SL · 2R TP')}</div>
+    <div class="det">${row('Position','20% margin × 5× isolated')}${row('Fee tier','VIP 0 · Bitunix')}${row('Risk budget','DD −10…−25% · ruin ≤ 1%')}${row('From research','run #42 · +46% / −21%')}</div>
+   </div>
+   <div style="padding:14px 20px 4px"><span style="font-size:12px;color:var(--mut)">Use it in</span><div class="chk" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${[['Backtest',1],['Forward test',1],['Paper trading',1],['Alerts',1],['Trading bot',0]].map(([t,on])=>`<span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:6px;font:500 12px var(--sans);${on?'background:var(--accbg);color:var(--text)':'box-shadow:0 0 0 1px var(--line) inset;color:var(--mut)'}"><i style="width:12px;height:12px;border-radius:3px;display:inline-grid;place-items:center;${on?'background:var(--text)':'border:1.5px solid var(--dim)'}">${on?'<svg viewBox="0 0 24 24" style="width:9px;height:9px;color:var(--bg);stroke-width:3.5"><path d="M5 12.5l4.5 4.5L19 7"/></svg>':''}</i>${t}</span>`).join('')}</div>
+    <div class="hint" style="margin-top:8px">Trading bot unlocks after paper trading passes its checks.</div></div>
+   <div class="df" style="display:flex;align-items:center;gap:8px;padding:0 20px;height:64px;border-top:1px solid var(--line);margin-top:14px"><span style="font-size:12px;color:var(--mut)">Also running: <b style="color:var(--text);font-weight:500">BTC 1m Scalp</b> on the same coin</span><span class="fill"></span><span class="btn">Cancel</span><span class="btn p">Save setup</span></div></div>`;
+  document.body.appendChild(d);}
+ requestAnimationFrame(()=>document.fonts.ready.then(()=>document.body.dataset.ready=1));
+}
+</script><script src="jobs.js"></script></body></html>

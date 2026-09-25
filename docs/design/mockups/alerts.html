@@ -1,0 +1,470 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:Inter;src:url(node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:JBM;src:url(node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+:root{--bg:#0B0C0E;--surf:#0F1113;--pop:#15171A;--line:#1C1F23;--line2:#15171A;--text:#E7E9EC;--mut:#7D848E;--dim:#4A5059;--up:#2EBD85;--dn:#F0506E;--acc:#E7E9EC;--accbg:#1A1D21;--hov:#16191C;--ema1:#C9CDD3;--ema2:#6B727C;--draw:#6EA8FE;--amber:#F59E0B;--sans:Inter;--mono:JBM}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font:400 13px/16px var(--sans);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv11" 1;overflow:hidden}
+.num,.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+.app{display:grid;height:100vh}
+.rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:4px}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;margin:4px 0 16px;background:var(--acc);color:var(--bg);font:600 13px var(--sans)}
+.ri{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;color:var(--mut);position:relative}
+.ri svg{width:20px;height:20px}
+.ri.on{color:var(--text);background:var(--accbg)}
+.ri.on::before{content:"";position:absolute;left:-8px;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--acc)}
+.spacer{flex:1}
+.hd{height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.hd h1{font:600 15px var(--sans);letter-spacing:-.01em}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:6px;background:var(--accbg);color:var(--text);font-size:12px}
+.chip.o{background:none;box-shadow:0 0 0 1px var(--line) inset;color:var(--mut)}
+.chip svg{width:14px;height:14px}
+.fill{flex:1}
+.btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:8px;font-weight:500;font-size:12px;color:var(--text);box-shadow:0 0 0 1px var(--line) inset;flex:none}
+.btn svg{width:16px;height:16px}
+.btn.p{background:var(--acc);color:var(--bg);box-shadow:none;font-weight:600}
+.btn.g{box-shadow:none;color:var(--mut)}
+.ic{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;color:var(--mut)}
+.ic svg{width:16px;height:16px}
+.seg{display:flex;gap:2px;padding:2px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px}
+.seg span{font:500 12px var(--sans);color:var(--mut);padding:5px 10px;border-radius:6px}
+.seg span.on{background:var(--accbg);color:var(--text)}
+.sec{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* list panel */
+.lp{border-right:1px solid var(--line);display:grid;grid-template-rows:56px auto 1fr;min-height:0;background:var(--surf)}
+.search{margin:12px 16px 8px;height:36px;box-shadow:0 0 0 1px var(--line) inset;border-radius:8px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut);background:var(--bg)}
+.search svg{width:16px;height:16px}
+.si{padding:10px 16px;display:grid;gap:4px;position:relative}
+.si b{font-weight:500}
+.si .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut)}
+.si .dot{width:6px;height:6px;border-radius:50%}
+.si.on{background:var(--accbg)}
+.si.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--acc)}
+/* editor */
+.ed{display:grid;grid-template-rows:56px 1fr;min-width:0;min-height:0}
+.eb{padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;overflow:hidden}
+.card{background:var(--surf);border-radius:10px;box-shadow:0 0 0 1px var(--line) inset}
+.ch{height:44px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line)}
+.ch b{font-weight:600}
+.ch .mut{font-size:12px}
+.cb{padding:10px 16px}
+.bdot{width:8px;height:8px;border-radius:2px}
+.params{display:flex;flex-wrap:wrap;gap:8px}
+.pm{display:flex;align-items:center;height:32px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;overflow:hidden}
+.pm span{padding:0 10px;color:var(--mut);font-size:12px}
+.pm em{font:500 12px var(--mono);font-style:normal;padding:0 10px;height:100%;display:flex;align-items:center;background:var(--bg);border-left:1px solid var(--line)}
+.pm i{font-style:normal;color:var(--dim);padding:0 6px;height:100%;display:flex;align-items:center;border-left:1px solid var(--line)}
+.pm i svg{width:12px;height:12px}
+.cond{display:grid;grid-template-columns:24px auto auto auto 1fr 28px;align-items:center;gap:8px;height:36px}
+.cond .n{font:400 11px var(--mono);color:var(--dim)}
+.tok{height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:500 12px var(--mono)}
+.tok.op{font-family:var(--sans);color:var(--mut);background:none}
+.tok svg{width:12px;height:12px;color:var(--dim)}
+.tok .k{width:8px;height:2px;border-radius:1px}
+.cond .del{color:var(--dim);display:grid;place-items:center}
+.cond .del svg{width:14px;height:14px}
+.add{display:flex;gap:16px;padding:8px 0 4px 32px;color:var(--mut);font-size:12px;font-weight:500}
+.add span{display:flex;align-items:center;gap:6px}
+.add svg{width:14px;height:14px}
+.logic{font:500 11px var(--sans);color:var(--mut);padding:2px 0 2px 32px;letter-spacing:.04em}
+.exits{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.ex{background:var(--surf);padding:12px 16px;display:grid;gap:6px}
+.ex i{font-style:normal;color:var(--mut);font-size:11px;display:flex;align-items:center;justify-content:space-between}
+.ex em{font:500 13px var(--mono);font-style:normal}
+.ex.off em{color:var(--dim)}
+.tg{width:28px;height:16px;border-radius:8px;background:var(--dim);position:relative}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--bg)}
+.tg.on{background:var(--up)}
+.tg.on::after{left:14px}
+.code{overflow:hidden;text-overflow:ellipsis;font:400 12px/20px var(--mono);color:var(--mut);padding:12px 16px;border-top:1px solid var(--line);white-space:pre}
+.code b{color:var(--text);font-weight:500}.code .kw{color:var(--draw)}.code .c{color:var(--dim)}
+/* run panel */
+.rp{border-left:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.rb{padding:4px 16px;overflow:hidden}
+.rs{padding:12px 0 4px}
+.rr{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px}
+.rr>span:first-child{color:var(--mut)}
+.val{font:500 12px var(--mono);display:flex;align-items:center;gap:6px}
+.val svg{width:12px;height:12px;color:var(--dim)}
+.auto{font:600 10px var(--sans);color:var(--up);letter-spacing:.04em;background:color-mix(in srgb,var(--up) 14%,transparent);padding:2px 6px;border-radius:4px}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.dt{height:40px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:4px 10px;display:grid}
+.dt i{font-style:normal;font-size:10px;color:var(--mut)}
+.dt em{font:500 12px var(--mono);font-style:normal}
+.presets{display:flex;gap:4px;margin:4px 0 2px}
+.presets span{font:500 11px var(--sans);color:var(--mut);padding:4px 8px;border-radius:4px}
+.presets span.on{background:var(--accbg);color:var(--text)}
+.rdiv{height:1px;background:var(--line);margin:8px 0 0}
+.rf{padding:16px;border-top:1px solid var(--line);display:grid;gap:8px}
+.rf .btn{justify-content:center;height:40px}
+.rf small{font-size:11px;color:var(--mut);text-align:center}
+/* results */
+.rm{display:grid;grid-template-rows:56px 44px 1fr;min-width:0;min-height:0}
+.tabs{display:flex;gap:24px;padding:0 24px;border-bottom:1px solid var(--line);align-items:stretch}
+.tabs span{display:flex;align-items:center;color:var(--mut);font-weight:500;position:relative}
+.tabs span.on{color:var(--text)}
+.tabs span.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--acc)}
+.body{padding:24px;display:grid;gap:16px;min-height:0;overflow:hidden}
+.kpis{display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.kp{background:var(--surf);padding:12px 16px;display:grid;gap:4px}
+.kp i{font-style:normal;color:var(--mut);font-size:11px}
+.kp em{font:500 18px/22px var(--mono);font-style:normal;letter-spacing:-.01em}
+.kp small{font:400 11px var(--mono);color:var(--mut)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;min-height:0}
+.cv{position:relative}
+.cv canvas{position:absolute;inset:0;width:100%;height:100%}
+.lg{display:flex;gap:16px;font-size:11px;color:var(--mut);align-items:center}
+.lg .k{display:inline-block;width:12px;height:2px;margin-right:6px;vertical-align:middle}
+.tbl{width:100%;border-collapse:collapse}
+.tbl td,.tbl th{height:28px;padding:0 16px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2)}
+.tbl th{font:500 11px var(--sans);color:var(--mut);height:30px}
+.tbl td:first-child,.tbl th:first-child{text-align:left;font-family:var(--sans);color:var(--mut)}
+.tbl tr.b td{font-weight:500;color:var(--text)}
+.tbl tr.b td:first-child{color:var(--text);font-weight:500}
+.tbl tr.hl td{background:color-mix(in srgb,var(--dn) 8%,transparent)}
+.tbl tr.me td{background:var(--accbg)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;min-height:0}
+/* trades */
+.tt{width:100%;border-collapse:collapse}
+.tt th{position:sticky;top:0;background:var(--surf);font:500 11px var(--sans);color:var(--mut);height:36px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tt td{height:36px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.tt th:nth-child(-n+3),.tt td:nth-child(-n+3){text-align:left}
+.tt td.s{font-family:var(--sans);color:var(--mut)}
+.tt tr.on td{background:var(--accbg)}
+.tt tr.on td:first-child{box-shadow:2px 0 0 var(--acc) inset}
+.side{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:500}
+.side i{width:6px;height:6px;border-radius:50%}
+.liqb{font:600 10px var(--sans);color:#111;background:var(--amber);padding:1px 5px;border-radius:3px;margin-left:6px}
+.flt{display:flex;gap:8px;align-items:center}
+
+.cfg{border-right:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px 1fr auto;min-height:0}
+.cb2{padding:4px 16px;overflow:hidden}
+.blk{padding:14px 0 10px;border-bottom:1px solid var(--line)}
+.blk:last-child{border-bottom:0}
+.blk .sec{margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.pick{border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);padding:10px 12px;display:grid;gap:4px}
+.pick b{font-weight:500;display:flex;align-items:center;gap:8px}
+.pick small{font:400 11px var(--mono);color:var(--mut)}
+.pick.ref{box-shadow:0 0 0 1px var(--line) inset}
+.pick.fw{box-shadow:0 0 0 1px rgba(110,168,254,.45) inset;background:rgba(110,168,254,.06)}
+.pdot{width:8px;height:8px;border-radius:2px}
+.plist{display:grid;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips span{font:500 11px var(--sans);color:var(--mut);padding:5px 8px;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset}
+.chips span.on{color:var(--text);background:var(--accbg);box-shadow:none}
+.lockrow{display:flex;align-items:center;justify-content:space-between;height:30px;font-size:12px;color:var(--mut)}
+.lockrow b{font:500 12px var(--mono);color:var(--text);display:flex;align-items:center;gap:6px}
+.lockrow b svg{width:12px;height:12px;color:var(--dim)}
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;padding:16px 20px}
+.vs{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:8px;font:600 12px var(--sans);letter-spacing:.02em}
+.vs.ok{background:rgba(46,189,133,.14);color:#4FD19E}
+.vt b{font-weight:600;font-size:14px;display:block}
+.vt span{font-size:12px;color:var(--mut);display:block;margin-top:4px;line-height:17px}
+.vt .checks{display:flex;gap:8px;margin-top:12px}.vt .checks .ck{display:inline-flex;margin-top:0;color:var(--text)}
+.ck{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font-size:11px;white-space:nowrap}
+.ck svg{width:12px;height:12px}
+.ck.y svg{color:var(--up)}.ck.w svg{color:var(--amber)}.ck.n svg{color:var(--dn)}
+.cmp{width:100%;border-collapse:collapse}
+.cmp th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cmp td{height:28px;padding:0 10px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-family:var(--sans)}
+.cmp td:first-child{color:var(--mut)}
+.band{display:inline-block;position:relative;width:64px;height:10px;vertical-align:middle;margin-left:8px}
+.band i{position:absolute;top:4px;height:2px;background:var(--dim);border-radius:1px}
+.band b{position:absolute;top:1px;width:2px;height:8px;border-radius:1px}
+.reg{display:grid;grid-template-columns:repeat(4,1fr) 1.25fr;gap:1px;background:var(--line)}
+.rg{background:var(--surf);padding:12px 16px;display:grid;gap:8px}
+.rg i{font-style:normal;font-size:11px;color:var(--mut)}
+.pair{white-space:nowrap;display:grid;grid-template-columns:40px 1fr 64px;align-items:center;gap:8px;font:400 11px var(--mono)}
+.pair span:first-child{color:var(--mut)}
+.pair .br{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.pair .br b{position:absolute;top:0;bottom:0;border-radius:3px}
+.pair em{font-style:normal;text-align:right}
+.why{padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--mut);line-height:18px}
+.why b{color:var(--text);font-weight:500}
+/* walk forward */
+.wft{width:100%;border-collapse:collapse;table-layout:fixed}
+.wft th{font:500 11px var(--sans);color:var(--mut);height:34px;text-align:right;padding:0 12px;border-bottom:1px solid var(--line)}
+.wft td{height:26px;padding:0 12px;text-align:right;font:400 12px var(--mono);border-bottom:1px solid var(--line2);white-space:nowrap}
+.wft th:nth-child(-n+2),.wft td:nth-child(-n+2){text-align:left}
+.wft td.tl{padding:0 8px;position:relative}
+.gantt{position:relative;height:12px}
+.gantt i{position:absolute;top:0;height:12px;border-radius:3px}
+.gantt i.is{background:rgba(125,132,142,.28)}
+.gantt i.oos{background:rgba(110,168,254,.7)}
+.gantt i.neg{background:rgba(240,80,110,.7)}
+.gscale{display:flex;justify-content:space-between;font:400 10px var(--sans);color:var(--dim);padding:0 8px}
+/* paper */
+.live{display:flex;align-items:center;gap:16px;padding:0 20px;height:64px}
+.pill{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 10px;border-radius:6px;background:rgba(46,189,133,.12);color:#4FD19E;font:600 11px var(--sans);letter-spacing:.04em}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px rgba(46,189,133,.25)}
+.lstat{display:flex;flex-direction:column;gap:2px}
+.lstat i{font-style:normal;font-size:11px;color:var(--mut)}
+.lstat em{font:500 13px var(--mono);font-style:normal}
+.vd{width:1px;height:32px;background:var(--line)}
+.cl{display:grid;gap:0}
+.cli{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;min-height:44px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px}
+.cli svg{width:14px;height:14px}
+.cli small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+.cli em{font:500 12px var(--mono);font-style:normal}
+.cli.y>svg{color:var(--up)}.cli.w>svg{color:var(--amber)}
+.promo{padding:12px 16px;display:grid;gap:8px}
+.promo .btn{justify-content:center;height:36px;opacity:.5}
+.promo small{font-size:11px;color:var(--mut);text-align:center}
+.lg{white-space:nowrap}
+.al{border-right:1px solid var(--line);background:var(--surf);display:grid;grid-template-rows:56px auto auto minmax(0,1fr);min-height:0}
+.fch{display:flex;gap:4px;padding:4px 16px 10px;flex-wrap:wrap}
+.fch span{font:500 11px var(--sans);color:var(--mut);padding:4px 8px;border-radius:5px}
+.fch span.on{background:var(--accbg);color:var(--text)}
+.fch span i{font-style:normal;color:var(--dim);margin-left:4px;font-family:var(--mono)}
+.ai{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:10px;padding:10px 16px;align-items:start;position:relative;border-bottom:1px solid var(--line2)}
+.ai .d{width:8px;height:8px;border-radius:50%;margin-top:4px}
+.ai b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai small{display:block;font-size:11px;color:var(--mut);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai .r{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.ai .t{font:400 11px var(--mono);color:var(--mut)}
+.chs{display:flex;gap:3px;color:var(--dim)}
+.chs svg{width:13px;height:13px}
+.ai.on{background:var(--accbg)}
+.ai.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:var(--acc)}
+.ai.off b{color:var(--mut)}
+.typ{font:600 9px var(--sans);letter-spacing:.05em;padding:1px 5px;border-radius:3px;background:var(--accbg);color:var(--mut);margin-right:6px}
+.ev{display:grid;grid-template-columns:64px 104px minmax(0,1fr);gap:12px;padding:12px 16px;border-bottom:1px solid var(--line2);align-items:start}
+.ev .tm{font:400 12px var(--mono);color:var(--mut);padding-top:2px}
+.badge{font:600 10px var(--sans);letter-spacing:.05em;padding:3px 7px;border-radius:4px;display:inline-block;white-space:nowrap}
+.b-l{background:rgba(46,189,133,.15);color:#4FD19E}.b-s{background:rgba(240,80,110,.15);color:#F37A92}.b-x{background:rgba(125,132,142,.18);color:#AEB4BC}.b-tp{background:rgba(110,168,254,.15);color:#8DB8FF}
+.ev .dsc b{font:500 13px var(--mono);font-weight:500}
+.ev .dsc small{display:block;font-size:11px;color:var(--mut);margin-top:3px}
+.dl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.dl span{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 7px;border-radius:5px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:400 11px var(--sans);color:var(--mut);white-space:nowrap}
+.dl span svg{width:12px;height:12px}
+.dl span.ok svg{color:var(--up)}.dl span.bad svg{color:var(--amber)}
+.dl span em{font:400 10px var(--mono);font-style:normal;color:var(--dim)}
+.phone{background:#0E1621;border-radius:14px;box-shadow:0 0 0 1px #1d2733 inset;padding:0;overflow:hidden;display:grid;grid-template-rows:48px 1fr}
+.phone .top{display:flex;align-items:center;gap:10px;padding:0 14px;background:#17212B;border-bottom:1px solid #0b121a}
+.phone .av{width:28px;height:28px;border-radius:50%;background:#E7E9EC;color:#0B0C0E;display:grid;place-items:center;font:600 12px var(--sans)}
+.phone .top b{font-weight:600;font-size:13px;display:block}
+.phone .top small{font-size:11px;color:#6C7883}
+.bub{margin:14px;background:#182533;border-radius:12px 12px 12px 4px;padding:10px 12px 8px;font:400 12.5px/18px var(--sans);color:#E9EEF3;max-width:92%}
+.bub .h{font-weight:600;font-size:13px}
+.bub .m{font-family:var(--mono);font-size:12px}
+.bub .snap{height:112px;border-radius:8px;background:#0B0C0E;margin:8px 0;position:relative;overflow:hidden}
+.bub .snap canvas{position:absolute;inset:0;width:100%;height:100%}
+.bub .ft{font-size:10.5px;color:#6C7883;display:flex;justify-content:space-between;margin-top:4px}
+.kb{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 14px 14px}
+.kb span{background:#1f2c3a;border-radius:8px;text-align:center;font:500 12px var(--sans);color:#E9EEF3;padding:8px 0}
+.form{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;min-height:0}
+.fl{display:grid;gap:16px;align-content:start}
+.frow{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:12px;min-height:38px;padding:0 16px;border-bottom:1px solid var(--line2);font-size:12px}
+.frow:last-child{border-bottom:0}
+.frow>span:first-child{color:var(--mut)}
+.chk{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.chk span{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:6px;box-shadow:0 0 0 1px var(--line) inset;font:500 12px var(--sans);color:var(--mut)}
+.chk span.on{background:var(--accbg);box-shadow:none;color:var(--text)}
+.chk span i{width:12px;height:12px;border-radius:3px;border:1.5px solid var(--dim);display:inline-grid;place-items:center}
+.chk span.on i{background:var(--text);border-color:var(--text)}
+.chk span.on i svg{width:9px;height:9px;color:var(--bg);stroke-width:3.5}
+.tpl{margin:10px 16px;border-radius:8px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;padding:10px 12px;font:400 12px/20px var(--mono);color:var(--text);white-space:pre}
+.tpl .v{color:#8DB8FF;background:rgba(110,168,254,.12);border-radius:3px;padding:0 3px}
+.vars{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
+.vars span{font:400 11px var(--mono);color:#8DB8FF;background:rgba(110,168,254,.10);padding:3px 6px;border-radius:4px}
+.dst{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:48px;padding:6px 16px;border-bottom:1px solid var(--line2)}
+.dst .ico{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;background:var(--accbg);color:var(--mut)}
+.dst .ico svg{width:15px;height:15px}
+.dst b{font-weight:500;display:block}
+.dst small{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+.dsth{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:12px 16px 4px}
+.toast{margin:0 16px 16px;border-radius:10px;background:#1E2126;box-shadow:0 8px 24px rgba(0,0,0,.4);padding:10px 12px;display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:12px}
+.toast .av{width:28px;height:28px;border-radius:6px;background:#E7E9EC;color:#0B0C0E;display:grid;place-items:center;font:600 12px var(--sans)}
+.toast b{font-weight:600;display:block}
+.toast small{color:var(--mut);display:block;margin-top:2px;line-height:16px}
+.steps{display:grid;gap:0}
+.stp{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line2);align-items:start}
+.stp .n{width:24px;height:24px;border-radius:50%;background:var(--accbg);display:grid;place-items:center;font:600 11px var(--mono)}
+.stp .n.ok{background:rgba(46,189,133,.16);color:#4FD19E}
+.stp>span>b{font-weight:500;display:block}.stp small b{display:inline;font-weight:500;color:var(--text)}
+.stp small{display:block;font-size:12px;color:var(--mut);margin-top:4px;line-height:17px}
+.lnk{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;margin-top:8px;height:30px;padding:0 10px;border-radius:6px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font:400 12px var(--mono);color:var(--text)}
+.lnk em{font-style:normal;color:var(--mut);font-family:var(--sans);font-size:11px}
+.qr{width:112px;height:112px;border-radius:8px;background:#fff;padding:6px}
+.qr canvas{width:100%;height:100%;display:block}
+.dtbl{width:100%;border-collapse:collapse}
+.dtbl th{white-space:nowrap;font:500 11px var(--sans);color:var(--mut);height:32px;text-align:left;padding:0 12px;border-bottom:1px solid var(--line)}
+.dtbl td{height:44px;padding:0 12px;border-bottom:1px solid var(--line2);font-size:12px;white-space:nowrap}
+.dtbl td.m{font-family:var(--mono);color:var(--mut)}
+.okp{font:600 10px var(--sans);letter-spacing:.04em;padding:2px 6px;border-radius:4px;background:rgba(46,189,133,.14);color:#4FD19E}
+.note{margin:0 16px 14px;padding:10px 12px;border-radius:8px;background:var(--bg);box-shadow:0 0 0 1px var(--line) inset;font-size:11.5px;line-height:17px;color:var(--mut)}
+.note b{color:var(--text);font-weight:500}
+.lg{white-space:nowrap}
+.dd{height:34px;border-radius:8px;box-shadow:0 0 0 1px var(--line) inset;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px}
+.dd b{font-weight:500}.dd svg{width:12px;height:12px;color:var(--mut)}
+.dbar{display:flex;align-items:center;gap:12px;height:64px;padding:0 24px;border-top:1px solid var(--line);background:var(--surf)}
+</style>
+</head><body><div class="app" id="app"></div>
+<script>
+const S=(location.hash||'#a1').slice(1);
+const I={
+ chart:'<path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 5-6"/>',
+ strat:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/>',
+ fwd:'<path d="M4 12h12M12 6l6 6-6 6"/><path d="M20 5v14"/>',
+ res:'<path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="4" width="3" height="13"/>',
+ alert:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ bot:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16.5h5"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>',
+ user:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/>',
+ more:'<circle cx="5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="19" cy="12" r=".9"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',cdn:'<path d="M6 9l6 6 6-6"/>',back:'<path d="M15 6l-6 6 6 6"/>',
+ play:'<path d="M7 5l12 7-12 7z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+ tune:'<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+ lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ re:'<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>',
+ code:'<path d="M9 7l-5 5 5 5M15 7l5 5-5 5"/>',grp:'<path d="M8 4H5v16h3M16 4h3v16h-3"/>',
+ flt:'<path d="M4 5h16l-6 7v6l-4 2v-8z"/>',
+};
+Object.assign(I,{check:'<path d="M5 12.5l4.5 4.5L19 7"/>',warn:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',pause:'<path d="M9 6v12M15 6v12"/>',bot2:'<rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 4v4M9 13h.01M15 13h.01"/>'});
+Object.assign(I,{tg:'<path d="M21 4L3 11l6 2 2 6 3-4 5 4z"/><path d="M9 13l12-9"/>',wh:'<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ bellsm:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',laptop:'<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',phone:'<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+ copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',users:'<circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/><path d="M16 14a5 5 0 0 1 6 5"/>',
+ mega:'<path d="M3 10v4h3l7 4V6L6 10z"/><path d="M17 9a4 4 0 0 1 0 6"/>',user1:'<circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/>',shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',pause:'<path d="M9 6v12M15 6v12"/>'});
+const svg=k=>`<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const rail=on=>`<nav class="rail"><div class="logo">Q</div>`+['chart','strat','fwd','res','alert','bot'].map((k,i)=>`<div class="ri ${i==on?'on':''}">${svg(k)}</div>`).join('')+`<div class="spacer"></div><div class="ri">${svg('set')}</div><div class="ri">${svg('user')}</div></nav>`;
+const app=document.getElementById('app');
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function setup(id){const cv=document.getElementById(id);const r=cv.getBoundingClientRect();const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);return [x,r.width,r.height]}
+const chk='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const items=[
+ ['up','STRATEGY','EMA Trend + RSI Pullback v3','BTCUSDT 15m · long, short, exit, TP/SL','33m',['bellsm','tg','tg'],1],
+ ['up','STRATEGY','My Indicator L1×L2 v5','BTCUSDT 1h · paper trading','2h',['bellsm','tg']],
+ ['up','PRICE','BTC crossing 62,300.0','from chart line · once','—',['bellsm','tg']],
+ ['up','PRICE','ETH above 3,500.00','once','—',['bellsm']],
+ ['up','INDICATOR','SOL · RSI 14 below 30','1h · every bar close','1d',['tg']],
+ ['up','RISK','Drawdown beyond −8%','paper account','—',['bellsm','tg']],
+ ['up','RISK','Liquidation closer than 3%','all open positions','—',['bellsm','tg','mail']],
+ ['up','MARKET','Funding above 0.05% / 8h','BTCUSDT, ETHUSDT','3d',['tg']],
+ ['up','SYSTEM','Bot errors & disconnects','all bots','5d',['bellsm','tg','mail']],
+ ['dim','PRICE','BTC below 60,000.0','expired 1405/06/30','—',['bellsm'],0,1]];
+const list=`<aside class="al"><div class="hd" style="justify-content:space-between"><b style="font-weight:600">Alerts</b><span class="btn p" style="height:30px">${svg('plus')}New alert</span></div>
+ <div><div class="search">${svg('search')}<span>Search alerts</span></div></div>
+ <div class="fch"><span class="on">All<i>10</i></span><span>Strategy<i>2</i></span><span>Price<i>3</i></span><span>Indicator<i>1</i></span><span>Risk<i>2</i></span><span>Market<i>1</i></span><span>System<i>1</i></span></div>
+ <div style="overflow:hidden">${items.map((a,i)=>`<div class="ai ${S!=='a3'&&i===0?'on':''} ${a[7]?'off':''}"><span class="d" style="background:var(--${a[0]==='up'?'up':'dim'})"></span><span><b><span class="typ">${a[1]}</span>${a[2]}</b><small>${a[3]}</small></span><span class="r"><span class="t">${a[4]}</span><span class="chs">${a[5].map(svg).join('')}</span></span></div>`).join('')}</div></aside>`;
+const tgPhone=(big)=>`<div class="phone"><div class="top"><span class="av">Q</span><span><b>Quanta Signals</b><small>group · 3 members · bot</small></span></div><div>
+ <div class="bub"><div class="h"><span style="color:#4FD19E">▲ LONG</span> · BTCUSDT 15m</div>
+  <div>EMA Trend + RSI Pullback <span style="color:#6C7883">v3</span></div>
+  <div class="m" style="margin-top:6px">Entry  64,021.5<br>Stop   63,380.0  (−1.00%)<br>Target 65,300.0  (+2.00%)<br>Size   20% × 5× isolated</div>
+  ${big?'<div class="snap"><canvas id="snap"></canvas></div>':''}
+  <div style="color:#8B98A5;font-size:11.5px;margin-top:6px">Bar close 11:15 Tehran · paper account</div>
+  <div class="ft"><span>Not financial advice</span><span>11:15:01</span></div></div>
+ <div class="kb"><span>Open chart</span><span>Mute 1 h</span></div></div></div>`;
+
+if(S==='a1'){
+ app.style.gridTemplateColumns='56px 360px minmax(0,1fr)';
+ const ev=[
+  ['13:45','b-tp','TP HIT','64,262.0','take profit on long · +31.40 USDT',[['ok','bellsm','Browser','0.2 s'],['ok','user1','Telegram DM','0.8 s'],['ok','users','Quanta Signals','0.8 s']]],
+  ['11:15','b-l','LONG ENTRY','64,021.5','bar close · EMA 20 > 50, RSI crossed 40, L3 rising',[['ok','bellsm','Browser','0.2 s'],['ok','user1','Telegram DM','0.8 s'],['ok','users','Quanta Signals','0.9 s'],['bad','mega','@quanta_signals','429 → retried 3.2 s']]],
+  ['08:30','b-x','EXIT','64,294.6','opposite signal · closed short +18.75 USDT',[['ok','bellsm','Browser','0.2 s'],['ok','user1','Telegram DM','0.7 s'],['ok','users','Quanta Signals','0.8 s'],['ok','mega','@quanta_signals','1.0 s']]],
+  ['06:00','b-s','SHORT ENTRY','64,388.0','bar close · EMA 20 < 50, RSI crossed 60 · quiet hours: sent silently',[['ok','bellsm','Browser','0.3 s'],['ok','user1','Telegram DM','silent'],['ok','users','Quanta Signals','silent']]],
+  ['Yesterday 22:45','b-l','LONG ENTRY','63,902.2','bar close',[['ok','bellsm','Browser','0.2 s'],['ok','user1','Telegram DM','0.9 s']]]];
+ app.innerHTML=rail(4)+list+`<section class="rm" style="grid-template-rows:56px 44px minmax(0,1fr)"><div class="hd"><h1>EMA Trend + RSI Pullback v3</h1><span class="chip o">Strategy signals</span><span class="chip o">BTCUSDT · 15m</span><span class="chip" style="color:#4FD19E;background:rgba(46,189,133,.12)">● Active · watched on server</span><span class="fill"></span><span class="btn g">${svg('pause')}Pause</span><span class="btn">${svg('tg')}Test send</span><span class="btn">Edit</span></div>
+ <div class="tabs"><span class="on">Activity</span><span>Settings</span><span>Delivery log</span></div>
+ <div class="body" style="grid-template-rows:auto minmax(0,1fr)">
+  <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+   <div class="kp"><i>Fired · 30 days</i><em>214</em><small>98 long · 71 short · 45 exit</small></div>
+   <div class="kp"><i>Delivered</i><em class="up">99.6%</em><small>3 retried · 0 lost</small></div>
+   <div class="kp"><i>Signal → Telegram</i><em>0.9 s</em><small>median · bar close to phone</small></div>
+   <div class="kp"><i>Next check</i><em>11:13</em><small>at the next 15m bar close</small></div></div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;min-height:0">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Today</b><span class="mut">each signal and where it was delivered</span></div>
+    ${ev.map(e=>`<div class="ev"><span class="tm">${e[0]}</span><span><span class="badge ${e[1]}">${e[2]}</span></span><span class="dsc"><b>${e[3]}</b><small>${e[4]}</small><span class="dl">${e[5].map(d=>`<span class="${d[0]}">${svg(d[0]==='ok'?'check':'warn')}${svg(d[1]).replace('<svg','<svg style="color:var(--mut)"')}${d[2]}<em>${d[3]}</em></span>`).join('')}</span></span></div>`).join('')}</div>
+   <div class="card" style="display:grid;grid-template-rows:44px auto 1fr"><div class="ch"><b>As received</b><span class="mut">Telegram group</span></div><div style="padding:12px">${tgPhone(true)}</div><div></div></div>
+  </div></div></section>`;
+}
+
+if(S==='a2'){
+ app.style.gridTemplateColumns='56px 360px minmax(0,1fr)';
+ const c=(on,t)=>`<span class="${on?'on':''}"><i>${on?chk:''}</i>${t}</span>`;
+ const tg=(on)=>`<span class="tg ${on?'on':''}" style="flex:none"></span>`;
+ app.innerHTML=rail(4)+list+`<section class="rm" style="grid-template-rows:56px minmax(0,1fr) 64px"><div class="hd"><h1>New alert</h1><span class="chip o">draft · autosaved</span><span class="fill"></span><span class="ic">${svg('x')}</span></div>
+ <div class="body" style="padding-bottom:16px"><div class="form">
+  <div class="fl">
+   <div class="card"><div class="ch"><b>1 · What to watch</b></div>
+    <div class="frow"><span>Source</span><div class="seg" style="justify-self:start"><span class="on">Strategy</span><span>Price</span><span>Indicator</span><span>Risk</span><span>Market</span></div></div>
+    <div class="frow"><span>Strategy</span><div class="dd" style="max-width:420px"><b>EMA Trend + RSI Pullback · v3 ${svg('lock').replace('<svg','<svg style="width:12px;height:12px;vertical-align:-2px;color:var(--mut)"')}</b>${svg('cdn')}</div></div>
+    <div class="frow"><span>Market</span><div class="chk">${c(1,'BTCUSDT 15m')}${c(0,'ETHUSDT 15m')}<span style="box-shadow:none;border:1px dashed var(--line)">${svg('plus').replace('<svg','<svg style="width:12px;height:12px"')}Add</span></div></div>
+    <div class="frow"><span>Events</span><div class="chk">${c(1,'Long entry')}${c(1,'Short entry')}${c(1,'Exit')}${c(1,'TP hit')}${c(1,'SL hit')}</div></div></div>
+   <div class="card"><div class="ch"><b>2 · When to fire</b></div>
+    <div class="frow"><span>Check on</span><div class="seg" style="justify-self:start"><span class="on">Bar close · no repaint</span><span>Every tick</span></div></div>
+    <div class="frow"><span>Repeat</span><span style="display:flex;align-items:center;gap:12px"><span class="seg"><span class="on">Every signal</span><span>Once</span><span>Once per bar</span></span><span class="mut">expires never</span></span></div>
+    <div class="frow"><span>Burst guard</span><span style="color:var(--text)">Merge signals within <b class="m">10 s</b> into one message</span></div>
+    <div class="frow"><span>Quiet hours</span><span style="display:flex;align-items:center;gap:12px;color:var(--text)"><b class="m">01:00 – 07:00</b> Tehran · Telegram sends silently ${tg(1)}</span></div>
+</div>
+   <div class="card"><div class="ch"><b>3 · Message</b><span class="fill"></span><div class="seg"><span class="on">English</span><span>فارسی</span></div></div>
+    <div class="tpl"><span class="v">{{side_icon}}</span> <span class="v">{{SIDE}}</span> · <span class="v">{{symbol}}</span> <span class="v">{{tf}}</span>
+<span class="v">{{strategy}}</span> v<span class="v">{{version}}</span>
+Entry  <span class="v">{{price}}</span>
+Stop   <span class="v">{{sl}}</span>  (<span class="v">{{sl_pct}}</span>)
+Target <span class="v">{{tp}}</span>  (<span class="v">{{tp_pct}}</span>)</div>
+    <div class="vars"><span>{{size}}</span><span>{{leverage}}</span><span>{{pnl}}</span><span>{{rsi}}</span><span>{{time_tehran}}</span><span>{{chart_link}}</span><span>+ chart snapshot ✓</span></div></div>
+  </div>
+  <div class="fl">
+   <div class="card" style="overflow:hidden"><div class="ch"><b>4 · Send to</b><span class="fill"></span><span class="btn g" style="height:28px">Manage</span></div>
+    <div class="dsth">Browser</div>
+    <div class="dst"><span class="ico">${svg('laptop')}</span><span><b>This laptop · Chrome</b><small>push allowed</small></span>${tg(1)}</div>
+    <div class="dst"><span class="ico">${svg('phone')}</span><span><b>iPhone · Home-screen app</b><small>last seen 2 h ago</small></span>${tg(1)}</div>
+    <div class="dsth">Telegram</div>
+    <div class="dst"><span class="ico">${svg('user1')}</span><span><b>Direct message</b><small>@you · via @QuantaAlertsBot</small></span>${tg(1)}</div>
+    <div class="dst"><span class="ico">${svg('users')}</span><span><b>Quanta Signals</b><small>group · 3 members</small></span>${tg(1)}</div>
+    <div class="dst"><span class="ico">${svg('mega')}</span><span><b>@quanta_signals</b><small>channel · bot is admin</small></span>${tg(1)}</div>
+    <div class="dsth">Other</div>
+    <div class="dst"><span class="ico">${svg('wh')}</span><span><b>Webhook</b><small>signed JSON POST</small></span>${tg(0)}</div>
+    <div class="dst" style="border:0"><span class="ico">${svg('mail')}</span><span><b>Email</b><small>for risk & system alerts</small></span>${tg(0)}</div></div>
+   <div class="card"><div class="ch"><b>Preview</b><span class="mut">browser</span></div><div style="padding-top:12px"><div class="toast"><span class="av">Q</span><span><b>▲ LONG · BTCUSDT 15m</b><small>EMA Trend + RSI Pullback v3 · entry 64,021.5 · SL 63,380.0 · TP 65,300.0</small></span></div></div></div>
+  </div></div></div>
+ <div class="dbar"><span class="mut" style="font-size:12px">Alerts run on our server — they fire even when your browser is closed.</span><span class="fill"></span><span class="btn">${svg('tg')}Test send</span><span class="btn p">Create alert</span></div>
+ </section>`;
+}
+
+if(S==='a3'){
+ app.style.gridTemplateColumns='56px 360px minmax(0,1fr)';
+ app.innerHTML=rail(4)+list+`<section class="rm" style="grid-template-rows:56px 44px minmax(0,1fr)"><div class="hd"><h1>Notification channels</h1><span class="chip o">used by all alerts and bots</span><span class="fill"></span></div>
+ <div class="tabs"><span class="on">Telegram</span><span>Browser</span><span>Webhook</span><span>Email</span></div>
+ <div class="body" style="grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:minmax(0,1fr)">
+  <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start;min-width:0">
+   <div class="card"><div class="ch"><b>Connect Telegram</b><span class="mut">no login or phone number needed — only a one-time link</span></div>
+    <div class="steps">
+     <div class="stp"><span class="n ok">${svg('check').replace('<svg','<svg style="width:12px;height:12px"')}</span><span><b>Direct messages</b><small>Open the link, press <b>Start</b>. The bot replies “Connected” and your chat is saved.</small><span class="lnk">t.me/QuantaAlertsBot?start=lnk_7Q2F9K <em>10 min</em> ${svg('copy').replace('<svg','<svg style="width:12px;height:12px;color:var(--mut)"')}</span></span><span class="qr"><canvas id="qr"></canvas></span></div>
+     <div class="stp"><span class="n ok">${svg('check').replace('<svg','<svg style="width:12px;height:12px"')}</span><span><b>A group</b><small>Tap <b>Add to group</b>, pick the group. The bot posts a confirmation there — only group admins can link it.</small><span class="lnk">t.me/QuantaAlertsBot?startgroup=lnk_G41M2 <em>single use</em></span></span><span></span></div>
+     <div class="stp"><span class="n">3</span><span><b>A channel</b><small>Add <b>@QuantaAlertsBot</b> to the channel as admin with only <b>Post messages</b> allowed, then paste the channel’s @username below. We post a test message to verify.</small><span class="lnk" style="width:320px;justify-content:space-between"><span style="color:var(--dim)">@your_channel</span><em>Verify</em></span></span><span></span></div>
+    </div></div>
+   <div class="card" style="overflow:hidden"><div class="ch"><b>Connected</b><span class="mut">3 destinations</span></div>
+    <table class="dtbl"><tr><th>Type</th><th>Name</th><th>Chat ID</th><th>Status</th><th>Last sent</th><th></th></tr>
+     <tr><td>${svg('user1').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px;color:var(--mut);margin-right:6px"')}Direct</td><td>@you</td><td class="m">•••• 4812</td><td><span class="okp">VERIFIED</span></td><td class="m">13:45:01</td><td style="color:var(--dim);width:20px">${svg('x').replace('<svg','<svg style="width:14px;height:14px"')}</td></tr>
+     <tr><td>${svg('users').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px;color:var(--mut);margin-right:6px"')}Group</td><td>Quanta Signals</td><td class="m">•••• 9920</td><td><span class="okp">VERIFIED</span></td><td class="m">13:45:01</td><td style="color:var(--dim);width:20px">${svg('x').replace('<svg','<svg style="width:14px;height:14px"')}</td></tr>
+     <tr><td>${svg('mega').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px;color:var(--mut);margin-right:6px"')}Channel</td><td>@quanta_signals</td><td class="m">•••• 3307</td><td><span class="okp">VERIFIED</span></td><td class="m">08:30:01</td><td style="color:var(--dim);width:20px">${svg('x').replace('<svg','<svg style="width:14px;height:14px"')}</td></tr></table></div>
+  </div>
+  <div style="display:grid;gap:16px;align-content:start">
+   <div class="card"><div class="ch"><b>Delivery rules</b></div>
+    <div class="note" style="margin-top:14px"><b>Telegram limits:</b> about 1 message per second per chat and 20 per minute per group. When several signals fire together we queue them and merge bursts into one message, so nothing is dropped.</div>
+    <div class="note"><b>Retries:</b> failed sends retry 3× with back-off; after that the alert shows a warning here and in the browser.</div>
+    <div class="note"><b>Mute from Telegram:</b> every message has <b>Mute 1 h</b> and <b>Open chart</b> buttons.</div></div>
+   <div class="card"><div class="ch">${svg('shield').replace('<svg','<svg style="width:16px;height:16px;color:var(--up)"')}<b>Privacy &amp; security</b></div>
+    <div class="note" style="margin-top:14px">We store only the chat ID — never your Telegram login. Link codes are single-use and expire in 10 minutes. Remove a destination here or send <b>/stop</b> to the bot.</div>
+    <div class="note">Signals are for information only. Messages include “Not financial advice”; for public channels you are responsible for local rules on sharing trading signals.</div></div>
+   <div class="card"><div class="ch"><b>Your own bot</b><span class="mut">optional</span></div><div class="note" style="margin-top:14px">Advanced: paste a token from @BotFather to send under your own bot name. Stored encrypted, never shown again.</div></div>
+  </div></div></section>`;
+}
+document.fonts.ready.then(()=>{
+ if(document.getElementById('snap')){const [x,w,h]=setup('snap');let s=11;const r=()=>(s=(s*16807)%2147483647)/2147483647;let p=h*0.6;const n=46;const bw=w/n;for(let i=0;i<n;i++){const o=p;const c=o+(r()-.52)*14-(i>30?2:0);const hi=Math.min(o,c)-r()*6,lo=Math.max(o,c)+r()*6;const up=c<o;x.strokeStyle=up?'#2EBD85':'#F0506E';x.fillStyle=x.strokeStyle;x.beginPath();x.moveTo(i*bw+bw/2,hi);x.lineTo(i*bw+bw/2,lo);x.stroke();x.fillRect(i*bw+bw*.2,Math.min(o,c),bw*.6,Math.max(1,Math.abs(c-o)));p=Math.max(20,Math.min(h-20,c))}
+  x.setLineDash([3,3]);x.strokeStyle='#2EBD85';x.beginPath();x.moveTo(0,p-18);x.lineTo(w,p-18);x.stroke();x.strokeStyle='#F0506E';x.beginPath();x.moveTo(0,p+16);x.lineTo(w,p+16);x.stroke();x.setLineDash([]);x.fillStyle='#2EBD85';x.beginPath();x.moveTo(w-bw*1.5,p+10);x.lineTo(w-bw*1.5-4,p+16);x.lineTo(w-bw*1.5+4,p+16);x.fill()}
+ if(document.getElementById('qr')){const [x,w,h]=setup('qr');const n=25,c=w/n;let s=5;const r=()=>(s=(s*16807)%2147483647)/2147483647;x.fillStyle='#fff';x.fillRect(0,0,w,h);x.fillStyle='#0B0C0E';for(let i=0;i<n;i++)for(let j=0;j<n;j++){if(r()<0.47)x.fillRect(i*c,j*c,c,c)}
+  [[0,0],[n-7,0],[0,n-7]].forEach(([a,b])=>{x.fillStyle='#fff';x.fillRect((a-0)*c,(b-0)*c,8*c>w?7*c:8*c,8*c>w?7*c:8*c);x.fillStyle='#0B0C0E';x.fillRect(a*c,b*c,7*c,7*c);x.fillStyle='#fff';x.fillRect((a+1)*c,(b+1)*c,5*c,5*c);x.fillStyle='#0B0C0E';x.fillRect((a+2)*c,(b+2)*c,3*c,3*c)})}
+ document.body.dataset.ready=1});
+</script><script src="jobs.js"></script></body></html>

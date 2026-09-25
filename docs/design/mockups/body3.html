@@ -1,0 +1,65 @@
+<style>
+.bar{gap:8px;padding:0 12px}
+.dv{width:1px;height:20px;background:var(--line);margin:0 4px}
+.gb{height:32px;min-width:32px;padding:0 8px;border-radius:6px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--mut);font:500 12px var(--sans)}
+.gb svg{width:18px;height:18px}
+.gb.t{color:var(--text)}
+.gb .car{width:10px;height:10px;color:var(--dim)}
+.symb{display:flex;align-items:center;gap:8px;height:32px;padding:0 10px 0 8px;border-radius:6px;background:var(--accbg)}
+.symb svg{width:16px;height:16px;color:var(--mut)}
+.symb b{font:600 14px var(--sans)}
+.symb span{font-size:11px;color:var(--mut)}
+.seg{margin-left:0}
+.fill{flex:1}
+.lr .dot{width:6px;height:6px;border-radius:50%;background:var(--up)}
+.foot{gap:4px;padding:0 8px 0 56px}
+.fb{height:24px;padding:0 8px;border-radius:4px;display:flex;align-items:center;gap:6px;color:var(--mut);font:500 11px var(--sans)}
+.fb.on{color:var(--text);background:var(--accbg)}
+.fb svg{width:14px;height:14px}
+.fdv{width:1px;height:14px;background:var(--line);margin:0 6px}
+.pl{position:absolute;display:flex;align-items:stretch;height:22px;border-radius:4px;font:500 11px/22px var(--mono);z-index:4;overflow:hidden;box-shadow:0 0 0 1px var(--c) inset;background:var(--surf)}
+.pl span{padding:0 8px;white-space:nowrap}
+.pl .h{background:var(--c);color:#fff;font-family:var(--sans)}
+.pl .x{border-left:1px solid color-mix(in srgb,var(--c) 40%,transparent);color:var(--mut);padding:0 6px}
+.pl .x svg{width:12px;height:12px;vertical-align:-2px}
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:grid;place-items:center}
+.b .scrim{background:rgba(20,20,20,.25)}
+.dlg{width:760px;height:600px;background:var(--pop);border-radius:12px;box-shadow:var(--shadow);display:grid;grid-template-rows:56px 1fr 64px;overflow:hidden}
+.dh{display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 24px;border-bottom:1px solid var(--line)}
+.dh b{font:600 15px var(--sans)}
+.db{display:grid;grid-template-columns:200px 1fr;min-height:0}
+.dtabs{border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+.dtabs span{height:36px;display:flex;align-items:center;gap:10px;padding:0 12px;border-radius:6px;color:var(--mut);font-weight:500}
+.dtabs span svg{width:16px;height:16px}
+.dtabs span.on{background:var(--accbg);color:var(--text)}
+.dc{padding:8px 24px;overflow:hidden}
+.dsec{font:500 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:16px 0 4px}
+.drow{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:12px;height:36px}
+.drow.hl{background:var(--accbg);margin:0 -12px;padding:0 12px;border-radius:6px}
+.cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--dim);display:grid;place-items:center}
+.cb.on{background:var(--acc);border-color:var(--acc)}
+.cb.on svg{width:12px;height:12px;color:var(--bg);stroke-width:2.5}
+.drow .r{display:flex;align-items:center;gap:8px;color:var(--mut);font-size:12px}
+.sel{height:28px;padding:0 10px;border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;gap:8px;color:var(--text);font-size:12px;min-width:120px;justify-content:space-between}
+.sel svg{width:12px;height:12px;color:var(--mut)}
+.swc{width:20px;height:20px;border-radius:4px;box-shadow:0 0 0 1px var(--line)}
+.new{font:600 10px var(--sans);color:var(--draw);letter-spacing:.04em}
+.df{border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 16px 0 24px}
+.df .fill{flex:1}
+.pbtn{height:32px;padding:0 16px;border-radius:8px;display:flex;align-items:center;font-weight:600;font-size:12px}
+.pbtn.p{background:var(--acc);color:var(--bg)}
+.pbtn.s{box-shadow:0 0 0 1px var(--line) inset}
+</style>
+<div class="app">
+  <nav class="rail" id="rail"></nav>
+  <section class="main">
+    <div class="bar" id="bar"></div>
+    <div class="work">
+      <div class="tools" id="tools"></div>
+      <div class="panes" id="panes"></div>
+    </div>
+    <div class="foot" id="foot"></div>
+  </section>
+  <aside class="side" id="side"></aside>
+</div>
