@@ -33,3 +33,6 @@ coverage/
 
 # Runtime
 /data/
+
+# TypeScript incremental build info
+*.tsbuildinfo
