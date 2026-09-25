@@ -163,7 +163,10 @@ def create_sim_app() -> FastAPI:
 
         now = _now_ms()
         step = parsed_interval.milliseconds
-        end = min(endTime or now, now + step)
+        # A real venue never returns a bar that has not opened. The current
+        # bar is the newest one that can exist, and it is still forming.
+        current_open = (now // step) * step
+        end = min(endTime or now, current_open) + 1
         start = startTime if startTime is not None else end - step * limit
 
         market = SyntheticMarket(symbol)

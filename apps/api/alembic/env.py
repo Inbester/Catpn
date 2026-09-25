@@ -22,6 +22,39 @@ if config.config_file_name is not None:
 config.set_main_option("sqlalchemy.url", str(get_settings().database_url))
 target_metadata = Base.metadata
 
+# Tables converted to TimescaleDB hypertables, and the time column each one
+# is partitioned on. create_hypertable() adds its own descending index on
+# that column; it is not in the models, so autogenerate would otherwise try
+# to drop it on every run.
+HYPERTABLES = {"klines": "open_time", "funding_rates": "funding_time"}
+
+# Schemas TimescaleDB manages internally. Nothing in them is ours to migrate.
+TIMESCALE_SCHEMAS = {
+    "_timescaledb_internal",
+    "_timescaledb_catalog",
+    "_timescaledb_config",
+    "_timescaledb_cache",
+    "timescaledb_information",
+    "timescaledb_experimental",
+}
+
+
+def include_object(
+    obj: object, name: str | None, type_: str, reflected: bool, compare_to: object
+) -> bool:
+    """Keep Timescale's own objects out of autogenerate."""
+    schema = getattr(obj, "schema", None)
+    if schema in TIMESCALE_SCHEMAS:
+        return False
+
+    if type_ == "index" and reflected and name:
+        table_name = getattr(getattr(obj, "table", None), "name", None)
+        time_column = HYPERTABLES.get(str(table_name))
+        if time_column and name == f"{table_name}_{time_column}_idx":
+            return False
+
+    return True
+
 
 def run_migrations_offline() -> None:
     context.configure(
@@ -30,6 +63,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -41,6 +75,7 @@ def do_run_migrations(connection: Connection) -> None:
         target_metadata=target_metadata,
         compare_type=True,
         compare_server_default=True,
+        include_object=include_object,
     )
     with context.begin_transaction():
         context.run_migrations()

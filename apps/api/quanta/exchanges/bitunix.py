@@ -300,7 +300,11 @@ class BitunixAdapter:
         user, so this is what the backfill job drives.
         """
         cursor = start
-        step = interval.milliseconds * MAX_KLINE_LIMIT
+        # Span one bar less than the page limit. Whether the venue treats
+        # endTime as inclusive or exclusive, the window then holds at most
+        # MAX_KLINE_LIMIT bars — so the server never truncates a page and
+        # silently drops its oldest bar, which would leave a gap.
+        step = interval.milliseconds * (MAX_KLINE_LIMIT - 1)
 
         while cursor < end:
             window_end = min(cursor + step, end)

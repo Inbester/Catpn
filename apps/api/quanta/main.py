@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -9,13 +10,18 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from redis.asyncio import Redis
 
+from quanta.api.market_runtime import set_market_service
 from quanta.api.router import api_router
-from quanta.core.config import get_settings
+from quanta.core.config import Settings, get_settings
 from quanta.core.logging import configure_logging
 from quanta.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 from quanta.core.redis_client import close_redis, init_redis
-from quanta.db.session import dispose_engine
+from quanta.db.session import dispose_engine, get_session_factory
+from quanta.exchanges.base import Interval
+from quanta.exchanges.bitunix import BitunixAdapter
+from quanta.services.market_data import MarketDataService
 
 logger = structlog.get_logger(__name__)
 
@@ -28,15 +34,54 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     redis = await init_redis()
     if redis is None:
-        # Rate limiting degrades open and the market-data fan-out (phase 1)
-        # is not wired yet, so this is a warning rather than a hard failure.
+        # Rate limiting degrades open; the live chart stream needs Redis and
+        # reports itself unavailable rather than failing the whole boot.
         logger.warning("startup_without_redis")
+
+    market = await _start_market_data(settings, redis)
 
     yield
 
+    if market is not None:
+        await market.stop()
+    set_market_service(None)
     await close_redis()
     await dispose_engine()
     logger.info("shutdown")
+
+
+async def _start_market_data(settings: Settings, redis: Redis | None) -> MarketDataService | None:
+    """Open the one shared exchange connection and warm the chart's history.
+
+    Failures here are logged, not fatal: the app must still serve sign-in
+    and the shell when the venue is unreachable — which SPEC §9 says is the
+    normal case in restricted regions.
+    """
+    if not settings.market_data_enabled:
+        return None
+
+    adapter = BitunixAdapter(rest_url=settings.exchange_rest_url, ws_url=settings.exchange_ws_url)
+    service = MarketDataService(adapter, get_session_factory(), redis)
+    set_market_service(service)
+
+    async def warm() -> None:
+        try:
+            await service.refresh_instruments()
+            for symbol in settings.market_warm_symbols:
+                for raw_interval in settings.market_warm_intervals:
+                    interval = Interval(raw_interval)
+                    await service.ensure_history(symbol, interval, bars=settings.market_warm_bars)
+                    await service.fill_gaps(symbol, interval)
+                    service.subscribe(symbol, interval)
+                await service.refresh_funding(symbol)
+            logger.info("market_data_warm", symbols=settings.market_warm_symbols)
+        except Exception as exc:  # the app stays up when the venue is unreachable
+            logger.warning("market_data_warm_failed", error=str(exc))
+
+    await service.start()
+    # Warming runs in the background so boot is not blocked on the exchange.
+    asyncio.create_task(warm())  # noqa: RUF006 - lives for the process
+    return service
 
 
 def create_app() -> FastAPI:

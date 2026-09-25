@@ -60,6 +60,19 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     cookie_domain: str | None = None
 
+    # --- Market data -------------------------------------------------------
+    # Point these at the simulator (python -m quanta.exchanges.sim) when the
+    # venue is unreachable — a restricted region per SPEC §9, or a network
+    # policy that blocks it.
+    exchange_rest_url: str = "https://fapi.bitunix.com"
+    exchange_ws_url: str = "wss://fapi.bitunix.com/public/"
+    # Symbols warmed up on boot so the chart opens on stored data.
+    market_warm_symbols: Annotated[list[str], NoDecode] = ["BTCUSDT", "ETHUSDT"]
+    market_warm_intervals: Annotated[list[str], NoDecode] = ["1m", "15m", "1h"]
+    market_warm_bars: int = 1500
+    # Off in tests, where no exchange is running.
+    market_data_enabled: bool = True
+
     # --- CORS --------------------------------------------------------------
     # NoDecode: take the env value as a plain string so the validator below
     # can accept a comma-separated list, not only JSON.
@@ -80,9 +93,9 @@ class Settings(BaseSettings):
     cross_origin_isolation: bool = True
     hsts_max_age_seconds: int = 31_536_000
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("cors_origins", "market_warm_symbols", "market_warm_intervals", mode="before")
     @classmethod
-    def _split_origins(cls, value: object) -> object:
+    def _split_list(cls, value: object) -> object:
         """Accept a comma-separated string as well as a JSON list."""
         if isinstance(value, str):
             text = value.strip()

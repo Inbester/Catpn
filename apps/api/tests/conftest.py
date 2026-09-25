@@ -10,6 +10,9 @@ os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-used-anywhere-real-0123456789")
 os.environ.setdefault("COOKIE_SECURE", "false")
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+# No exchange in the test environment; market-data tests build their own
+# service against the simulator.
+os.environ.setdefault("MARKET_DATA_ENABLED", "false")
 os.environ.setdefault(
     "DATABASE_URL",
     os.environ.get(
