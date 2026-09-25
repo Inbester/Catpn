@@ -9,6 +9,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AppLayout } from '@/components/shell/AppLayout';
 import { ChartPage } from '@/features/chart/ChartPage';
+import { TestPage } from '@/features/test/TestPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
 
 export const routes: RouteObject[] = [
@@ -22,10 +23,7 @@ export const routes: RouteObject[] = [
         path: 'research',
         element: <PhasePlaceholder titleKey="nav.research" icon="research" phase={4} />,
       },
-      {
-        path: 'test',
-        element: <PhasePlaceholder titleKey="nav.test" icon="test" phase={2} />,
-      },
+      { path: 'test', element: <TestPage /> },
       {
         path: 'alerts',
         element: <PhasePlaceholder titleKey="nav.alerts" icon="alerts" phase={5} />,

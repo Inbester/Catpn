@@ -1,0 +1,43 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.cell {
+  padding: var(--space-4);
+  border-inline-end: 1px solid var(--line);
+  min-width: 0;
+}
+
+.cell:last-child {
+  border-inline-end: none;
+}
+
+.label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value {
+  font: 500 var(--text-xl) var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin-bottom: var(--space-1);
+}
+
+.note {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

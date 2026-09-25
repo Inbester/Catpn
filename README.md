@@ -6,15 +6,16 @@ The full product specification is in [`docs/SPEC.md`](docs/SPEC.md); the design
 decision log is in [`docs/DECISIONS.md`](docs/DECISIONS.md) and the approved
 mockups are in [`docs/design/`](docs/design/).
 
-> **Status:** phase 1 (see SPEC §8). Auth, workspace autosave, the app shell,
-> the Bitunix market-data pipeline and the Chart menu.
+> **Status:** phase 2 (see SPEC §8). Auth, workspace autosave, the app shell,
+> the Bitunix market-data pipeline, the Chart menu, and the strategy DSL,
+> backtest engine and Test menu.
 
 ## Layout
 
 ```
 apps/api/        FastAPI backend (Python 3.11)
 apps/web/        React + TypeScript frontend (Vite)
-packages/engine/ Strategy DSL and backtest core (phase 2)
+packages/engine/ Strategy DSL and backtest core
 infra/           Docker Compose for local development
 docs/            Specification, decisions and design references
 ```
@@ -74,9 +75,16 @@ identical output on every run.
 ## Tests
 
 ```bash
+cd packages/engine && .venv/bin/pytest
 cd apps/api && .venv/bin/pytest          # needs the quanta_test database
 cd apps/web && npm test
 ```
+
+The chart's TypeScript indicators are pinned to the Python engine by a
+generated fixture (`apps/web/src/features/chart/lib/__fixtures__`). If the
+two ever disagree a user would see one number on screen and another in
+their backtest, with no way to tell which is right, so the parity test
+fails instead.
 
 `quanta_test` is created once with:
 

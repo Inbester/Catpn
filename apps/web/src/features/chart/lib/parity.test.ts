@@ -20,8 +20,8 @@ function compare(actual: Array<number | null>, expected: Array<number | null>, n
   expect(actual, `${name}: length`).toHaveLength(expected.length);
 
   for (let i = 0; i < expected.length; i += 1) {
-    const want = expected[i];
-    const got = actual[i];
+    const want = expected[i] ?? null;
+    const got = actual[i] ?? null;
 
     if (want === null) {
       expect(got, `${name}[${i}] should be null (warm-up)`).toBeNull();
@@ -33,7 +33,7 @@ function compare(actual: Array<number | null>, expected: Array<number | null>, n
 }
 
 describe('parity with the Python engine', () => {
-  const values = fixture.values as number[];
+  const values = fixture.values;
   const bars: Bar[] = values.map((close, i) => ({
     time: 1_700_000_000_000 + i * 60_000,
     open: close,
