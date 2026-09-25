@@ -6,7 +6,8 @@ The full product specification is in [`docs/SPEC.md`](docs/SPEC.md); the design
 decision log is in [`docs/DECISIONS.md`](docs/DECISIONS.md) and the approved
 mockups are in [`docs/design/`](docs/design/).
 
-> **Status:** phase 0 (see SPEC §8). Auth, workspace autosave and the app shell.
+> **Status:** phase 1 (see SPEC §8). Auth, workspace autosave, the app shell,
+> the Bitunix market-data pipeline and the Chart menu.
 
 ## Layout
 
@@ -48,6 +49,27 @@ npm run dev
 ```
 
 The app serves on <http://localhost:5173>.
+
+### Market data without the exchange
+
+`fapi.bitunix.com` is unreachable from some networks, and SPEC §9 lists
+regions where the venue is restricted. A simulator speaks the same wire
+format so the chart, backfill and fan-out all work offline:
+
+```bash
+cd apps/api
+.venv/bin/python -m quanta.exchanges.sim     # serves on :8100
+```
+
+Then point the API at it in `apps/api/.env`:
+
+```
+EXCHANGE_REST_URL=http://127.0.0.1:8100
+EXCHANGE_WS_URL=ws://127.0.0.1:8100/public/
+```
+
+Its bars are generated from a seed, so the same symbol and timeframe give
+identical output on every run.
 
 ## Tests
 
