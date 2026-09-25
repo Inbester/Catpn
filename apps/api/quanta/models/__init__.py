@@ -2,6 +2,7 @@
 
 from quanta.models.audit import AuditEvent
 from quanta.models.market import BackfillState, FundingRate, InstrumentMeta, Kline
+from quanta.models.strategy import BacktestRun, StrategyRecord
 from quanta.models.user import AuthSession, User
 from quanta.models.workspace import DOCUMENT_KINDS, WorkspaceDocument, WorkspaceRevision
 
@@ -10,9 +11,11 @@ __all__ = [
     "AuditEvent",
     "AuthSession",
     "BackfillState",
+    "BacktestRun",
     "FundingRate",
     "InstrumentMeta",
     "Kline",
+    "StrategyRecord",
     "User",
     "WorkspaceDocument",
     "WorkspaceRevision",
