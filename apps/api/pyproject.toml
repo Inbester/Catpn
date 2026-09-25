@@ -19,7 +19,14 @@ dependencies = [
     "redis>=5.2.0",
     "httpx>=0.28.0",
     "structlog>=24.4.0",
+    "numpy>=2.1.0",
+    "quanta-engine",
 ]
+
+[tool.uv.sources]
+# The strategy engine lives in the monorepo (SPEC §4); phase 4's job runner
+# will depend on the same package.
+quanta-engine = { path = "../../packages/engine", editable = true }
 
 [project.optional-dependencies]
 dev = [

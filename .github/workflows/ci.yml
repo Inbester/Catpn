@@ -14,6 +14,41 @@ env:
   NODE_VERSION: '22'
 
 jobs:
+  engine:
+    name: Engine
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          uv venv .venv --python ${{ env.PYTHON_VERSION }}
+          uv pip install -e ".[dev]"
+
+      - name: Lint
+        run: .venv/bin/ruff check .
+
+      - name: Check formatting
+        run: .venv/bin/ruff format --check .
+
+      - name: Type check
+        run: .venv/bin/mypy quanta_engine
+
+      - name: Test
+        run: .venv/bin/pytest -q
+
   api:
     name: API
     runs-on: ubuntu-latest
@@ -65,6 +100,7 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
+        # The engine is a path dependency, so uv resolves it from the repo.
         run: |
           uv venv .venv --python ${{ env.PYTHON_VERSION }}
           uv pip install -e ".[dev]"
