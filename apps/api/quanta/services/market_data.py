@@ -254,6 +254,32 @@ class MarketDataService:
             await db.commit()
         return count
 
+    async def backfill_funding(self, symbol: str, *, start: int, end: int) -> int:
+        """Store every settlement in a range, paging past the venue's limit.
+
+        SPEC §6 caps the funding endpoint at 200 rows a call, which is under
+        70 days of 8-hourly settlements. A backtest over a longer range with
+        an unpaged fetch would silently charge no funding for the months it
+        could not see, so this walks the range instead.
+        """
+        written = 0
+        cursor = start
+        while cursor < end:
+            entries = await self._adapter.funding_history(symbol, start=cursor, end=end)
+            if not entries:
+                break
+            async with self._sessions() as db:
+                written += await market_store.upsert_funding(db, symbol, entries)
+                await db.commit()
+            latest = max(entry.funding_time for entry in entries)
+            if latest < cursor:
+                # A venue that ignores startTime would otherwise loop forever.
+                break
+            cursor = latest + 1
+
+        logger.info("funding_backfill_complete", symbol=symbol, settlements=written)
+        return written
+
     # --- Shared stream --------------------------------------------------
 
     def subscribe(self, symbol: str, interval: Interval, price_type: PriceType = "LAST") -> None:

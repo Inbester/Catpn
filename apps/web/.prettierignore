@@ -1,0 +1,5 @@
+dist
+coverage
+# Emitted by the Python engine, not hand-written: reformatting it here would
+# make the next regeneration look like a diff.
+src/features/chart/lib/__fixtures__/engine-parity.json

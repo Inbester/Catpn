@@ -1,0 +1,321 @@
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.panelTitle {
+  font: 600 var(--text-md) var(--font-sans);
+}
+
+.panelNote {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.panelBody {
+  padding: var(--space-4);
+}
+
+/* --- verdict --- */
+
+.verdict {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  padding: var(--space-5);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font: 600 var(--text-sm) var(--font-sans);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chipOk {
+  background: color-mix(in srgb, var(--up) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--up) 45%, transparent);
+  color: var(--up);
+}
+
+.chipWarn {
+  background: color-mix(in srgb, var(--amber) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  color: var(--amber);
+}
+
+.chipFail {
+  background: color-mix(in srgb, var(--down) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--down) 45%, transparent);
+  color: var(--down);
+}
+
+.verdictBody {
+  min-width: 0;
+}
+
+.headline {
+  font: 600 var(--text-lg) var(--font-sans);
+  line-height: 1.4;
+  margin-bottom: var(--space-2);
+}
+
+.explanation {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  margin-bottom: var(--space-4);
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+}
+
+.checkOk {
+  color: var(--up);
+  border-color: color-mix(in srgb, var(--up) 35%, transparent);
+}
+
+.checkWarn {
+  color: var(--amber);
+  border-color: color-mix(in srgb, var(--amber) 35%, transparent);
+}
+
+.checkFail {
+  color: var(--down);
+  border-color: color-mix(in srgb, var(--down) 35%, transparent);
+}
+
+.checkDetail {
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* --- table --- */
+
+.tableScroll {
+  /* Every cell is nowrap so the numbers stay aligned; when the panel is
+     narrower than the table, scroll it rather than clipping the band. */
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table th {
+  text-align: end;
+  font-weight: 400;
+  font-size: var(--text-xs);
+  color: var(--dim);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: start;
+}
+
+.table td {
+  text-align: end;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line-2);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.metricLabel {
+  font-family: var(--font-sans);
+  color: var(--muted);
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-inline-end: var(--space-2);
+}
+
+/* The expected-range track: where the test value fell inside the band. */
+.band {
+  /* Range above track rather than beside it: side by side the cell is wide
+     enough to push the column off the panel on a 1440px screen. */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+.bandRange {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.bandTrack {
+  position: relative;
+  width: 72px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  flex-shrink: 0;
+}
+
+.bandMarker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--up);
+  transform: translateX(-1px);
+}
+
+.bandMarkerOut {
+  background: var(--down);
+}
+
+/* --- regime --- */
+
+.regimeGrid {
+  display: grid;
+  /* Wide enough for "Ordibehesht 1404" and a bar that still reads as a bar.
+     The 1px gap over a line-coloured background draws the separators, so
+     they stay correct however many cells land on a row. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.regimeCell {
+  padding: var(--space-4);
+  background: var(--surface);
+}
+
+.regimeLabel {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-bottom: var(--space-3);
+}
+
+.regimeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.regimePeriod {
+  color: var(--muted);
+  /* Wide enough for "Ordibehesht 1404": the year is the only thing telling
+     the two rows apart, so it must never be the part that gets cut. */
+  min-width: 108px;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.regimeBar {
+  flex: 1;
+  min-width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.regimeFill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.regimeValue {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  min-width: 56px;
+  text-align: end;
+  flex-shrink: 0;
+}
+
+.reading {
+  padding: var(--space-4);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+}
+
+.reading strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* --- walk-forward --- */
+
+.windowBar {
+  display: flex;
+  height: 18px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--line-2);
+}
+
+.windowIn {
+  background: var(--dim);
+}
+
+.windowOut {
+  background: var(--drawing);
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

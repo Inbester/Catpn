@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
 import { useAuthStore } from '@/lib/auth/store';
+import { ForwardPanel } from '@/features/forward/ForwardPanel';
 import { EquityChart } from './components/EquityChart';
 import { CostsPanel } from './components/CostsPanel';
 import { KpiStrip } from './components/KpiStrip';
@@ -37,7 +38,7 @@ const NEW_STRATEGY: StrategyPayload = {
   params: {},
 };
 
-type ResultTab = 'overview' | 'trades' | 'costs' | 'properties';
+type ResultTab = 'overview' | 'trades' | 'costs' | 'properties' | 'forward';
 
 export function TestPage() {
   const user = useAuthStore((state) => state.user);
@@ -123,6 +124,25 @@ export function TestPage() {
     const value = Number(raw);
     if (Number.isFinite(value)) setConfig((current) => ({ ...current, [key]: value }));
   };
+
+  const selected = strategies.find((strategy) => strategy.id === selectedId) ?? null;
+
+  // The forward test runs against a stored version, so it only needs a saved
+  // strategy — not a backtest. The backtest tabs need a run.
+  const tabs: [ResultTab, string][] = [
+    ...((run
+      ? [
+          ['overview', 'Overview'],
+          ['trades', 'List of trades'],
+          ['costs', 'Costs & liquidation'],
+          ['properties', 'Properties'],
+        ]
+      : []) as [ResultTab, string][]),
+    ...((selected ? [['forward', 'Forward test']] : []) as [ResultTab, string][]),
+  ];
+  const activeTab: ResultTab = tabs.some(([key]) => key === tab)
+    ? tab
+    : (tabs[0]?.[0] ?? 'overview');
 
   /** Buy & hold rebased to the starting capital, for the equity overlay. */
   const benchmark = run
@@ -308,16 +328,29 @@ export function TestPage() {
             </p>
           ) : null}
 
-          <button
-            type="button"
-            className={`${styles.button} ${styles.primary}`}
-            onClick={() => {
-              void runBacktest();
-            }}
-            disabled={busy || !draftValid}
-          >
-            {busy ? 'Running…' : 'Run backtest'}
-          </button>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                void save();
+              }}
+              disabled={busy || !draftValid}
+              title="Store a version without running it — enough to forward test"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              className={`${styles.button} ${styles.primary}`}
+              onClick={() => {
+                void runBacktest();
+              }}
+              disabled={busy || !draftValid}
+            >
+              {busy ? 'Running…' : 'Run backtest'}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -352,21 +385,14 @@ export function TestPage() {
           ) : null}
         </header>
 
-        {run ? (
+        {tabs.length > 0 ? (
           <>
             <nav className={styles.tabs}>
-              {(
-                [
-                  ['overview', 'Overview'],
-                  ['trades', 'List of trades'],
-                  ['costs', 'Costs & liquidation'],
-                  ['properties', 'Properties'],
-                ] as const
-              ).map(([key, label]) => (
+              {tabs.map(([key, label]) => (
                 <button
                   key={key}
                   type="button"
-                  className={`${styles.tab} ${tab === key ? styles.active : ''}`}
+                  className={`${styles.tab} ${activeTab === key ? styles.active : ''}`}
                   onClick={() => {
                     setTab(key);
                   }}
@@ -377,7 +403,7 @@ export function TestPage() {
             </nav>
 
             <div className={styles.content}>
-              {tab === 'overview' ? (
+              {run && activeTab === 'overview' ? (
                 <>
                   <KpiStrip stats={run.stats} />
                   <div className={styles.split}>
@@ -407,15 +433,17 @@ export function TestPage() {
                 </>
               ) : null}
 
-              {tab === 'trades' ? <TradesTable trades={run.trades} timezone={timezone} /> : null}
+              {run && activeTab === 'trades' ? (
+                <TradesTable trades={run.trades} timezone={timezone} />
+              ) : null}
 
-              {tab === 'costs' ? (
+              {run && activeTab === 'costs' ? (
                 <div className={styles.split}>
                   <CostsPanel stats={run.stats} trades={run.trades} />
                 </div>
               ) : null}
 
-              {tab === 'properties' ? (
+              {run && activeTab === 'properties' ? (
                 <section
                   style={{
                     background: 'var(--surface)',
@@ -456,11 +484,22 @@ export function TestPage() {
                   </dl>
                 </section>
               ) : null}
+
+              {activeTab === 'forward' && selected ? (
+                <ForwardPanel
+                  strategyId={selected.id}
+                  strategyVersion={selected.version}
+                  symbol={symbol}
+                  interval={interval}
+                  config={config}
+                />
+              ) : null}
             </div>
           </>
         ) : (
           <div className={styles.placeholder}>
-            Write a strategy on the left and run a backtest.
+            Write a strategy on the left and run a backtest, or pick a saved strategy to forward
+            test it.
             <br />
             Bars come from what the chart has already downloaded, so open the symbol and timeframe
             on the Chart menu first.

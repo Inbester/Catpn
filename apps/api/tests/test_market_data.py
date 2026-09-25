@@ -253,6 +253,49 @@ class TestBackfill:
         after = await market_store.read_bars(db, "BTCUSDT", Interval.M1, limit=1000)
         assert market_store.find_gaps(after, Interval.M1) == []
 
+    async def test_funding_backfill_pages_past_the_venue_limit(
+        self, db: AsyncSession, adapter: BitunixAdapter, session_factory: object
+    ) -> None:
+        """SPEC §6 caps the funding endpoint at 200 rows.
+
+        A year of 8-hourly settlements is over a thousand, so an unpaged
+        fetch would leave most of the range with no funding — and a backtest
+        would then report costs it never charged.
+        """
+        service = MarketDataService(adapter, session_factory, None)  # type: ignore[arg-type]
+        eight_hours = 8 * 3_600_000
+        end = (NOW // eight_hours) * eight_hours
+        start = end - eight_hours * 900
+
+        written = await service.backfill_funding("BTCUSDT", start=start, end=end)
+        assert written > 200, "the fetch stopped at one page"
+
+        stored = await market_store.read_funding(db, "BTCUSDT", start=start, end=end)
+        times = [entry.funding_time for entry in stored]
+        assert len(times) == len(set(times))
+        assert {b - a for a, b in pairwise(times)} == {eight_hours}
+
+    async def test_funding_backfill_stops_on_a_venue_that_ignores_the_cursor(
+        self, session_factory: object
+    ) -> None:
+        """Paging advances on the newest row, so a stuck venue must not loop."""
+        from quanta.exchanges.base import Funding
+
+        calls = 0
+
+        class StuckAdapter:
+            async def funding_history(
+                self, symbol: str, *, start: int | None = None, end: int | None = None
+            ) -> list[Funding]:
+                nonlocal calls
+                calls += 1
+                # Always the same row, whatever the cursor asks for.
+                return [Funding(NOW, Decimal("0.0001"))]
+
+        service = MarketDataService(StuckAdapter(), session_factory, None)  # type: ignore[arg-type]
+        await service.backfill_funding("BTCUSDT", start=NOW + 1, end=NOW + 10_000_000)
+        assert calls == 1
+
     async def test_ensure_history_only_fetches_what_is_missing(
         self, db: AsyncSession, adapter: BitunixAdapter, session_factory: object
     ) -> None:

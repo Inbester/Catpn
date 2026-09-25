@@ -72,6 +72,22 @@ EXCHANGE_WS_URL=ws://127.0.0.1:8100/public/
 Its bars are generated from a seed, so the same symbol and timeframe give
 identical output on every run.
 
+### Loading deep history
+
+Boot only warms a recent window, because SPEC §6 stores history once,
+server-side, rather than fetching it live for each user. A forward test or
+a walk-forward over a year needs more than that, so load it explicitly:
+
+```bash
+cd apps/api
+.venv/bin/python -m quanta.tools.backfill BTCUSDT 1h \
+  --start 2025-03-01 --end 2026-05-01 --funding
+```
+
+Dates are UTC and `--end` is exclusive. `--funding` also stores the
+8-hourly settlements, without which a backtest over that range charges no
+funding and quietly understates its own costs.
+
 ## Tests
 
 ```bash
