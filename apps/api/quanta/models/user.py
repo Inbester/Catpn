@@ -73,6 +73,12 @@ class AuthSession(UUIDPrimaryKey, Timestamped, Base):
         PgUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     token_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    # The hash this session held immediately before the last rotation. Two
+    # tabs (or React's double-mount in development) can refresh at the same
+    # moment; without this the loser presents a token that no longer matches
+    # anything and gets signed out. See REFRESH_GRACE_SECONDS.
+    previous_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    rotated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

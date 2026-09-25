@@ -1,0 +1,151 @@
+/*
+ * Quanta design tokens — SPEC §2.
+ *
+ * Theme A "Graphite" (dark) is the default; theme B "Paper" (light) is the
+ * alternative. Both are declared as explicit `[data-theme]` selectors so the
+ * user's stored choice always wins over the OS preference; the media query
+ * only decides what an unset preference resolves to.
+ *
+ * Rule from the spec: colour carries meaning only. Green and red mean up and
+ * down, amber means warning or liquidation, blue means drawings. Everything
+ * else is neutral.
+ */
+
+:root {
+  /* --- Layout skeleton: 8px base grid with a 4px sub-step -------------- */
+  --rail-width: 56px;
+  --drawing-toolbar-width: 48px;
+  --side-panel-width: 320px;
+  --header-height: 56px;
+  --tab-strip-height: 44px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* --- Typography ------------------------------------------------------ */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Every price and value is monospaced so digits do not shift on updates. */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+
+  --leading-tight: 16px;
+  --leading-normal: 20px;
+
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+  /* The spec allows a price change at most a subtle 300ms tint. */
+  --transition-tint: 300ms ease-out;
+}
+
+/* --- Theme A: Graphite (dark, default) -------------------------------- */
+:root,
+:root[data-theme='graphite'] {
+  color-scheme: dark;
+
+  --bg: #0b0c0e;
+  --surface: #0f1113;
+  --line: #1c1f23;
+  --line-2: #15171a;
+  --text: #e7e9ec;
+  --muted: #7d848e;
+  --dim: #4a5059;
+
+  --up: #2ebd85;
+  --down: #f0506e;
+  --amber: #f59e0b;
+  --drawing: #6ea8fe;
+
+  --accent: #e7e9ec;
+  --accent-bg: #1a1d21;
+  --on-accent: #0b0c0e;
+
+  --series-1: #c9cdd3;
+  --series-2: #6b727c;
+  --series-3: #d9b26a;
+
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 55%);
+  --shadow-modal: 0 24px 64px rgb(0 0 0 / 65%);
+}
+
+/* --- Theme B: Paper (light) ------------------------------------------- */
+:root[data-theme='paper'] {
+  color-scheme: light;
+
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --line: #e6e5e1;
+  --line-2: #efeeeb;
+  --text: #16181b;
+  --muted: #6f737a;
+  --dim: #a3a6ab;
+
+  --up: #0e9f6e;
+  --down: #d83a4a;
+  --amber: #b7791f;
+  --drawing: #2563eb;
+
+  --accent: #16181b;
+  --accent-bg: #f0efec;
+  --on-accent: #ffffff;
+
+  --series-1: #16181b;
+  --series-2: #a3a6ab;
+  --series-3: #b7791f;
+
+  --shadow-popover: 0 8px 24px rgb(22 24 27 / 12%);
+  --shadow-modal: 0 24px 64px rgb(22 24 27 / 18%);
+}
+
+/* Only applies when the user has not chosen; data-theme always wins. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --line: #e6e5e1;
+    --line-2: #efeeeb;
+    --text: #16181b;
+    --muted: #6f737a;
+    --dim: #a3a6ab;
+
+    --up: #0e9f6e;
+    --down: #d83a4a;
+    --amber: #b7791f;
+    --drawing: #2563eb;
+
+    --accent: #16181b;
+    --accent-bg: #f0efec;
+    --on-accent: #ffffff;
+
+    --series-1: #16181b;
+    --series-2: #a3a6ab;
+    --series-3: #b7791f;
+
+    --shadow-popover: 0 8px 24px rgb(22 24 27 / 12%);
+    --shadow-modal: 0 24px 64px rgb(22 24 27 / 18%);
+  }
+}

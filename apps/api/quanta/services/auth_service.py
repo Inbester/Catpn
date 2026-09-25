@@ -6,7 +6,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pyotp
-from sqlalchemy import select, update
+from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from quanta.core.config import get_settings
@@ -22,6 +22,12 @@ from quanta.core.security import (
 )
 from quanta.models.audit import AuditEvent
 from quanta.models.user import AuthSession, User
+
+# How long a just-rotated refresh token keeps working. Long enough to cover
+# concurrent refreshes from two tabs or a retried request, short enough that a
+# stolen token is useless: outside this window a reused token is treated as
+# theft and every session for that user is revoked.
+REFRESH_GRACE_SECONDS = 15
 
 
 class AuthError(Exception):
@@ -171,13 +177,21 @@ async def rotate_refresh_token(
     copy replayed afterwards matches nothing and is rejected.
     """
     token_hash = hash_token(presented_token)
-    result = await db.execute(select(AuthSession).where(AuthSession.token_hash == token_hash))
+    now = datetime.now(UTC)
+
+    result = await db.execute(
+        select(AuthSession).where(
+            or_(
+                AuthSession.token_hash == token_hash,
+                AuthSession.previous_token_hash == token_hash,
+            )
+        )
+    )
     session = result.scalar_one_or_none()
 
     if session is None:
         raise AuthError("Invalid session. Please sign in again.")
 
-    now = datetime.now(UTC)
     if session.revoked_at is not None:
         # A revoked token being replayed suggests theft: drop every session
         # for that user and make them sign in again.
@@ -187,12 +201,30 @@ async def rotate_refresh_token(
     if session.expires_at <= now:
         raise AuthError("Session expired. Please sign in again.")
 
+    is_current = session.token_hash == token_hash
+    if not is_current:
+        # The token was already rotated. Inside the grace window this is a
+        # race between two tabs; outside it, it is a replay.
+        rotated_at = session.rotated_at
+        within_grace = (
+            rotated_at is not None and (now - rotated_at).total_seconds() <= REFRESH_GRACE_SECONDS
+        )
+        if not within_grace:
+            await revoke_all_sessions(db, session.user_id)
+            raise AuthError("Session replay detected. Please sign in again.")
+
     user = await db.get(User, session.user_id)
     if user is None or not user.is_active:
         raise AuthError("This account is disabled.", status_code=403)
 
     new_token = generate_token()
+    if is_current:
+        session.previous_token_hash = session.token_hash
+    # A grace-window refresh leaves previous_token_hash alone, so the racing
+    # tab's token stays valid for the rest of the window instead of being
+    # knocked out by its own sibling.
     session.token_hash = hash_token(new_token)
+    session.rotated_at = now
     session.last_used_at = now
     if ip_address:
         session.ip_address = ip_address

@@ -1,0 +1,67 @@
+{
+  "app": { "name": "کوانتا", "tagline": "نمودار، پژوهش و معامله ارز دیجیتال" },
+  "nav": {
+    "chart": "نمودار",
+    "research": "پژوهش",
+    "test": "آزمون",
+    "alerts": "هشدارها",
+    "bot": "ربات معامله‌گر",
+    "resources": "منابع",
+    "ai": "هوش مصنوعی",
+    "settings": "تنظیمات",
+    "account": "حساب کاربری",
+    "jobs": "کارها",
+    "activeAlerts": "هشدارهای فعال"
+  },
+  "save": {
+    "saved": "ذخیره شد",
+    "saving": "در حال ذخیره…",
+    "offline": "آفلاین",
+    "error": "ذخیره نشد",
+    "conflict": "جای دیگر تغییر کرد",
+    "pendingChanges": "{{count}} تغییر در انتظار همگام‌سازی",
+    "pendingChanges_other": "{{count}} تغییر در انتظار همگام‌سازی"
+  },
+  "auth": {
+    "signIn": "ورود",
+    "signOut": "خروج",
+    "createAccount": "ساخت حساب",
+    "email": "ایمیل",
+    "password": "گذرواژه",
+    "displayName": "نام",
+    "twoFactor": "کد دو مرحله‌ای",
+    "twoFactorHint": "کد ۶ رقمی برنامه احرازهویت یا یک کد بازیابی را وارد کنید.",
+    "verify": "تأیید",
+    "noAccount": "حساب ندارید؟",
+    "haveAccount": "حساب دارید؟",
+    "signingIn": "در حال ورود…",
+    "passwordRules": "حداقل ۱۲ نویسه، شامل حروف بزرگ و کوچک، رقم و نماد.",
+    "genericError": "خطایی رخ داد. دوباره تلاش کنید."
+  },
+  "jobs": {
+    "title": "کارها",
+    "running": "در حال اجرا",
+    "queued": "در صف",
+    "paused": "متوقف‌شده",
+    "finished": "پایان‌یافته",
+    "empty": "هنوز کاری نیست. اجرای پژوهش و بک‌تست اینجا دیده می‌شود.",
+    "queuedCount": "{{count}} در صف"
+  },
+  "alerts": {
+    "title": "هشدارهای فعال",
+    "empty": "هشدار فعالی نیست. از نمودار یا یک ستاپ بسازید.",
+    "nextCheck": "بررسی بعدی"
+  },
+  "theme": { "label": "پوسته", "graphite": "گرافیت", "paper": "کاغذ" },
+  "language": { "label": "زبان", "en": "English", "fa": "فارسی" },
+  "calendar": { "label": "تقویم", "gregorian": "میلادی", "jalali": "شمسی" },
+  "common": {
+    "cancel": "انصراف",
+    "save": "ذخیره",
+    "close": "بستن",
+    "retry": "تلاش دوباره",
+    "loading": "در حال بارگذاری…",
+    "comingSoon": "به‌زودی",
+    "phasePlaceholder": "این منو در فاز {{phase}} می‌آید."
+  }
+}

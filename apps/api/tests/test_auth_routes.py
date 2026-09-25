@@ -2,11 +2,33 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 import pyotp
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from quanta.models.user import AuthSession
+from quanta.services import auth_service
 
 GOOD_PASSWORD = "Sunset-Harbour-42!"
+
+
+def read_set_cookie(response: object, name: str = "quanta_refresh") -> str:
+    """Pull a cookie value straight out of the response's Set-Cookie headers."""
+    headers = response.headers.get_list("set-cookie")  # type: ignore[attr-defined]
+    for header in headers:
+        if header.startswith(f"{name}="):
+            return header.split("=", 1)[1].split(";", 1)[0]
+    raise AssertionError(f"{name} was not set on this response")
+
+
+def present_only(client: AsyncClient, token: str, name: str = "quanta_refresh") -> None:
+    """Make `token` the single cookie the next request will send."""
+    client.cookies.clear()
+    client.cookies.set(name, token)
 
 
 async def register(client: AsyncClient, prefix: str, email: str = "trader@example.com") -> dict:
@@ -143,24 +165,73 @@ class TestProtectedRoutes:
 class TestRefreshRotation:
     async def test_refresh_rotates_the_cookie(self, client: AsyncClient, api_prefix: str) -> None:
         await register(client, api_prefix)
-        await login(client, api_prefix)
-        first = client.cookies["quanta_refresh"]
+        login_response = await client.post(
+            f"{api_prefix}/auth/login",
+            json={"email": "trader@example.com", "password": GOOD_PASSWORD},
+        )
+        first = read_set_cookie(login_response)
 
         response = await client.post(f"{api_prefix}/auth/refresh")
         assert response.status_code == 200
-        assert client.cookies["quanta_refresh"] != first
+        assert read_set_cookie(response) != first
 
-    async def test_replaying_an_old_token_fails(self, client: AsyncClient, api_prefix: str) -> None:
+    async def test_a_racing_refresh_inside_the_grace_window_succeeds(
+        self, client: AsyncClient, api_prefix: str
+    ) -> None:
+        """Two tabs refreshing at once must not sign the user out.
+
+        React's double-mount in development produces exactly this pattern, and
+        strict one-shot rotation would reject whichever request lost the race.
+        """
         await register(client, api_prefix)
-        await login(client, api_prefix)
-        stolen = client.cookies["quanta_refresh"]
+        login_response = await client.post(
+            f"{api_prefix}/auth/login",
+            json={"email": "trader@example.com", "password": GOOD_PASSWORD},
+        )
+        first = read_set_cookie(login_response)
 
+        present_only(client, first)
         assert (await client.post(f"{api_prefix}/auth/refresh")).status_code == 200
 
-        # Replace the jar wholesale: setting a cookie with an explicit domain
-        # would add a second entry rather than shadow the rotated one.
-        client.cookies.clear()
-        client.cookies.set("quanta_refresh", stolen)
+        # The slower tab still holds the token from before that rotation.
+        present_only(client, first)
+        second = await client.post(f"{api_prefix}/auth/refresh")
+        assert second.status_code == 200
+        assert read_set_cookie(second) != first
+
+    async def test_reuse_after_the_grace_window_revokes_everything(
+        self, client: AsyncClient, api_prefix: str, db: AsyncSession
+    ) -> None:
+        """Outside the window the same reuse is treated as theft."""
+        await register(client, api_prefix)
+        login_response = await client.post(
+            f"{api_prefix}/auth/login",
+            json={"email": "trader@example.com", "password": GOOD_PASSWORD},
+        )
+        stolen = read_set_cookie(login_response)
+
+        present_only(client, stolen)
+        rotated = await client.post(f"{api_prefix}/auth/refresh")
+        fresh = read_set_cookie(rotated)
+
+        # Age the rotation past the grace window.
+        await db.execute(
+            update(AuthSession).values(
+                rotated_at=datetime.now(UTC)
+                - timedelta(seconds=auth_service.REFRESH_GRACE_SECONDS + 5)
+            )
+        )
+        await db.commit()
+
+        present_only(client, stolen)
+        assert (await client.post(f"{api_prefix}/auth/refresh")).status_code == 401
+
+        # The legitimate token is revoked too: the session is assumed stolen.
+        present_only(client, fresh)
+        assert (await client.post(f"{api_prefix}/auth/refresh")).status_code == 401
+
+    async def test_an_unknown_token_is_rejected(self, client: AsyncClient, api_prefix: str) -> None:
+        present_only(client, "not-a-real-refresh-token")
         assert (await client.post(f"{api_prefix}/auth/refresh")).status_code == 401
 
     async def test_refresh_without_a_cookie_fails(

@@ -7,7 +7,6 @@ from pydantic import ValidationError
 
 from quanta.core.config import DEV_SECRET_KEY, Settings
 
-
 # conftest exports ENVIRONMENT, SECRET_KEY and friends for the HTTP tests.
 # These cases are about the defaults and the guard, so the ambient values have
 # to go or they would mask exactly what is under test.

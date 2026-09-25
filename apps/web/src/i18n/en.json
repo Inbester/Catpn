@@ -1,0 +1,67 @@
+{
+  "app": { "name": "Quanta", "tagline": "Crypto charting, research and trading" },
+  "nav": {
+    "chart": "Chart",
+    "research": "Research",
+    "test": "Test",
+    "alerts": "Alerts",
+    "bot": "Trading bot",
+    "resources": "Resources",
+    "ai": "AI",
+    "settings": "Settings",
+    "account": "Account",
+    "jobs": "Jobs",
+    "activeAlerts": "Active alerts"
+  },
+  "save": {
+    "saved": "Saved",
+    "saving": "Saving…",
+    "offline": "Offline",
+    "error": "Not saved",
+    "conflict": "Changed elsewhere",
+    "pendingChanges": "{{count}} change waiting to sync",
+    "pendingChanges_other": "{{count}} changes waiting to sync"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "createAccount": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Name",
+    "twoFactor": "Two-factor code",
+    "twoFactorHint": "Enter the 6-digit code from your authenticator app, or a recovery code.",
+    "verify": "Verify",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "signingIn": "Signing in…",
+    "passwordRules": "At least 12 characters, with upper and lower case, a digit and a symbol.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "jobs": {
+    "title": "Jobs",
+    "running": "Running",
+    "queued": "Queued",
+    "paused": "Paused",
+    "finished": "Finished",
+    "empty": "No jobs yet. Research and backtest runs appear here.",
+    "queuedCount": "{{count}} queued"
+  },
+  "alerts": {
+    "title": "Active alerts",
+    "empty": "No active alerts. Create one from a chart or a setup.",
+    "nextCheck": "Next check"
+  },
+  "theme": { "label": "Theme", "graphite": "Graphite", "paper": "Paper" },
+  "language": { "label": "Language", "en": "English", "fa": "فارسی" },
+  "calendar": { "label": "Calendar", "gregorian": "Gregorian", "jalali": "Jalali" },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "retry": "Retry",
+    "loading": "Loading…",
+    "comingSoon": "Coming soon",
+    "phasePlaceholder": "This menu arrives in phase {{phase}}."
+  }
+}

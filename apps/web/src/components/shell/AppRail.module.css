@@ -1,0 +1,100 @@
+/* App rail — 56px, SPEC §2 global chrome. */
+
+.rail {
+  width: var(--rail-width);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2) 0;
+  gap: var(--space-1);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+
+/* In RTL the rail stays on the left; only its border side flips. */
+:global([dir='rtl']) .rail {
+  border-right: none;
+  border-left: 1px solid var(--line);
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  margin: var(--space-1) 0 var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 600 var(--text-base) var(--font-sans);
+  flex-shrink: 0;
+}
+
+.item {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  position: relative;
+  flex-shrink: 0;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.item:hover {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.item.active {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+/* The 2px marker to the left of the active menu. */
+.item.active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -8px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--up);
+  color: var(--on-accent);
+  font: 500 10px/16px var(--font-mono);
+  text-align: center;
+  border: 2px solid var(--bg);
+  box-sizing: content-box;
+}
+
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ringLabel {
+  position: absolute;
+  font: 500 9px var(--font-mono);
+  color: var(--text);
+}

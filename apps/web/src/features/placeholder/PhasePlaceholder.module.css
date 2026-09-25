@@ -1,0 +1,27 @@
+.wrap {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+}
+
+.inner {
+  max-width: 420px;
+  text-align: center;
+}
+
+.icon {
+  color: var(--dim);
+  margin: 0 auto var(--space-4);
+}
+
+.title {
+  font: 600 var(--text-lg) var(--font-sans);
+  margin-bottom: var(--space-2);
+}
+
+.body {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
