@@ -1,0 +1,21 @@
+.countdown {
+  position: absolute;
+  inset-inline-end: 0;
+  z-index: 3;
+  pointer-events: none;
+  min-width: 64px;
+  padding: 2px var(--space-2);
+  text-align: center;
+  font: 500 var(--text-xs) var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--on-accent);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.up {
+  background: var(--up);
+}
+
+.down {
+  background: var(--down);
+}

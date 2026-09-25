@@ -289,7 +289,7 @@ def create_sim_app() -> FastAPI:
                             continue
                         step = interval.milliseconds
                         open_time = (now // step) * step
-                        bar = market.bar(open_time, interval, closed=False)
+                        bar = market.bar(open_time, interval, closed=False, now_ms=now)
                         await websocket.send_text(
                             json.dumps(
                                 {

@@ -1,0 +1,160 @@
+.bar {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bar::-webkit-scrollbar {
+  display: none;
+}
+
+.symbolButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--muted);
+}
+
+.symbolButton:hover {
+  background: var(--accent-bg);
+}
+
+.symbolName {
+  font: 600 var(--text-lg) var(--font-sans);
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.symbolKind {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.segment {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.segmentItem {
+  font: 500 var(--text-sm) var(--font-sans);
+  color: var(--muted);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.segmentItem:hover {
+  color: var(--text);
+}
+
+.segmentItem.active {
+  background: var(--accent-bg);
+  color: var(--text);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.button:hover {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+}
+
+.iconButton:hover {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.live {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--up);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent);
+}
+
+.liveDot.stale {
+  background: var(--dim);
+  box-shadow: none;
+}
+
+.menu {
+  position: absolute;
+  top: calc(var(--header-height) - var(--space-1));
+  z-index: var(--z-dropdown);
+  min-width: 160px;
+  padding: var(--space-1);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  text-align: start;
+}
+
+.menuItem:hover {
+  background: var(--accent-bg);
+  color: var(--text);
+}
+
+.menuItem.active {
+  color: var(--text);
+}
+
+.menuWrap {
+  position: relative;
+}

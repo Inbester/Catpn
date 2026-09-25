@@ -90,15 +90,34 @@ class SyntheticMarket:
         noise = ((bucket * 1_103_515_245 + 12_345) % 10_000) / 10_000.0 - 0.5
         return 1.0 + trend + swing + ripple + noise * 0.004
 
-    def bar(self, open_time: int, interval: Interval, *, closed: bool = True) -> Bar:
-        """Build the bar opening at ``open_time``."""
+    def bar(
+        self,
+        open_time: int,
+        interval: Interval,
+        *,
+        closed: bool = True,
+        now_ms: int | None = None,
+    ) -> Bar:
+        """Build the bar opening at ``open_time``.
+
+        A forming bar (``closed=False`` with ``now_ms`` given) only covers
+        the path so far: its close is the price *now*, and its high and low
+        come from the elapsed part of the bar. Running it to the bar's future
+        close time instead would leave the live candle frozen, which is
+        exactly the behaviour a chart must not have.
+        """
         anchor = self.anchor
         step = interval.milliseconds
 
+        end_time = open_time + step
+        if not closed and now_ms is not None:
+            end_time = max(open_time, min(now_ms, open_time + step))
+
         open_factor = self._price_at(open_time)
-        close_factor = self._price_at(open_time + step)
-        # Sample inside the bar so the wick reflects the path, not just ends.
-        mid_factors = [self._price_at(open_time + step * k // 4) for k in (1, 2, 3)]
+        close_factor = self._price_at(end_time)
+        # Sample inside the elapsed span so the wick reflects the path.
+        elapsed = end_time - open_time
+        mid_factors = [self._price_at(open_time + elapsed * k // 4) for k in (1, 2, 3)]
 
         open_price = Decimal(str(open_factor)) * anchor
         close_price = Decimal(str(close_factor)) * anchor
@@ -139,7 +158,7 @@ class SyntheticMarket:
 
         while open_time < end:
             is_forming = now_ms is not None and open_time <= now_ms < open_time + step
-            bars.append(self.bar(open_time, interval, closed=not is_forming))
+            bars.append(self.bar(open_time, interval, closed=not is_forming, now_ms=now_ms))
             open_time += step
 
         return bars

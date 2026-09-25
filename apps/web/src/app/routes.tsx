@@ -8,6 +8,7 @@
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AppLayout } from '@/components/shell/AppLayout';
+import { ChartPage } from '@/features/chart/ChartPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
 
 export const routes: RouteObject[] = [
@@ -16,10 +17,7 @@ export const routes: RouteObject[] = [
     element: <AppLayout />,
     children: [
       { index: true, element: <Navigate to="/chart" replace /> },
-      {
-        path: 'chart',
-        element: <PhasePlaceholder titleKey="nav.chart" icon="chart" phase={1} />,
-      },
+      { path: 'chart', element: <ChartPage /> },
       {
         path: 'research',
         element: <PhasePlaceholder titleKey="nav.research" icon="research" phase={4} />,

@@ -475,12 +475,12 @@ def _parse_ticker(row: Any) -> Ticker | None:
     if not symbol or last is None:
         return None
 
+    # `priceChangePercent` is already a percentage. There is deliberately no
+    # "looks like a ratio, multiply by 100" heuristic here: a genuine +0.61%
+    # day is under 1 and would be silently rendered as +61%.
     change = _decimal(row.get("priceChangePercent") or row.get("changePercent"), Decimal(0))
     if change is None:
         change = Decimal(0)
-    # Some venues express the 24h change as a ratio rather than a percent.
-    if abs(change) < 1 and row.get("priceChangePercent") is not None:
-        change = change * 100
 
     return Ticker(
         symbol=str(symbol),

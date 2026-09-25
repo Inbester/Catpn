@@ -1,0 +1,92 @@
+.legend {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-3);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  pointer-events: auto;
+}
+
+.title {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.liveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--up);
+  flex-shrink: 0;
+}
+
+.liveDot.stale {
+  background: var(--dim);
+}
+
+.ohlc {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.value {
+  color: var(--text);
+}
+
+.indicatorRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: auto;
+}
+
+.swatch {
+  width: 8px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.indicatorName {
+  color: var(--muted);
+}
+
+.controls {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.indicatorRow:hover .controls {
+  opacity: 1;
+}
+
+.control {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--dim);
+}
+
+.control:hover {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.hidden {
+  opacity: 0.45;
+}

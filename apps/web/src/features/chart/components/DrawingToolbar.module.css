@@ -1,0 +1,54 @@
+.toolbar {
+  width: var(--drawing-toolbar-width);
+  flex-shrink: 0;
+  border-inline-end: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2) 0;
+  gap: var(--space-1);
+  background: var(--bg);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.tool {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.tool:hover {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.tool.active {
+  color: var(--text);
+  background: var(--accent-bg);
+}
+
+.tool.on {
+  color: var(--drawing);
+}
+
+.divider {
+  width: 20px;
+  height: 1px;
+  background: var(--line);
+  margin: var(--space-1) 0;
+  flex-shrink: 0;
+}
+
+.spacer {
+  flex: 1;
+  min-height: var(--space-2);
+}

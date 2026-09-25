@@ -316,12 +316,31 @@ class TestParsing:
     def test_rejects_a_kline_with_an_unparsable_price(self) -> None:
         assert _parse_bar({"time": 1, "open": "n/a", "high": "2", "low": "1", "close": "2"}) is None
 
-    def test_a_ratio_change_is_normalised_to_percent(self) -> None:
+    def test_a_small_change_is_not_rescaled(self) -> None:
+        """A quiet day is under 1%, and must not be read as a ratio.
+
+        An earlier version multiplied any |change| < 1 by 100, turning a real
+        +0.61% day into +61% in the watchlist.
+        """
         ticker = _parse_ticker(
-            {"symbol": "BTCUSDT", "lastPrice": "64000", "priceChangePercent": "0.0214"}
+            {"symbol": "LINKUSDT", "lastPrice": "13.48", "priceChangePercent": "0.6118"}
+        )
+        assert ticker is not None
+        assert ticker.change_percent_24h == Decimal("0.6118")
+
+    def test_a_large_change_passes_through(self) -> None:
+        ticker = _parse_ticker(
+            {"symbol": "BTCUSDT", "lastPrice": "64000", "priceChangePercent": "2.14"}
         )
         assert ticker is not None
         assert ticker.change_percent_24h == Decimal("2.14")
+
+    def test_a_negative_change_keeps_its_sign(self) -> None:
+        ticker = _parse_ticker(
+            {"symbol": "SOLUSDT", "lastPrice": "148.3", "priceChangePercent": "-0.84"}
+        )
+        assert ticker is not None
+        assert ticker.change_percent_24h == Decimal("-0.84")
 
     def test_kline_subscription_needs_an_interval(self) -> None:
         with pytest.raises(ExchangeError, match="needs an interval"):

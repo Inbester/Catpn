@@ -19,6 +19,9 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_TARGET ?? 'http://localhost:8000',
         changeOrigin: true,
+        // The live chart stream is a WebSocket on the same prefix, so the
+        // proxy has to forward upgrade requests too.
+        ws: true,
       },
     },
   },
