@@ -354,3 +354,27 @@ class TestNoFutureBars:
         assert stored, "nothing was stored"
         assert stored[-1].open_time <= current_open
         assert all(b.closed for b in stored if b.open_time < current_open)
+
+
+class TestBulkWrites:
+    """Postgres allows at most 32,767 bind parameters in one statement.
+
+    A kline row carries 11, so an unchunked INSERT fails above about 2,900
+    bars. The backfill pages in 200s and never hit it; a bulk import does.
+    """
+
+    async def test_writes_more_bars_than_one_statement_allows(self, db: AsyncSession) -> None:
+        many = [bar(NOW + i * 60_000, close=str(100 + i % 50)) for i in range(9_000)]
+        written = await market_store.upsert_bars(db, "BTCUSDT", Interval.M1, many)
+        assert written == 9_000
+
+        stored = await market_store.read_bars(db, "BTCUSDT", Interval.M1, limit=10_000)
+        assert len(stored) == 9_000
+
+    async def test_writes_a_long_funding_history(self, db: AsyncSession) -> None:
+        from quanta.exchanges.base import Funding
+
+        eight_hours = 8 * 3_600_000
+        entries = [Funding(NOW + i * eight_hours, Decimal("0.0001")) for i in range(12_000)]
+        assert await market_store.upsert_funding(db, "BTCUSDT", entries) == 12_000
+        assert len(await market_store.read_funding(db, "BTCUSDT")) == 12_000

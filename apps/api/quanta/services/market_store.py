@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from itertools import pairwise
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
@@ -11,6 +13,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from quanta.exchanges.base import Bar, Funding, Interval, PriceType, Symbol
 from quanta.models.market import BackfillState, FundingRate, InstrumentMeta, Kline
+
+# Postgres allows at most 32,767 bind parameters in one statement. A kline
+# row carries 11 of them, so a single INSERT tops out just under 3,000 rows.
+# Chunking well below that keeps bulk writes working whatever the caller
+# hands us — the backfill pages in 200s, but an import does not.
+MAX_BIND_PARAMETERS = 32_000
+
+
+def _chunk_size(columns: int) -> int:
+    return max(1, MAX_BIND_PARAMETERS // max(1, columns))
+
+
+def _chunks(rows: list[dict[str, Any]], columns: int) -> Iterator[list[dict[str, Any]]]:
+    size = _chunk_size(columns)
+    for start in range(0, len(rows), size):
+        yield rows[start : start + size]
 
 
 def to_datetime(epoch_ms: int) -> datetime:
@@ -56,22 +74,24 @@ async def upsert_bars(
         for bar in bars
     ]
 
-    statement = insert(Kline).values(rows)
-    statement = statement.on_conflict_do_update(
-        constraint="pk_klines",
-        set_={
-            "open": statement.excluded.open,
-            "high": statement.excluded.high,
-            "low": statement.excluded.low,
-            "close": statement.excluded.close,
-            "volume": statement.excluded.volume,
-            "quote_volume": statement.excluded.quote_volume,
-            "closed": statement.excluded.closed,
-            "updated_at": func.now(),
-        },
-        where=Kline.closed.is_(False),
-    )
-    await db.execute(statement)
+    for chunk in _chunks(rows, columns=11):
+        statement = insert(Kline).values(chunk)
+        statement = statement.on_conflict_do_update(
+            constraint="pk_klines",
+            set_={
+                "open": statement.excluded.open,
+                "high": statement.excluded.high,
+                "low": statement.excluded.low,
+                "close": statement.excluded.close,
+                "volume": statement.excluded.volume,
+                "quote_volume": statement.excluded.quote_volume,
+                "closed": statement.excluded.closed,
+                "updated_at": func.now(),
+            },
+            where=Kline.closed.is_(False),
+        )
+        await db.execute(statement)
+
     await _touch_backfill_state(db, symbol, interval, price_type)
     return len(rows)
 
@@ -203,16 +223,17 @@ async def upsert_funding(db: AsyncSession, symbol: str, entries: list[Funding]) 
         }
         for entry in entries
     ]
-    statement = insert(FundingRate).values(rows)
-    await db.execute(
-        statement.on_conflict_do_update(
-            constraint="pk_funding_rates",
-            set_={
-                "funding_rate": statement.excluded.funding_rate,
-                "mark_price": statement.excluded.mark_price,
-            },
+    for chunk in _chunks(rows, columns=4):
+        statement = insert(FundingRate).values(chunk)
+        await db.execute(
+            statement.on_conflict_do_update(
+                constraint="pk_funding_rates",
+                set_={
+                    "funding_rate": statement.excluded.funding_rate,
+                    "mark_price": statement.excluded.mark_price,
+                },
+            )
         )
-    )
     return len(rows)
 
 
@@ -257,25 +278,26 @@ async def upsert_instruments(db: AsyncSession, symbols: list[Symbol]) -> int:
         }
         for symbol in symbols
     ]
-    statement = insert(InstrumentMeta).values(rows)
-    await db.execute(
-        statement.on_conflict_do_update(
-            index_elements=[InstrumentMeta.symbol],
-            set_={
-                "base": statement.excluded.base,
-                "quote": statement.excluded.quote,
-                "min_leverage": statement.excluded.min_leverage,
-                "max_leverage": statement.excluded.max_leverage,
-                "default_leverage": statement.excluded.default_leverage,
-                "base_precision": statement.excluded.base_precision,
-                "quote_precision": statement.excluded.quote_precision,
-                "min_trade_volume": statement.excluded.min_trade_volume,
-                "status": statement.excluded.status,
-                "api_supported": statement.excluded.api_supported,
-                "refreshed_at": func.now(),
-            },
+    for chunk in _chunks(rows, columns=12):
+        statement = insert(InstrumentMeta).values(chunk)
+        await db.execute(
+            statement.on_conflict_do_update(
+                index_elements=[InstrumentMeta.symbol],
+                set_={
+                    "base": statement.excluded.base,
+                    "quote": statement.excluded.quote,
+                    "min_leverage": statement.excluded.min_leverage,
+                    "max_leverage": statement.excluded.max_leverage,
+                    "default_leverage": statement.excluded.default_leverage,
+                    "base_precision": statement.excluded.base_precision,
+                    "quote_precision": statement.excluded.quote_precision,
+                    "min_trade_volume": statement.excluded.min_trade_volume,
+                    "status": statement.excluded.status,
+                    "api_supported": statement.excluded.api_supported,
+                    "refreshed_at": func.now(),
+                },
+            )
         )
-    )
     return len(rows)
 
 

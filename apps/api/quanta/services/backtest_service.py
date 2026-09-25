@@ -50,7 +50,7 @@ def build_strategy(record: StrategyRecord) -> Strategy:
     return strategy
 
 
-def _to_bars(rows: list[Any]) -> Bars:
+def to_bars(rows: list[Any]) -> Bars:
     return Bars(
         time=np.array([bar.open_time for bar in rows], dtype=np.int64),
         open=np.array([float(bar.open) for bar in rows], dtype=np.float64),
@@ -61,7 +61,7 @@ def _to_bars(rows: list[Any]) -> Bars:
     )
 
 
-def _to_config(payload: dict[str, Any], tiers: tuple[PositionTier, ...]) -> BacktestConfig:
+def to_config(payload: dict[str, Any], tiers: tuple[PositionTier, ...]) -> BacktestConfig:
     return BacktestConfig(
         initial_capital=float(payload.get("initial_capital", 10_000.0)),
         margin_percent=float(payload.get("margin_percent", 10.0)),
@@ -75,7 +75,7 @@ def _to_config(payload: dict[str, Any], tiers: tuple[PositionTier, ...]) -> Back
     )
 
 
-async def _load_tiers(symbol: str) -> tuple[PositionTier, ...]:
+async def load_tiers(symbol: str) -> tuple[PositionTier, ...]:
     """The venue's maintenance-margin ladder, or a flat fallback.
 
     A flat rate understates liquidation risk on large positions, so the real
@@ -136,7 +136,7 @@ async def run(
             "so the history is downloaded."
         )
 
-    bars = _to_bars(rows)
+    bars = to_bars(rows)
 
     funding: list[FundingEvent] = []
     if config_payload.get("apply_funding", True):
@@ -161,10 +161,10 @@ async def run(
                 limit=MAX_MAGNIFIER_BARS,
             )
             if len(minute_rows) > 1:
-                magnifier = _to_bars(minute_rows)
+                magnifier = to_bars(minute_rows)
 
-    tiers = await _load_tiers(symbol)
-    config = _to_config(config_payload, tiers)
+    tiers = await load_tiers(symbol)
+    config = to_config(config_payload, tiers)
 
     started = time.perf_counter()
     try:
