@@ -90,9 +90,7 @@ class TestComputePreferences:
         assert body["device_label"] == "Workshop iMac"
         assert body["local_profile"]["webgpu"] is True
 
-    async def test_preferences_are_per_user(
-        self, client: AsyncClient, api_prefix: str
-    ) -> None:
+    async def test_preferences_are_per_user(self, client: AsyncClient, api_prefix: str) -> None:
         from tests.test_research_routes import other_user
 
         mine = await auth(client, api_prefix)

@@ -1,5 +1,12 @@
 """SQLAlchemy models. Importing this package registers every table."""
 
+from quanta.models.alert import (
+    ALERT_SOURCES,
+    DESTINATION_KINDS,
+    Alert,
+    AlertEvent,
+    Channel,
+)
 from quanta.models.audit import AuditEvent
 from quanta.models.compute import (
     COMPUTE_FEATURES,
@@ -16,18 +23,23 @@ from quanta.models.user import AuthSession, User
 from quanta.models.workspace import DOCUMENT_KINDS, WorkspaceDocument, WorkspaceRevision
 
 __all__ = [
+    "ALERT_SOURCES",
     "COMPUTE_FEATURES",
     "COMPUTE_SOURCES",
     "DEFAULT_ROUTING",
+    "DESTINATION_KINDS",
     "DOCUMENT_KINDS",
     "JOB_STATES",
     "PIPELINE_STAGES",
     "SERVER_ONLY",
     "SETUP_COLORS",
+    "Alert",
+    "AlertEvent",
     "AuditEvent",
     "AuthSession",
     "BackfillState",
     "BacktestRun",
+    "Channel",
     "ComputePreference",
     "FundingRate",
     "InstrumentMeta",

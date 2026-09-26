@@ -64,6 +64,12 @@ class Settings(BaseSettings):
     # Point these at the simulator (python -m quanta.exchanges.sim) when the
     # venue is unreachable — a restricted region per SPEC §9, or a network
     # policy that blocks it.
+    # Alerts run a background loop; off in tests, which drive it directly.
+    alerts_enabled: bool = True
+    # Empty means the notifier records sends instead of calling Telegram,
+    # which is what lets the whole path be exercised without a token.
+    telegram_bot_token: str = ""
+
     exchange_rest_url: str = "https://fapi.bitunix.com"
     exchange_ws_url: str = "wss://fapi.bitunix.com/public/"
     # Symbols warmed up on boot so the chart opens on stored data.

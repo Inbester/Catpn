@@ -13,6 +13,9 @@ os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 # No exchange in the test environment; market-data tests build their own
 # service against the simulator.
 os.environ.setdefault("MARKET_DATA_ENABLED", "false")
+# The alert loop is driven directly in the tests that care about it, so
+# a background tick would only make them race each other.
+os.environ.setdefault("ALERTS_ENABLED", "false")
 os.environ.setdefault(
     "DATABASE_URL",
     os.environ.get(

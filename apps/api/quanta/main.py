@@ -22,7 +22,9 @@ from quanta.db.session import dispose_engine, get_session_factory
 from quanta.exchanges.base import Interval
 from quanta.exchanges.bitunix import BitunixAdapter
 from quanta.services import jobs
+from quanta.services.alert_runner import AlertRunner
 from quanta.services.market_data import MarketDataService
+from quanta.services.notifier import Notifier
 
 logger = structlog.get_logger(__name__)
 
@@ -51,8 +53,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     market = await _start_market_data(settings, redis)
 
+    # The only always-on component: alerts have to fire with every browser
+    # closed, which is the whole reason evaluation lives here.
+    alert_runner = AlertRunner(
+        get_session_factory(), Notifier(telegram_token=settings.telegram_bot_token)
+    )
+    if settings.alerts_enabled:
+        await alert_runner.start()
+
     yield
 
+    await alert_runner.stop()
     if market is not None:
         await market.stop()
     set_market_service(None)
