@@ -98,14 +98,20 @@ export function stageStatus(setup: Setup, stage: Stage): StageStatus {
   return setup.pipeline[stage]?.status ?? 'not_started';
 }
 
-/** Where a Setup is switched on, in pipeline order. */
+/**
+ * Where a Setup is switched on, in pipeline order.
+ *
+ * Returns stage keys rather than labels: the caller translates them, and a
+ * function that returned English would be one more place to find when the
+ * Persian pass came round.
+ */
 export function usedIn(setup: Setup): string[] {
   const uses: [boolean, string][] = [
-    [setup.use_in_backtest, 'Backtest'],
-    [setup.use_in_forward, 'Forward'],
-    [setup.use_in_paper, 'Paper'],
-    [setup.use_in_alerts, 'Alerts'],
-    [setup.use_in_bot, 'Bot'],
+    [setup.use_in_backtest, 'backtest'],
+    [setup.use_in_forward, 'forward'],
+    [setup.use_in_paper, 'paper'],
+    [setup.use_in_alerts, 'alerts'],
+    [setup.use_in_bot, 'bot'],
   ];
-  return uses.filter(([on]) => on).map(([, label]) => label);
+  return uses.filter(([on]) => on).map(([, key]) => key);
 }

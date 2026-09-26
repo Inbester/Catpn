@@ -49,7 +49,7 @@ describe('stageStatus', () => {
 
 describe('usedIn', () => {
   it('lists the enabled uses in pipeline order', () => {
-    expect(usedIn(setup({ use_in_alerts: true }))).toEqual(['Backtest', 'Forward', 'Alerts']);
+    expect(usedIn(setup({ use_in_alerts: true }))).toEqual(['backtest', 'forward', 'alerts']);
   });
 
   it('returns nothing when a setup is switched off everywhere', () => {

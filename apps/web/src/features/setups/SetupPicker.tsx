@@ -7,6 +7,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 
@@ -32,6 +33,7 @@ function matches(setup: Setup, query: string): boolean {
 }
 
 export function SetupPicker() {
+  const { t } = useTranslation();
   const { setups, selectedId, loaded, load, select } = useSetupsStore();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -102,7 +104,7 @@ export function SetupPicker() {
             <span className={styles.triggerMeta}>{describe(selected)}</span>
           </>
         ) : (
-          <span className={styles.triggerName}>No setup</span>
+          <span className={styles.triggerName}>{t('setups.picker.none')}</span>
         )}
         <Icon name="chevronDown" size={12} />
       </button>
@@ -119,7 +121,7 @@ export function SetupPicker() {
                 <Icon name="search" size={14} />
                 <input
                   className={styles.searchInput}
-                  placeholder="Search setups, coins, timeframes"
+                  placeholder={t('setups.picker.search')}
                   value={query}
                   autoFocus
                   onChange={(event) => {
@@ -169,7 +171,7 @@ export function SetupPicker() {
                       setOpen(false);
                     }}
                   >
-                    Clear selection
+                    {t('setups.picker.clear')}
                   </button>
                 ) : (
                   <span />
@@ -181,7 +183,7 @@ export function SetupPicker() {
                     setOpen(false);
                   }}
                 >
-                  Manage all setups →
+                  {t('setups.picker.manage')}
                 </Link>
               </div>
             </div>,

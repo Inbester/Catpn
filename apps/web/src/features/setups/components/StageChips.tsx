@@ -6,7 +6,9 @@
  * stages alone.
  */
 
-import { PIPELINE_STAGES, STAGE_LABELS, STAGE_NAMES, stageStatus } from '../lib/types';
+import { useTranslation } from 'react-i18next';
+
+import { PIPELINE_STAGES, stageStatus } from '../lib/types';
 import type { Setup, StageStatus } from '../lib/types';
 import styles from './setups.module.css';
 
@@ -17,14 +19,9 @@ const STATUS_CLASS: Record<StageStatus, string | undefined> = {
   not_started: styles.stageIdle,
 };
 
-const STATUS_WORD: Record<StageStatus, string> = {
-  passed: 'passed',
-  running: 'running',
-  failed: 'failed',
-  not_started: 'not started',
-};
-
 export function StageChips({ setup, size = 'sm' }: { setup: Setup; size?: 'sm' | 'md' }) {
+  const { t } = useTranslation();
+
   return (
     <span className={`${styles.stages} ${size === 'md' ? styles.stagesMd : ''}`}>
       {PIPELINE_STAGES.map((stage) => {
@@ -33,9 +30,9 @@ export function StageChips({ setup, size = 'sm' }: { setup: Setup; size?: 'sm' |
           <span
             key={stage}
             className={`${styles.stage} ${STATUS_CLASS[status] ?? ''}`}
-            title={`${STAGE_NAMES[stage]}: ${STATUS_WORD[status]}`}
+            title={`${t(`setups.stage.${stage}`)}: ${t(`setups.stageStatus.${status}`)}`}
           >
-            {STAGE_LABELS[stage]}
+            {t(`setups.stageShort.${stage}`)}
           </span>
         );
       })}

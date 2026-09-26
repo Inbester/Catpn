@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
@@ -43,6 +44,7 @@ const NEW_STRATEGY: StrategyPayload = {
 type ResultTab = 'overview' | 'trades' | 'costs' | 'properties' | 'forward';
 
 export function TestPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const timezone = user?.timezone ?? 'UTC';
 
@@ -96,7 +98,7 @@ export function TestPage() {
       await refresh();
       return saved;
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not save the strategy.');
+      setError(caught instanceof ApiError ? caught.message : t('test.saveFailed'));
       return null;
     }
   };
@@ -117,7 +119,7 @@ export function TestPage() {
       setRun(result);
       setTab('overview');
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'The backtest could not be run.');
+      setError(caught instanceof ApiError ? caught.message : t('test.runFailed'));
     } finally {
       setBusy(false);
     }
@@ -163,7 +165,7 @@ export function TestPage() {
     <div className={styles.page}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarTitle}>Strategies</span>
+          <span className={styles.sidebarTitle}>{t('test.strategies')}</span>
           <button
             type="button"
             className={styles.button}
@@ -174,7 +176,7 @@ export function TestPage() {
             }}
           >
             <Icon name="plus" size={14} />
-            New
+            {t('test.new')}
           </button>
         </div>
 
@@ -199,10 +201,10 @@ export function TestPage() {
 
           <StrategyEditor value={draft} onChange={setDraft} onValidity={setDraftValid} />
 
-          <div className={styles.label}>Backtest</div>
+          <div className={styles.label}>{t('test.backtest')}</div>
           <div className={styles.grid}>
             <label className={styles.field}>
-              <span className={styles.label}>Symbol</span>
+              <span className={styles.label}>{t('test.symbol')}</span>
               <input
                 className={styles.input}
                 value={symbol}
@@ -212,7 +214,7 @@ export function TestPage() {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Timeframe</span>
+              <span className={styles.label}>{t('test.timeframe')}</span>
               <select
                 className={styles.select}
                 value={interval}
@@ -228,7 +230,7 @@ export function TestPage() {
               </select>
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Capital</span>
+              <span className={styles.label}>{t('test.capital')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -239,7 +241,7 @@ export function TestPage() {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Margin %</span>
+              <span className={styles.label}>{t('test.marginPercent')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -250,7 +252,7 @@ export function TestPage() {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Leverage</span>
+              <span className={styles.label}>{t('test.leverage')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -263,7 +265,7 @@ export function TestPage() {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Margin mode</span>
+              <span className={styles.label}>{t('test.marginMode')}</span>
               <select
                 className={styles.select}
                 value={config.margin_mode}
@@ -274,12 +276,12 @@ export function TestPage() {
                   }));
                 }}
               >
-                <option value="isolated">Isolated</option>
-                <option value="cross">Cross</option>
+                <option value="isolated">{t('test.isolated')}</option>
+                <option value="cross">{t('test.cross')}</option>
               </select>
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Taker fee</span>
+              <span className={styles.label}>{t('test.takerFee')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -291,7 +293,7 @@ export function TestPage() {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Slippage (bps)</span>
+              <span className={styles.label}>{t('test.slippage')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -312,7 +314,7 @@ export function TestPage() {
                 setConfig((current) => ({ ...current, apply_funding: event.target.checked }));
               }}
             />
-            Charge funding every 8 hours
+            {t('test.applyFunding')}
           </label>
           <label className={styles.check}>
             <input
@@ -322,7 +324,7 @@ export function TestPage() {
                 setConfig((current) => ({ ...current, use_magnifier: event.target.checked }));
               }}
             />
-            Use 1m bars to resolve intrabar exits
+            {t('test.useMagnifier')}
           </label>
 
           {error ? (
@@ -339,9 +341,9 @@ export function TestPage() {
                 void save();
               }}
               disabled={busy || !draftValid}
-              title="Store a version without running it — enough to forward test"
+              title={t('test.saveTitle')}
             >
-              Save
+              {t('test.save')}
             </button>
             <button
               type="button"
@@ -351,7 +353,7 @@ export function TestPage() {
               }}
               disabled={busy || !draftValid}
             >
-              {busy ? 'Running…' : 'Run backtest'}
+              {busy ? t('test.running') : t('test.run')}
             </button>
           </div>
         </div>
@@ -391,17 +393,17 @@ export function TestPage() {
               onClick={() => {
                 setSavingSetup(true);
               }}
-              title="Lock this version, market and sizing together"
+              title={t('test.saveAsSetupTitle')}
             >
               <Icon name="lock" size={14} />
-              Save as setup
+              {t('test.saveAsSetup')}
             </button>
           ) : null}
 
           {run ? (
             <a className={styles.button} href={apiCalls.tradesCsvPath(run.id)} download>
               <Icon name="chevronDown" size={14} />
-              Export CSV
+              {t('test.exportCsv')}
             </a>
           ) : null}
         </header>
@@ -437,7 +439,7 @@ export function TestPage() {
                       }}
                     >
                       <div className={styles.label} style={{ marginBottom: 'var(--space-3)' }}>
-                        Equity, with drawdown underneath
+                        {t('test.equityTitle')}
                       </div>
                       <EquityChart
                         time={run.equity.time}
@@ -475,31 +477,33 @@ export function TestPage() {
                 >
                   <dl className={styles.grid}>
                     <div className={styles.field}>
-                      <span className={styles.label}>Strategy version</span>
+                      <span className={styles.label}>{t('test.strategyVersion')}</span>
                       <span className="num">{run.strategy_version.slice(0, 16)}</span>
                     </div>
                     <div className={styles.field}>
-                      <span className={styles.label}>Bars</span>
+                      <span className={styles.label}>{t('test.bars')}</span>
                       <span className="num">{run.equity.time.length}</span>
                     </div>
                     <div className={styles.field}>
-                      <span className={styles.label}>Run time</span>
+                      <span className={styles.label}>{t('test.runTime')}</span>
                       <span className="num">{duration(run.duration_ms)}</span>
                     </div>
                     <div className={styles.field}>
-                      <span className={styles.label}>Intrabar magnifier</span>
+                      <span className={styles.label}>{t('test.magnifier')}</span>
                       <span className="num">
-                        {run.config['magnifier_used'] ? '1m bars' : 'stop assumed first'}
+                        {run.config['magnifier_used']
+                          ? t('test.magnifierOn')
+                          : t('test.magnifierOff')}
                       </span>
                     </div>
                     <div className={styles.field}>
-                      <span className={styles.label}>Liquidations</span>
+                      <span className={styles.label}>{t('test.liquidations')}</span>
                       <span className={`num ${run.stats.liquidations > 0 ? 'down' : ''}`}>
                         {run.stats.liquidations}
                       </span>
                     </div>
                     <div className={styles.field}>
-                      <span className={styles.label}>Ran at</span>
+                      <span className={styles.label}>{t('test.ranAt')}</span>
                       <span className="num">{timestamp(Date.parse(run.created_at), timezone)}</span>
                     </div>
                   </dl>
@@ -520,11 +524,9 @@ export function TestPage() {
           </>
         ) : (
           <div className={styles.placeholder}>
-            Write a strategy on the left and run a backtest, or pick a saved strategy to forward
-            test it.
+            {t('test.placeholder')}
             <br />
-            Bars come from what the chart has already downloaded, so open the symbol and timeframe
-            on the Chart menu first.
+            {t('test.placeholderBars')}
           </div>
         )}
       </div>

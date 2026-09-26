@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { ApiError } from '@/lib/api/client';
 import * as setupsApi from './lib/api';
@@ -53,6 +54,7 @@ export function SaveSetupDialog({
   onClose,
   onSaved,
 }: SaveSetupDialogProps) {
+  const { t } = useTranslation();
   const adopt = useSetupsStore((state) => state.adopt);
 
   const [name, setName] = useState(`${symbol} ${interval} ${strategyName}`.slice(0, 120));
@@ -102,7 +104,7 @@ export function SaveSetupDialog({
       onSaved?.(setup);
       onClose();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'The setup could not be saved.');
+      setError(caught instanceof ApiError ? caught.message : t('setups.save.failed'));
     } finally {
       setBusy(false);
     }
@@ -115,15 +117,20 @@ export function SaveSetupDialog({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="Save as setup">
+      <div
+        className={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('setups.save.title')}
+      >
         <header className={styles.header}>
-          <span className={styles.title}>Save as setup</span>
-          <span className={styles.note}>locks this version</span>
+          <span className={styles.title}>{t('setups.save.title')}</span>
+          <span className={styles.note}>{t('setups.save.note')}</span>
         </header>
 
         <div className={styles.body}>
           <label className={styles.field}>
-            <span className={styles.label}>Name</span>
+            <span className={styles.label}>{t('setups.save.name')}</span>
             <input
               className={styles.input}
               value={name}
@@ -135,7 +142,7 @@ export function SaveSetupDialog({
           </label>
 
           <div className={styles.field}>
-            <span className={styles.label}>Colour</span>
+            <span className={styles.label}>{t('setups.save.colour')}</span>
             <div className={styles.colors}>
               {SETUP_COLORS.map((option) => (
                 <button
@@ -155,31 +162,31 @@ export function SaveSetupDialog({
 
           <dl className={styles.bundle}>
             <div>
-              <dt>Strategy</dt>
+              <dt>{t('setups.save.strategy')}</dt>
               <dd>
                 {strategyName} · <span className="num">{strategyVersion.slice(0, 12)}</span>
               </dd>
             </div>
             <div>
-              <dt>Market</dt>
+              <dt>{t('setups.save.market')}</dt>
               <dd className="num">
                 {symbol} · {interval}
               </dd>
             </div>
             <div>
-              <dt>Position</dt>
+              <dt>{t('setups.save.position')}</dt>
               <dd className="num">
                 {marginPercent}% × {leverage}× {marginMode}
               </dd>
             </div>
             <div>
-              <dt>Exposure</dt>
-              <dd className="num" title="Margin share times leverage: what the setup controls">
-                {exposure.toFixed(0)}% of equity
+              <dt>{t('setups.save.exposure')}</dt>
+              <dd className="num" title={t('setups.save.exposureTitle')}>
+                {t('setups.save.exposureValue', { percent: exposure.toFixed(0) })}
               </dd>
             </div>
             <div>
-              <dt>Fees</dt>
+              <dt>{t('setups.save.fees')}</dt>
               <dd className="num">
                 maker {makerFee} · taker {takerFee}
               </dd>
@@ -187,7 +194,7 @@ export function SaveSetupDialog({
           </dl>
 
           <label className={styles.field}>
-            <span className={styles.label}>Max drawdown budget (%)</span>
+            <span className={styles.label}>{t('setups.save.budget')}</span>
             <input
               className={styles.input}
               type="number"
@@ -202,21 +209,23 @@ export function SaveSetupDialog({
             />
             <span className={styles.help}>
               {observedDrawdownPercent !== null
-                ? `The run drew down ${observedDrawdownPercent.toFixed(2)}%. A budget below that leaves no room.`
-                : 'Negative, or leave empty for no budget.'}
+                ? t('setups.save.budgetObserved', {
+                    percent: observedDrawdownPercent.toFixed(2),
+                  })
+                : t('setups.save.budgetFree')}
             </span>
           </label>
 
           <fieldset className={styles.uses}>
-            <legend className={styles.label}>Use it in</legend>
+            <legend className={styles.label}>{t('setups.save.useIn')}</legend>
             {(
               [
-                ['use_in_backtest', 'Backtest'],
-                ['use_in_forward', 'Forward'],
-                ['use_in_paper', 'Paper'],
-                ['use_in_alerts', 'Alerts'],
+                ['use_in_backtest', 'backtest'],
+                ['use_in_forward', 'forward'],
+                ['use_in_paper', 'paper'],
+                ['use_in_alerts', 'alerts'],
               ] as const
-            ).map(([key, label]) => (
+            ).map(([key, use]) => (
               <label key={key} className={styles.check}>
                 <input
                   type="checkbox"
@@ -225,12 +234,10 @@ export function SaveSetupDialog({
                     setUses((current) => ({ ...current, [key]: event.target.checked }));
                   }}
                 />
-                {label}
+                {t(`setups.use.${use}`)}
               </label>
             ))}
-            <p className={styles.locked}>
-              Bot stays locked until paper trading passes (SPEC §3.3).
-            </p>
+            <p className={styles.locked}>{t('setups.save.botLocked')}</p>
           </fieldset>
 
           {error ? (
@@ -242,7 +249,7 @@ export function SaveSetupDialog({
 
         <footer className={styles.footer}>
           <button type="button" className={styles.button} onClick={onClose}>
-            Cancel
+            {t('setups.save.cancel')}
           </button>
           <button
             type="button"
@@ -252,7 +259,7 @@ export function SaveSetupDialog({
               void save();
             }}
           >
-            {busy ? 'Saving…' : 'Save setup'}
+            {busy ? t('setups.save.saving') : t('setups.save.submit')}
           </button>
         </footer>
       </div>

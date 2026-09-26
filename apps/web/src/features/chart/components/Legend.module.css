@@ -1,6 +1,6 @@
 .legend {
   position: absolute;
-  left: var(--space-4);
+  inset-inline-start: var(--space-4);
   top: var(--space-3);
   z-index: 3;
   display: flex;

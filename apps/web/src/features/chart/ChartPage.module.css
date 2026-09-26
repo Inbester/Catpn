@@ -83,8 +83,12 @@
 .selectionBar {
   position: absolute;
   top: var(--space-3);
-  left: 50%;
-  transform: translateX(-50%);
+  /* Centred in both directions. Not inset-inline-start plus a translate:
+     the inset flips under RTL and the transform does not, so the pair
+     would decentre the bar in Persian. Auto margins have no handedness. */
+  inset-inline: 0;
+  margin-inline: auto;
+  width: fit-content;
   z-index: 5;
   display: flex;
   align-items: center;
