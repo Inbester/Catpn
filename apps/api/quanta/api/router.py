@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from quanta.api.routes import (
     alerts,
     auth,
+    bots,
     forward,
     health,
     market,
@@ -33,3 +34,5 @@ api_router.include_router(alerts.router)
 api_router.include_router(alerts.channels_router)
 api_router.include_router(paper.router)
 api_router.include_router(network.router)
+api_router.include_router(bots.router)
+api_router.include_router(bots.keys_router)

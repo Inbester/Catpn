@@ -8,6 +8,13 @@ from quanta.models.alert import (
     Channel,
 )
 from quanta.models.audit import AuditEvent
+from quanta.models.bot import (
+    BOT_STATES,
+    HALT_REASONS,
+    Bot,
+    BotOrder,
+    ExchangeKey,
+)
 from quanta.models.compute import (
     COMPUTE_FEATURES,
     COMPUTE_SOURCES,
@@ -31,11 +38,13 @@ from quanta.models.workspace import DOCUMENT_KINDS, WorkspaceDocument, Workspace
 
 __all__ = [
     "ALERT_SOURCES",
+    "BOT_STATES",
     "COMPUTE_FEATURES",
     "COMPUTE_SOURCES",
     "DEFAULT_ROUTING",
     "DESTINATION_KINDS",
     "DOCUMENT_KINDS",
+    "HALT_REASONS",
     "JOB_STATES",
     "PIPELINE_STAGES",
     "ROUTABLE_FEATURES",
@@ -48,8 +57,11 @@ __all__ = [
     "AuthSession",
     "BackfillState",
     "BacktestRun",
+    "Bot",
+    "BotOrder",
     "Channel",
     "ComputePreference",
+    "ExchangeKey",
     "FeatureRoute",
     "FundingRate",
     "InstrumentMeta",

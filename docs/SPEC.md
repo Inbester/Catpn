@@ -370,7 +370,11 @@ In the second case, cross-indicator-only rules number 59,348.
 A bot = one Setup + one exchange API key + risk limits. It is only available
 after the Setup passes paper trading.
 
-**Three tabs, and one button that is always reachable.**
+**Two tabs, and one button that is always reachable.** The exchange key
+itself lives in Settings, not here (decided 2026-09-26): it belongs to the
+account rather than to any one bot, one key serves every bot, and Settings
+is where a person goes to connect an outside service. This menu picks from
+the keys already connected and links to Settings to add one.
 
 *Bots* — one card per bot: the Setup's name and colour, symbol and
 timeframe, state, the position it holds right now, today's realised and
@@ -378,14 +382,6 @@ unrealised P&L, orders placed today, and the two risk budgets drawn as
 bars (daily loss used, drawdown used). Bars, not numbers, because the
 question a person actually asks is "how much room is left", and a bar
 answers it without arithmetic.
-
-*Keys* — exchange API keys. Adding one shows the server's static IP to
-copy into the exchange's whitelist first, then takes the key. The server
-verifies the key before storing it: a key with withdrawal permission is
-refused outright, and a key that is not whitelisted to that IP is refused
-with the IP repeated. Afterwards only a label, the last four characters
-and a fingerprint are ever shown; the secret is never returned, to anyone,
-including the user who typed it.
 
 *Activity* — the audit log: every order with its `clientId`, what was
 sent, what came back, and how long it took, plus every reconciliation, every
@@ -437,7 +433,40 @@ risk limits downward does not; editing them upward does.
 - Every order goes to an audit log.
 - **Order traffic always leaves from the server's static IP and is never routed through user VPNs** (see §9).
 
-### 3.6 Resources ✅
+### 3.6 Settings ✅ (2026-09-26)
+
+Account-level things, in one place, because that is where a person looks
+for them.
+
+**Account** — display name, password, and **2FA**: the QR to enrol, the
+recovery codes shown once, and the option to disable it. This is not
+optional furniture: SPEC §3.5 requires 2FA before a bot can be armed, so
+without this page the trading bot cannot be used at all.
+
+**Sessions** — every signed-in device with its last-seen time, and "sign
+out everywhere". A user who suspects a leak needs this before they need
+anything else.
+
+**Exchange keys** — the user connects **their own** key and trades their
+own account; the platform never holds funds (SPEC §9). Adding one shows
+the server's static IP to whitelist **first**, then takes the key, because
+a key pasted before the whitelist exists will simply be refused and the
+user will not know why.
+
+The server verifies the key before storing it. A key with withdrawal
+permission is refused outright — the platform never needs it. A key that
+is not pinned to the server's static IP is refused, with the IP repeated
+in the message. Each refusal says which of the three settings to change,
+because "invalid key" tells nobody anything.
+
+Afterwards only a label, the last four characters and a fingerprint are
+ever shown. The secret is never returned, to anyone, including the user
+who typed it. A key in use by a bot cannot be deleted until that bot is
+stopped.
+
+**Appearance** — theme A or B.
+
+### 3.7 Resources ✅
 
 **Compute tab**
 - Two cards, **Server** and **This computer**, each showing the user's share or detected hardware, the queue or allocation, and speed on the last run.
@@ -481,7 +510,7 @@ PersistentKeepalive = 25
 - Private keys are encrypted at rest and never shown again.
 - *Implementation note:* tunnels live in the server's network namespace, one per user config (or a per-tenant egress service). Rate-limit the tests.
 
-### 3.7 AI ⏳ — scope to be defined.
+### 3.8 AI ⏳ — scope to be defined.
 
 ---
 
