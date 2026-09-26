@@ -70,6 +70,13 @@ class Settings(BaseSettings):
     # which is what lets the whole path be exercised without a token.
     telegram_bot_token: str = ""
 
+    # --- Trading (SPEC §3.5, §9) -------------------------------------------
+    # The address order traffic leaves from. It is what the user whitelists
+    # on their exchange key, and the reason bot orders are never routed
+    # through a user VPN. Empty means no key can be admitted, which is the
+    # right failure: a key admitted without a whitelist is worse than none.
+    exchange_static_ip: str = ""
+
     exchange_rest_url: str = "https://fapi.bitunix.com"
     exchange_ws_url: str = "wss://fapi.bitunix.com/public/"
     # Symbols warmed up on boot so the chart opens on stored data.
