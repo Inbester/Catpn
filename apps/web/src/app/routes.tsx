@@ -39,13 +39,23 @@ export const routes: RouteObject[] = [
         path: 'ai',
         element: <PhasePlaceholder titleKey="nav.ai" icon="ai" phase={7} />,
       },
+      // The API behind both of these is built (2FA, sessions, exchange
+      // keys); only the pages are missing, so they say that rather than
+      // naming a phase that has already passed.
       {
         path: 'settings',
-        element: <PhasePlaceholder titleKey="nav.settings" icon="settings" phase={1} />,
+        element: (
+          <PhasePlaceholder
+            titleKey="nav.settings"
+            icon="settings"
+            phase={6}
+            note="Two-factor authentication, sessions and exchange keys are ready on the server. This page is next."
+          />
+        ),
       },
       {
         path: 'account',
-        element: <PhasePlaceholder titleKey="nav.account" icon="account" phase={1} />,
+        element: <Navigate to="/settings" replace />,
       },
       { path: '*', element: <Navigate to="/chart" replace /> },
     ],

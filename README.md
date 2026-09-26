@@ -6,9 +6,16 @@ The full product specification is in [`docs/SPEC.md`](docs/SPEC.md); the design
 decision log is in [`docs/DECISIONS.md`](docs/DECISIONS.md) and the approved
 mockups are in [`docs/design/`](docs/design/).
 
-> **Status:** phase 2 (see SPEC §8). Auth, workspace autosave, the app shell,
-> the Bitunix market-data pipeline, the Chart menu, and the strategy DSL,
-> backtest engine and Test menu.
+> **Status:** phase 6 (see SPEC §8). Phases 0–5 are complete: auth, autosave,
+> the app shell, the Bitunix market-data pipeline and Chart, the strategy DSL,
+> backtest engine and Test menu, forward testing and Setups, the Research menu
+> and Discover, and Alerts with paper trading.
+>
+> Phase 6 (Trading bot) is built on the server — the trading adapter, the
+> exchange-key vault, risk limits, the execution service and its API — but the
+> **Bot and Settings pages are still placeholders**, so none of it can be
+> driven from the interface yet. Exchange keys and two-factor authentication
+> live in Settings (SPEC §3.6), and a bot cannot be armed without 2FA.
 
 ## Layout
 
@@ -22,9 +29,12 @@ docs/            Specification, decisions and design references
 
 ## Running it locally
 
-Start Postgres (with TimescaleDB) and Redis:
+Four terminals, or three if you can reach the exchange. Postgres and Redis
+come up in Docker; the API, the web app and (offline) the simulator run
+directly.
 
 ```bash
+# 1. Postgres (with TimescaleDB) and Redis
 docker compose -f infra/docker-compose.yml up -d
 ```
 

@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
@@ -18,6 +19,7 @@ from quanta.core.config import Settings, get_settings
 from quanta.core.logging import configure_logging
 from quanta.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 from quanta.core.redis_client import close_redis, init_redis
+from quanta.core.validation import summarise
 from quanta.db.session import dispose_engine, get_session_factory
 from quanta.exchanges.base import Interval
 from quanta.exchanges.bitunix import BitunixAdapter
@@ -136,6 +138,19 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(api_router, prefix=settings.api_prefix)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        """Answer in sentences, not in schema vocabulary.
+
+        Pydantic's "String should have at least 1 character" is precise and
+        useless on a form: it does not say which field or what to do. The
+        status and the {"detail": ...} shape are unchanged, so nothing that
+        reads errors has to care — only the words do.
+        """
+        return JSONResponse(status_code=422, content={"detail": summarise(list(exc.errors()))})
 
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
