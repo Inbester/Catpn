@@ -48,7 +48,7 @@ Every menu (Test, Alerts, Bot) has a Setup picker in its header.
 | D6 | Alerts and Telegram | ✅ approved |
 | D7 | Resources (Compute, Network/WireGuard) | ✅ approved |
 | D8 | Global Jobs ring and active-alerts bell in the rail. Autosave and History. | ✅ approved |
-| D9 | Trading bot menu design | ⏳ **pending** (design in the next session, before phase 6) |
+| D9 | Trading bot menu design | ✅ **settled** (2026-09-26): three tabs (Bots, Keys, Activity), a header kill switch, states stopped/armed/running/halted, and a pre-flight checklist that gates arming. See §3.5. |
 | D10 | AI menu scope | ⏳ **pending** |
 | D11 | UI language | ✅ **settled (amended)**: the interface is **English only**, and the calendar is **Gregorian only**. Persian is not a second interface: resting the pointer on a term for about a second opens a small window under that word with its Persian translation and an explanation, set in Vazirmatn. The chrome never flips direction and there is no second bundle to keep in step. Supersedes the earlier default of a Persian RTL UI with Jalali support. |
 | D12 | Exchange | ⏳ Default: an **exchange adapter layer**. Bitunix is adapter #1. See §9 (legal). |
@@ -365,9 +365,62 @@ In the second case, cross-indicator-only rules number 59,348.
 
 **Channels page:** see §7 for Telegram setup details.
 
-### 3.5 Trading bot ⏳ (design pending; requirements so far)
+### 3.5 Trading bot ✅ (D9 settled 2026-09-26)
 
-- A bot = one Setup + an exchange API key + risk limits. It is only available after the Setup passes paper trading.
+A bot = one Setup + one exchange API key + risk limits. It is only available
+after the Setup passes paper trading.
+
+**Three tabs, and one button that is always reachable.**
+
+*Bots* — one card per bot: the Setup's name and colour, symbol and
+timeframe, state, the position it holds right now, today's realised and
+unrealised P&L, orders placed today, and the two risk budgets drawn as
+bars (daily loss used, drawdown used). Bars, not numbers, because the
+question a person actually asks is "how much room is left", and a bar
+answers it without arithmetic.
+
+*Keys* — exchange API keys. Adding one shows the server's static IP to
+copy into the exchange's whitelist first, then takes the key. The server
+verifies the key before storing it: a key with withdrawal permission is
+refused outright, and a key that is not whitelisted to that IP is refused
+with the IP repeated. Afterwards only a label, the last four characters
+and a fingerprint are ever shown; the secret is never returned, to anyone,
+including the user who typed it.
+
+*Activity* — the audit log: every order with its `clientId`, what was
+sent, what came back, and how long it took, plus every reconciliation, every
+risk trip and every start, stop and kill, with who did it.
+
+*Kill switch* — in the menu header, on every tab. It stops every bot and
+cancels every open order, and it takes 2FA. It is a header button rather
+than a per-bot action because the moment you want it is the moment you do
+not want to be choosing from a list.
+
+**States.** `stopped → armed → running`, and `halted` from any of them.
+*Armed* means it has passed pre-flight and will act on its next signal;
+*running* means it holds a position. *Halted* is what a tripped risk limit
+or the kill switch produces: it is not `stopped`, because it carries the
+reason, and a person has to read that reason and clear it by hand. Nothing
+un-halts itself.
+
+**Pre-flight.** A bot cannot be armed until every check passes, and each
+check is shown with the figure it was judged on — the same rule as the
+paper-trading promotion checklist, for the same reason:
+
+- the Setup was promoted from paper trading;
+- a key is attached, carries no withdrawal permission, and is whitelisted
+  to the server's static IP;
+- no other bot holds the same symbol on the same account in one-way mode
+  (otherwise hedge mode or a sub-account, per §3.2);
+- the intended size is inside the exchange's position tier at the chosen
+  leverage;
+- the risk limits are set, and the daily-loss and drawdown limits are
+  within the account's equity;
+- 2FA is enabled on the account.
+
+**Arming, starting live and the kill switch all require 2FA.** Editing
+risk limits downward does not; editing them upward does.
+
 - **API keys:**
   - Keys with withdrawal permission are rejected.
   - The key must be IP-whitelisted to the server's static IP (Bitunix allows up to 20 IPs per key).
@@ -574,7 +627,7 @@ Each phase ends runnable and tested.
 | **3** | **Test**: period vs period (Gregorian presets, Monte Carlo band, regime panel), walk-forward, drawdown panes everywhere, **Setups** (save, picker in all headers, overview) | March 2025 vs March 2026 report runs |
 | **4** | **Research**: range controls with live Bitunix limits and fee tiers, margin × leverage heatmap, trade risk (MAE), robustness (Monte Carlo, VaR, Kelly, stress), **Discover** (enumerator matching the §3.2 counts, FDR, out-of-sample), Resources/Compute (server job runner plus browser workers/WASM/WebGPU, allocation sliders, progress, checkpoint/resume) | Enumerator unit tests match 5,324 and 69,828 |
 | **5** | **Alerts**: server evaluator on bar close, notifier (Telegram DM/group/channel, Web Push, webhook, email), templates EN/FA, burst merge, quiet hours, delivery log, active-alerts bell; **paper trading** (live, execution-quality metrics, promotion checklist); Resources/Network (WireGuard import/validate/test/route) | Signal reaches a Telegram group within 2 s of bar close |
-| **6** | Finish the Trading bot design, then build: execution service, key vault, risk limits, kill switch, reconciliation, audit log, hedge-mode checks | Testnet or small live dry run passes a checklist |
+| **6** | **Trading bot** (design settled, §3.5): trading side of the exchange adapter, execution service, key vault, risk limits, kill switch, reconciliation, audit log, hedge-mode checks | Testnet or small live dry run passes a checklist |
 | **7** | AI menu (after its scope is defined), Local agent (optional), hardening, load tests, pen test | — |
 
 ---
@@ -597,9 +650,8 @@ Each phase ends runnable and tested.
 
 ## 10. Open items for the next session
 
-1. Design the **Trading bot** menu (D9).
-2. Define the **AI** menu (D10).
-3. Confirm the defaults for D11–D14.
-4. Choose where the code lives: connect a local folder in the Claude desktop app, or build in the cloud workspace and download.
-5. Pick hosting (region with access to the Bitunix and Telegram APIs), a domain, and whether to create the Telegram bot now via @BotFather (the token is entered later, encrypted).
-6. The **user** provides Bitunix API keys only in phase 6, and only if legally permitted in their jurisdiction.
+1. Define the **AI** menu (D10). Until then it is a menu entry with a placeholder page.
+2. Confirm the defaults for D12–D14. D11 is settled: English interface, Gregorian calendar, Persian as hover help.
+3. Choose where the code lives: connect a local folder in the Claude desktop app, or build in the cloud workspace and download.
+4. Pick hosting (region with access to the Bitunix and Telegram APIs), a domain, and whether to create the Telegram bot now via @BotFather (the token is entered later, encrypted).
+5. The **user** provides Bitunix API keys only in phase 6, and only if legally permitted in their jurisdiction.
