@@ -21,6 +21,7 @@ from quanta.core.redis_client import close_redis, init_redis
 from quanta.db.session import dispose_engine, get_session_factory
 from quanta.exchanges.base import Interval
 from quanta.exchanges.bitunix import BitunixAdapter
+from quanta.services import jobs
 from quanta.services.market_data import MarketDataService
 
 logger = structlog.get_logger(__name__)
@@ -37,6 +38,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         # Rate limiting degrades open; the live chart stream needs Redis and
         # reports itself unavailable rather than failing the whole boot.
         logger.warning("startup_without_redis")
+
+    # A previous process may have died mid-job. Those rows would otherwise
+    # claim to be running forever.
+    try:
+        async with get_session_factory()() as db:
+            stale = await jobs.mark_interrupted(db)
+        if stale:
+            logger.info("jobs_interrupted_by_restart", count=stale)
+    except Exception as exc:  # a database hiccup must not stop the boot
+        logger.warning("job_cleanup_failed", error=str(exc))
 
     market = await _start_market_data(settings, redis)
 

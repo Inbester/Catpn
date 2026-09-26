@@ -9,8 +9,11 @@ from fastapi import APIRouter, HTTPException, status
 from quanta.api.deps import CurrentUser, DbDep
 from quanta.models.strategy import StrategyRecord
 from quanta.schemas.research import (
+    ComputeResponse,
+    ComputeRoutingUpdate,
     DiscoverPlanRequest,
     DiscoverRequest,
+    JobHistoryEntry,
     JobResponse,
     JobResultResponse,
     LeverageRequest,
@@ -18,7 +21,7 @@ from quanta.schemas.research import (
     SourceInfo,
     StudyRequest,
 )
-from quanta.services import discover_service, research_service
+from quanta.services import compute_service, discover_service, jobs, research_service
 from quanta.services.backtest_service import BacktestError
 from quanta.services.jobs import JobState, registry
 
@@ -160,8 +163,32 @@ async def discover(payload: DiscoverRequest, user: CurrentUser, db: DbDep) -> Jo
             mix_indicators=payload.mix_indicators,
             max_hits=payload.max_hits,
         ),
+        on_finish=jobs.record_finish,
     )
+    # The row is what survives a restart; the registry entry is what runs.
+    await jobs.record_start(db, job, request=payload.model_dump())
     return JobResponse(**job.to_dict())
+
+
+@jobs_router.get("/history", response_model=list[JobHistoryEntry])
+async def job_history(user: CurrentUser, db: DbDep) -> list[JobHistoryEntry]:
+    """Every job this account has run, including ones a restart cut short."""
+    return [
+        JobHistoryEntry(
+            id=str(row.id),
+            kind=row.kind,
+            label=row.label,
+            state=row.state,
+            source=row.source,
+            done=row.done,
+            total=row.total,
+            created_at=row.created_at.isoformat(),
+            finished_at=row.finished_at.isoformat() if row.finished_at else None,
+            error=row.error,
+            request=row.request,
+        )
+        for row in await jobs.history(db, user.id)
+    ]
 
 
 @jobs_router.get("", response_model=list[JobResponse])
@@ -187,3 +214,48 @@ async def cancel_job(job_id: str, user: CurrentUser) -> dict:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such job.")
     stopped = registry.cancel(job_id, user.id)
     return {"cancelled": stopped}
+
+
+# --- Resources: compute ------------------------------------------------
+
+compute_router = APIRouter(prefix="/compute", tags=["compute"])
+
+
+@compute_router.get("", response_model=ComputeResponse)
+async def get_compute(user: CurrentUser, db: DbDep) -> ComputeResponse:
+    """Where each feature runs, plus what this server currently has."""
+    preference = await compute_service.get_preference(db, user.id)
+    await db.commit()
+    return ComputeResponse(
+        **compute_service.to_dict(preference), server=compute_service.server_specs()
+    )
+
+
+@compute_router.put("", response_model=ComputeResponse)
+async def update_compute(
+    payload: ComputeRoutingUpdate, user: CurrentUser, db: DbDep
+) -> ComputeResponse:
+    preference = await compute_service.get_preference(db, user.id)
+    try:
+        compute_service.apply_routing(preference, payload.routing)
+    except compute_service.ComputeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)
+        ) from exc
+
+    if payload.cpu_share_percent is not None:
+        preference.cpu_share_percent = payload.cpu_share_percent
+    if payload.gpu_duty_percent is not None:
+        preference.gpu_duty_percent = payload.gpu_duty_percent
+    if payload.ram_budget_mb is not None:
+        preference.ram_budget_mb = payload.ram_budget_mb
+    if payload.device_label is not None:
+        preference.device_label = payload.device_label
+    if payload.local_profile is not None:
+        preference.local_profile = payload.local_profile
+
+    await db.commit()
+    await db.refresh(preference)
+    return ComputeResponse(
+        **compute_service.to_dict(preference), server=compute_service.server_specs()
+    )

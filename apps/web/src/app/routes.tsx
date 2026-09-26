@@ -10,6 +10,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 import { AppLayout } from '@/components/shell/AppLayout';
 import { ChartPage } from '@/features/chart/ChartPage';
 import { ResearchPage } from '@/features/research/ResearchPage';
+import { ResourcesPage } from '@/features/resources/ResourcesPage';
 import { SetupsPage } from '@/features/setups/SetupsPage';
 import { TestPage } from '@/features/test/TestPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
@@ -35,10 +36,7 @@ export const routes: RouteObject[] = [
         path: 'bot',
         element: <PhasePlaceholder titleKey="nav.bot" icon="bot" phase={6} />,
       },
-      {
-        path: 'resources',
-        element: <PhasePlaceholder titleKey="nav.resources" icon="resources" phase={4} />,
-      },
+      { path: 'resources', element: <ResourcesPage /> },
       {
         path: 'ai',
         element: <PhasePlaceholder titleKey="nav.ai" icon="ai" phase={7} />,

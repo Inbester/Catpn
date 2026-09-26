@@ -6,10 +6,13 @@ the browser gives up, a proxy gives up, and the user has no idea whether
 anything is happening. So the search becomes a job — started, polled,
 cancellable — and the rail's Jobs ring reads its progress.
 
-Jobs live in the process, not the database. That is the honest scope for
-now: a restart loses running work, which is correct behaviour for a
-computation that can simply be re-run, and pretending otherwise would mean
-writing checkpoints nothing yet reads.
+The registry runs the work; the ``jobs`` table remembers it. A restart
+loses the running computation — it is pure CPU over data still in the
+database, so nothing is destroyed — but losing the record would mean
+someone who watched a half-hour search comes back to an empty list unable
+to tell whether it ever ran. Jobs left running by a restart are marked
+interrupted on the next boot and can be started again from their stored
+request.
 
 The work runs in a thread, because the engine is NumPy over the GIL and
 would otherwise block the event loop for the whole search — every other
@@ -27,6 +30,11 @@ from enum import StrEnum
 from typing import Any
 
 import structlog
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from quanta.db.session import get_session_factory
+from quanta.models.job import JobRecord
 
 logger = structlog.get_logger(__name__)
 
@@ -117,6 +125,7 @@ class JobRegistry:
         label: str,
         total: int,
         work: Callable[[Job], Any],
+        on_finish: Callable[[AsyncSession, Job], Any] | None = None,
     ) -> Job:
         job = Job(id=str(uuid.uuid4()), user_id=user_id, kind=kind, label=label, total=total)
         self._jobs[job.id] = job
@@ -138,6 +147,14 @@ class JobRegistry:
                 logger.warning("job_failed", job=job.id, kind=kind, error=str(exc))
             finally:
                 job.finished_at = datetime.now(UTC)
+                if on_finish is not None:
+                    # Its own session: the request that started the job is
+                    # long gone by the time a half-hour search ends.
+                    try:
+                        async with get_session_factory()() as db:
+                            await on_finish(db, job)
+                    except Exception as exc:  # recording must not mask the run
+                        logger.warning("job_record_failed", job=job.id, error=str(exc))
 
         self._tasks[job.id] = asyncio.create_task(run())
         return job
@@ -154,6 +171,69 @@ class JobRegistry:
 
 
 registry = JobRegistry()
+
+
+async def record_start(
+    db: AsyncSession, job: Job, *, request: dict[str, Any], source: str = "server"
+) -> None:
+    """Write the row that outlives the process."""
+    db.add(
+        JobRecord(
+            id=uuid.UUID(job.id),
+            user_id=job.user_id,
+            kind=job.kind,
+            label=job.label,
+            state=job.state.value,
+            source=source,
+            total=job.total,
+            request=request,
+            checkpoint={},
+        )
+    )
+    await db.commit()
+
+
+async def record_finish(db: AsyncSession, job: Job) -> None:
+    """Update the row once the work stops, whatever the outcome."""
+    record = await db.get(JobRecord, uuid.UUID(job.id))
+    if record is None:
+        return
+    record.state = job.state.value
+    record.done = job.done
+    record.total = job.total
+    record.error = job.error
+    record.finished_at = job.finished_at
+    # Only a coarse checkpoint: see the module note on why a resume
+    # re-runs rather than continuing mid-stream.
+    record.checkpoint = {"done": job.done, "total": job.total}
+    if job.state is JobState.DONE and isinstance(job.result, dict):
+        record.result = job.result
+    await db.commit()
+
+
+async def mark_interrupted(db: AsyncSession) -> int:
+    """On boot, close out jobs a previous process left running.
+
+    Without this a restart leaves rows claiming to be running forever, and
+    the rail would count progress that nothing is making.
+    """
+    stale = await db.execute(select(JobRecord).where(JobRecord.state.in_(["queued", "running"])))
+    rows = list(stale.scalars().all())
+    for row in rows:
+        row.state = "interrupted"
+        row.finished_at = datetime.now(UTC)
+    await db.commit()
+    return len(rows)
+
+
+async def history(db: AsyncSession, user_id: uuid.UUID, limit: int = 50) -> list[JobRecord]:
+    result = await db.execute(
+        select(JobRecord)
+        .where(JobRecord.user_id == user_id)
+        .order_by(JobRecord.created_at.desc())
+        .limit(limit)
+    )
+    return list(result.scalars().all())
 
 
 def progress_reporter(job: Job) -> Callable[[int, int], None]:

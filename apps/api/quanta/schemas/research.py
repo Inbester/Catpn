@@ -94,6 +94,20 @@ class JobResponse(BaseModel):
     error: str | None
 
 
+class JobHistoryEntry(BaseModel):
+    id: str
+    kind: str
+    label: str
+    state: str
+    source: str
+    done: int
+    total: int
+    created_at: str
+    finished_at: str | None
+    error: str | None
+    request: dict[str, Any]
+
+
 class JobResultResponse(JobResponse):
     result: dict[str, Any] | None = None
 
@@ -106,3 +120,26 @@ class SourceInfo(BaseModel):
 
 class StrategyRef(BaseModel):
     strategy_id: uuid.UUID
+
+
+class ComputeRoutingUpdate(BaseModel):
+    """Per-feature compute routing. Locked features are refused, not fixed."""
+
+    routing: dict[str, str] = Field(default_factory=dict)
+    cpu_share_percent: int | None = Field(default=None, ge=0, le=100)
+    gpu_duty_percent: int | None = Field(default=None, ge=0, le=100)
+    ram_budget_mb: int | None = Field(default=None, ge=128, le=131_072)
+    device_label: str | None = Field(default=None, max_length=120)
+    # What the browser reports about itself: cores, memory hint, WebGPU.
+    local_profile: dict[str, Any] | None = None
+
+
+class ComputeResponse(BaseModel):
+    routing: dict[str, str]
+    locked: dict[str, str]
+    cpu_share_percent: int
+    gpu_duty_percent: int
+    ram_budget_mb: int
+    local_profile: dict[str, Any]
+    device_label: str
+    server: dict[str, Any]
