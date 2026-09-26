@@ -36,9 +36,15 @@ class StressCase:
     net_percent: float
     max_drawdown_percent: float
     trades: int
-    # Change against the unstressed run, in points of return.
+    # Change against the base run, in points of return.
     delta_percent: float
     survived: bool
+    # Whether the case is meant to be harder than the base. Four of the
+    # five are; the VIP3 tier is cheaper than VIP0, so it is a what-if
+    # about qualifying for it, not a test of survival. Presenting a fee
+    # discount as a stress case would let a strategy "pass" by getting
+    # a benefit it has not earned.
+    adverse: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,7 +172,12 @@ def stress_tests(
     config: BacktestConfig | None = None,
     funding: list[FundingEvent] | None = None,
 ) -> list[StressCase]:
-    """The five cases SPEC §3.2 names, each strictly worse than the base.
+    """The five cases SPEC §3.2 names.
+
+    Four are adverse and are asserted never to help. The fifth, VIP3 fees,
+    is cheaper than the VIP0 default, so it is a what-if about qualifying
+    for that tier rather than a test of survival — it is marked as such so
+    a fee discount is never read as a strategy passing something.
 
     "Survived" means the case still made money. It is a low bar on
     purpose: a strategy that only works at VIP0 fees with no slippage is
@@ -175,35 +186,40 @@ def stress_tests(
     config = config or BacktestConfig()
     base_net, _, _ = _run(strategy, bars, config, funding)
 
-    cases: list[tuple[str, str, BacktestConfig, list[FundingEvent] | None]] = [
+    cases: list[tuple[str, str, BacktestConfig, list[FundingEvent] | None, bool]] = [
         (
             "VIP3 fees",
-            "Maker 0.016%, taker 0.04% — a tier most accounts never reach.",
+            "Maker 0.016%, taker 0.04%. Cheaper than VIP0, so this is what "
+            "the strategy would earn on a tier it has not reached yet.",
             replace(config, maker_fee=0.00016, taker_fee=0.0004),
             funding,
+            False,
         ),
         (
             "Fees doubled",
             "Twice the fee schedule, for a venue change or a tier loss.",
             replace(config, maker_fee=config.maker_fee * 2, taker_fee=config.taker_fee * 2),
             funding,
+            True,
         ),
         (
             "Slippage tripled",
             "Thin books, or an order larger than the top of the book.",
             replace(config, slippage_bps=config.slippage_bps * 3),
             funding,
+            True,
         ),
         (
             "Funding +0.03% per 8h",
             "A persistently crowded side of the trade.",
             config,
             _worsen_funding(funding, 0.0003),
+            True,
         ),
     ]
 
     out: list[StressCase] = []
-    for name, description, trial, trial_funding in cases:
+    for name, description, trial, trial_funding, adverse in cases:
         net, drawdown, trades = _run(strategy, bars, trial, trial_funding)
         out.append(
             StressCase(
@@ -214,10 +230,11 @@ def stress_tests(
                 trades=trades,
                 delta_percent=net - base_net,
                 survived=net > 0,
+                adverse=adverse,
             )
         )
 
-    out.append(_without_best_trades(strategy, bars, config, funding, base_net, count=5))
+    out.append(_without_best_trades(strategy, bars, config, funding, count=5))
     return out
 
 
@@ -241,7 +258,6 @@ def _without_best_trades(
     bars: Bars,
     config: BacktestConfig,
     funding: list[FundingEvent] | None,
-    base_net: float,
     *,
     count: int,
 ) -> StressCase:
@@ -260,13 +276,17 @@ def _without_best_trades(
             net_percent=0.0,
             max_drawdown_percent=0.0,
             trades=0,
-            delta_percent=-base_net,
+            delta_percent=0.0,
             survived=False,
         )
 
     kept = sorted(result.trades, key=lambda t: t.net_pnl)[: max(0, len(result.trades) - count)]
-    remaining = sum(t.net_pnl for t in kept)
-    net = remaining / config.initial_capital * 100.0
+    net = sum(t.net_pnl for t in kept) / config.initial_capital * 100.0
+    # Both sides measured the same way. The run's own net_profit_percent
+    # compounds position sizing on changing equity, so comparing this
+    # simple sum against it would report a difference that came from the
+    # two measures rather than from the trades removed.
+    comparable_base = sum(t.net_pnl for t in result.trades) / config.initial_capital * 100.0
     return StressCase(
         name=f"Best {count} trades removed",
         description=(
@@ -276,7 +296,7 @@ def _without_best_trades(
         net_percent=net,
         max_drawdown_percent=float(result.stats["max_drawdown_percent"]),
         trades=len(kept),
-        delta_percent=net - base_net,
+        delta_percent=net - comparable_base,
         survived=net > 0,
     )
 

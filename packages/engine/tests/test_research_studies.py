@@ -153,6 +153,14 @@ class TestStressTests:
             "Best 5 trades removed",
         ]
 
+    def test_the_cheaper_tier_is_not_sold_as_a_stress_case(self) -> None:
+        # VIP3 fees are lower than the VIP0 default, so the case can only
+        # improve the result. Marking it adverse would let a strategy
+        # "survive" a stress test by being handed a discount.
+        cases = {case.name: case for case in stress_tests(strategy(), series(3))}
+        assert cases["VIP3 fees"].adverse is False
+        assert all(case.adverse for name, case in cases.items() if name != "VIP3 fees")
+
     def test_doubling_fees_never_helps(self) -> None:
         cases = {case.name: case for case in stress_tests(strategy(), series(3))}
         assert cases["Fees doubled"].delta_percent <= 0
