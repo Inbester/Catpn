@@ -513,6 +513,7 @@ export function TestPage() {
                   symbol={symbol}
                   interval={interval}
                   config={config}
+                  params={selected.params}
                 />
               ) : null}
             </div>

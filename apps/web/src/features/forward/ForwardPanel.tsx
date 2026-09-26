@@ -13,11 +13,20 @@ import { ApiError } from '@/lib/api/client';
 import type { BacktestConfig } from '@/features/test/lib/types';
 import { EquityChart } from '@/features/test/components/EquityChart';
 import { ComparisonTable } from './components/ComparisonTable';
+import { ParameterGrid } from './components/ParameterGrid';
 import { RegimePanel } from './components/RegimePanel';
 import { VerdictCard } from './components/VerdictCard';
 import { WalkForwardPanel } from './components/WalkForwardPanel';
 import { JALALI_MONTHS_EN } from '@/lib/date/jalali';
 import * as forwardApi from './lib/api';
+import {
+  MAX_COMBINATIONS,
+  buildGrid,
+  combinationCount,
+  defaultRanges,
+  prune,
+  type ParamRange,
+} from './lib/grid';
 import {
   PRESETS,
   currentJalaliMonth,
@@ -36,6 +45,8 @@ export interface ForwardPanelProps {
   symbol: string;
   interval: string;
   config: BacktestConfig;
+  /** The frozen strategy's parameters — what a walk-forward can sweep. */
+  params?: Record<string, number>;
 }
 
 type Tab = 'periods' | 'walkforward';
@@ -46,6 +57,7 @@ export function ForwardPanel({
   symbol,
   interval,
   config,
+  params = {},
 }: ForwardPanelProps) {
   const [tab, setTab] = useState<Tab>('periods');
   const [preset, setPreset] = useState<PresetKey | null>('same_month_last_year');
@@ -54,6 +66,7 @@ export function ForwardPanel({
   const [months, setMonths] = useState<MonthPair>(() => presetMonths('same_month_last_year'));
   const periods = customPeriods(months.reference, months.test);
 
+  const [ranges, setRanges] = useState<Record<string, ParamRange>>(() => defaultRanges(params));
   const [comparison, setComparison] = useState<ComparisonResult | null>(null);
   const [walkForward, setWalkForward] = useState<WalkForwardResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,6 +106,10 @@ export function ForwardPanel({
     }
   };
 
+  const grid = prune(buildGrid(ranges));
+  const combinations = combinationCount(grid);
+  const gridTooLarge = combinations > MAX_COMBINATIONS;
+
   const runWalkForward = async () => {
     if (!strategyId) return;
     setBusy(true);
@@ -105,7 +122,7 @@ export function ForwardPanel({
           in_sample_days: 90,
           out_of_sample_days: 30,
           max_windows: 12,
-          grid: {},
+          grid,
           config,
         }),
       );
@@ -281,18 +298,25 @@ export function ForwardPanel({
         <>
           <div className={styles.controls}>
             <p className={styles.hint}>
-              Twelve windows: 90 days in sample, the 30 days after them tested. The chained curve
-              uses only data each window had not seen. There is no parameter grid yet, so the rules
-              are not re-tuned between windows — the in-sample leg measures them rather than fitting
-              them, and efficiency stays undefined.
+              Twelve windows: 90 days in sample, the 30 days after them tested. Each window picks
+              its parameters on the in-sample stretch alone, then trades them forward. The chained
+              curve uses only data each window had not seen.
             </p>
+
+            <ParameterGrid params={params} ranges={ranges} onChange={setRanges} />
+
             <button
               type="button"
               className={styles.run}
               onClick={() => {
                 void runWalkForward();
               }}
-              disabled={busy}
+              disabled={busy || gridTooLarge}
+              title={
+                gridTooLarge
+                  ? `${combinations.toLocaleString()} combinations per window is over the interactive limit.`
+                  : undefined
+              }
             >
               {busy ? 'Running…' : 'Run walk-forward'}
             </button>

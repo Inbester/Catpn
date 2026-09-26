@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from quanta_engine.forward.walkforward import MAX_COMBINATIONS
 
 from quanta.schemas.strategy import BacktestConfigPayload
 
@@ -59,8 +60,13 @@ class WalkForwardRequest(BaseModel):
             if not values:
                 raise ValueError("A parameter in the grid has no values.")
             total *= len(values)
-        if total > 400:
-            raise ValueError(f"{total} parameter combinations is too many for an interactive run.")
+        # The engine raises on the same limit; rejecting here means the
+        # caller gets a 422 naming the number instead of a 500 mid-run.
+        if total > MAX_COMBINATIONS:
+            raise ValueError(
+                f"{total} parameter combinations is too many for an interactive run; "
+                f"the limit is {MAX_COMBINATIONS}."
+            )
         return self
 
 

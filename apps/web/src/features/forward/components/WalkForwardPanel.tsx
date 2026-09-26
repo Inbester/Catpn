@@ -51,6 +51,12 @@ export function WalkForwardPanel({ result }: WalkForwardPanelProps) {
           ) : (
             <p className="muted">No out-of-sample trades were taken.</p>
           )}
+          {result.walk_forward_efficiency === null ? (
+            <p className={styles.chartNote}>
+              Efficiency is a dash because the in-sample windows did not make money. Dividing a
+              forward result by a loss gives a number that looks like a score and means nothing.
+            </p>
+          ) : null}
         </div>
       </section>
 
