@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { jalaliToDate } from '@/lib/date/jalali';
 import {
-  currentJalaliMonth,
+  currentMonth,
   customPeriods,
   monthLabel,
   presetMonths,
@@ -10,97 +9,90 @@ import {
   resolvePreset,
 } from './presets';
 
-// A fixed moment inside Farvardin 1405, so the presets are deterministic.
-const IN_FARVARDIN_1405 = jalaliToDate(1405, 1, 15);
+// A fixed moment inside March 2026, so the presets are deterministic.
+const IN_MARCH_2026 = new Date(Date.UTC(2026, 2, 15));
 
 describe('monthLabel', () => {
-  it('names the month in English and Persian', () => {
-    expect(monthLabel(1404, 1)).toBe('Farvardin 1404');
-    expect(monthLabel(1404, 1, 'fa')).toBe('فروردین 1404');
+  it('names the month', () => {
+    expect(monthLabel(2025, 3)).toBe('March 2025');
+    expect(monthLabel(2025, 12)).toBe('December 2025');
+  });
+
+  it('refuses a month outside the year', () => {
+    expect(() => monthLabel(2025, 13)).toThrow(RangeError);
   });
 });
 
 describe('previousMonth', () => {
   it('steps back within a year', () => {
-    expect(previousMonth(1404, 5)).toEqual({ jy: 1404, jm: 4 });
+    expect(previousMonth(2025, 5)).toEqual({ year: 2025, month: 4 });
   });
 
-  it('rolls the year at Farvardin', () => {
-    expect(previousMonth(1404, 1)).toEqual({ jy: 1403, jm: 12 });
+  it('rolls the year at January', () => {
+    expect(previousMonth(2025, 1)).toEqual({ year: 2024, month: 12 });
   });
 });
 
-describe('currentJalaliMonth', () => {
-  it('reads the Jalali month a date falls in', () => {
-    const month = currentJalaliMonth(IN_FARVARDIN_1405);
-    expect(month.jy).toBe(1405);
-    expect(month.jm).toBe(1);
+describe('currentMonth', () => {
+  it('reads the month in UTC', () => {
+    expect(currentMonth(IN_MARCH_2026)).toEqual({ year: 2026, month: 3 });
   });
 });
 
 describe('resolvePreset', () => {
-  it('compares this month with the same month last year', () => {
-    // The SPEC §8 acceptance example: Farvardin 1404 against 1405.
-    const { reference, test } = resolvePreset('same_month_last_year', IN_FARVARDIN_1405);
-    expect(reference.label).toBe('Farvardin 1404');
-    expect(test.label).toBe('Farvardin 1405');
+  it('compares this month against the same month last year', () => {
+    const { reference, test } = resolvePreset('same_month_last_year', IN_MARCH_2026);
+    expect(reference.label).toBe('March 2025');
+    expect(test.label).toBe('March 2026');
   });
 
-  it('puts the older period first', () => {
-    // A forward test asks whether what held before still holds now.
-    for (const key of ['same_month_last_year', 'previous_month', 'same_month_each_year'] as const) {
-      const { reference, test } = resolvePreset(key, IN_FARVARDIN_1405);
-      expect(reference.start, key).toBeLessThan(test.start);
-    }
+  it('puts the older period first, because that is what a forward test asks', () => {
+    const { reference, test } = resolvePreset('same_month_last_year', IN_MARCH_2026);
+    expect(reference.start).toBeLessThan(test.start);
   });
 
-  it('resolves to real UTC month boundaries', () => {
-    const { reference, test } = resolvePreset('same_month_last_year', IN_FARVARDIN_1405);
-    // Farvardin 1404 began on 21 March 2025.
-    expect(new Date(reference.start).toISOString()).toBe('2025-03-21T00:00:00.000Z');
-    expect(new Date(reference.end).toISOString()).toBe('2025-04-21T00:00:00.000Z');
-    expect(new Date(test.start).toISOString()).toBe('2026-03-21T00:00:00.000Z');
-  });
-
-  it('gives each period a whole month of span', () => {
-    const { reference, test } = resolvePreset('same_month_last_year', IN_FARVARDIN_1405);
-    for (const p of [reference, test]) {
-      const days = (p.end - p.start) / 86_400_000;
-      expect(days).toBe(31); // Farvardin always has 31 days.
-    }
+  it('spans whole months on UTC boundaries', () => {
+    // Bars close on UTC boundaries, so a period that began at local
+    // midnight would include or miss an hour of them.
+    const { reference, test } = resolvePreset('same_month_last_year', IN_MARCH_2026);
+    expect(new Date(reference.start).toISOString()).toBe('2025-03-01T00:00:00.000Z');
+    expect(new Date(reference.end).toISOString()).toBe('2025-04-01T00:00:00.000Z');
+    expect(new Date(test.start).toISOString()).toBe('2026-03-01T00:00:00.000Z');
   });
 
   it('steps back two months for the previous-month preset', () => {
-    const { reference, test } = resolvePreset('previous_month', IN_FARVARDIN_1405);
-    expect(test.label).toBe('Esfand 1404');
-    expect(reference.label).toBe('Bahman 1404');
+    const { reference, test } = resolvePreset('previous_month', IN_MARCH_2026);
+    expect(test.label).toBe('February 2026');
+    expect(reference.label).toBe('January 2026');
   });
 
   it('spans two years for the every-year preset', () => {
-    const { reference, test } = resolvePreset('same_month_each_year', IN_FARVARDIN_1405);
-    expect(reference.label).toBe('Farvardin 1403');
-    expect(test.label).toBe('Farvardin 1405');
+    const { reference, test } = resolvePreset('same_month_each_year', IN_MARCH_2026);
+    expect(reference.label).toBe('March 2024');
+    expect(test.label).toBe('March 2026');
   });
 });
 
 describe('customPeriods', () => {
-  it('builds the Farvardin 1404 vs 1405 pair the picker asks for', () => {
-    // The Phase 3 acceptance case. The preset only reaches it while today
-    // happens to fall in Farvardin, so the picker has to reach it directly.
-    const { reference, test } = customPeriods({ jy: 1404, jm: 1 }, { jy: 1405, jm: 1 });
+  it('builds an explicit pair the picker asks for', () => {
+    const { reference, test } = customPeriods({ year: 2025, month: 3 }, { year: 2026, month: 3 });
 
-    expect(reference.label).toBe('Farvardin 1404');
-    expect(test.label).toBe('Farvardin 1405');
-    expect(new Date(reference.start).toISOString()).toBe('2025-03-21T00:00:00.000Z');
-    expect(new Date(reference.end).toISOString()).toBe('2025-04-21T00:00:00.000Z');
-    expect(new Date(test.start).toISOString()).toBe('2026-03-21T00:00:00.000Z');
-    expect(new Date(test.end).toISOString()).toBe('2026-04-21T00:00:00.000Z');
+    expect(reference.label).toBe('March 2025');
+    expect(test.label).toBe('March 2026');
+    expect(new Date(reference.start).toISOString()).toBe('2025-03-01T00:00:00.000Z');
+    expect(new Date(test.end).toISOString()).toBe('2026-04-01T00:00:00.000Z');
+  });
+
+  it('rolls December into the next January', () => {
+    const { test } = customPeriods({ year: 2025, month: 1 }, { year: 2025, month: 12 });
+    expect(new Date(test.start).toISOString()).toBe('2025-12-01T00:00:00.000Z');
+    expect(new Date(test.end).toISOString()).toBe('2026-01-01T00:00:00.000Z');
   });
 
   it('agrees with the preset it stands in for', () => {
-    const months = presetMonths('same_month_last_year', IN_FARVARDIN_1405);
+    const months = presetMonths('same_month_last_year', IN_MARCH_2026);
     expect(customPeriods(months.reference, months.test)).toEqual(
-      resolvePreset('same_month_last_year', IN_FARVARDIN_1405),
+      resolvePreset('same_month_last_year', IN_MARCH_2026),
     );
   });
 });

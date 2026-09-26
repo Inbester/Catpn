@@ -17,7 +17,6 @@ import { ParameterGrid } from './components/ParameterGrid';
 import { RegimePanel } from './components/RegimePanel';
 import { VerdictCard } from './components/VerdictCard';
 import { WalkForwardPanel } from './components/WalkForwardPanel';
-import { JALALI_MONTHS_EN } from '@/lib/date/jalali';
 import * as forwardApi from './lib/api';
 import {
   MAX_COMBINATIONS,
@@ -28,11 +27,12 @@ import {
   type ParamRange,
 } from './lib/grid';
 import {
+  MONTH_NAMES,
   PRESETS,
-  currentJalaliMonth,
+  currentMonth,
   customPeriods,
   presetMonths,
-  type JalaliMonth,
+  type CalendarMonth,
   type Period,
   type PresetKey,
 } from './lib/presets';
@@ -61,7 +61,7 @@ export function ForwardPanel({
 }: ForwardPanelProps) {
   const [tab, setTab] = useState<Tab>('periods');
   const [preset, setPreset] = useState<PresetKey | null>('same_month_last_year');
-  // The two Jalali months are the source of truth; a preset only sets them,
+  // The two months are the source of truth; a preset only sets them,
   // so editing one afterwards is the same operation as picking a preset.
   const [months, setMonths] = useState<MonthPair>(() => presetMonths('same_month_last_year'));
   const periods = customPeriods(months.reference, months.test);
@@ -78,7 +78,7 @@ export function ForwardPanel({
     setComparison(null);
   };
 
-  const editMonth = (side: 'reference' | 'test', patch: Partial<JalaliMonth>) => {
+  const editMonth = (side: 'reference' | 'test', patch: Partial<CalendarMonth>) => {
     setPreset(null);
     setMonths((current) => ({ ...current, [side]: { ...current[side], ...patch } }));
     setComparison(null);
@@ -340,8 +340,8 @@ export function ForwardPanel({
 }
 
 interface MonthPair {
-  reference: JalaliMonth;
-  test: JalaliMonth;
+  reference: CalendarMonth;
+  test: CalendarMonth;
 }
 
 const YEAR_SPAN = 8;
@@ -350,25 +350,25 @@ function MonthPicker({
   value,
   onChange,
 }: {
-  value: JalaliMonth;
-  onChange: (patch: Partial<JalaliMonth>) => void;
+  value: CalendarMonth;
+  onChange: (patch: Partial<CalendarMonth>) => void;
 }) {
-  const thisYear = currentJalaliMonth().jy;
+  const thisYear = currentMonth().year;
   const years = Array.from({ length: YEAR_SPAN }, (_, i) => thisYear - (YEAR_SPAN - 1) + i);
   // A preset can reach further back than the list; keep that year selectable.
-  if (!years.includes(value.jy)) years.unshift(value.jy);
+  if (!years.includes(value.year)) years.unshift(value.year);
 
   return (
     <div className={styles.picker}>
       <select
         className={styles.pickerField}
-        value={value.jm}
-        aria-label="Jalali month"
+        value={value.month}
+        aria-label="Month"
         onChange={(event) => {
-          onChange({ jm: Number(event.target.value) });
+          onChange({ month: Number(event.target.value) });
         }}
       >
-        {JALALI_MONTHS_EN.map((name, index) => (
+        {MONTH_NAMES.map((name, index) => (
           <option key={name} value={index + 1}>
             {name}
           </option>
@@ -376,10 +376,10 @@ function MonthPicker({
       </select>
       <select
         className={styles.pickerField}
-        value={value.jy}
-        aria-label="Jalali year"
+        value={value.year}
+        aria-label="Year"
         onChange={(event) => {
-          onChange({ jy: Number(event.target.value) });
+          onChange({ year: Number(event.target.value) });
         }}
       >
         {years.map((year) => (

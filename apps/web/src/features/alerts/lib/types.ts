@@ -5,20 +5,21 @@ export type RepeatMode = 'every' | 'once' | 'once_per_bar';
 export type TriggerMode = 'bar_close' | 'tick';
 export type DestinationKind = 'telegram' | 'web_push' | 'webhook' | 'email';
 
-export const SOURCE_LABELS: Record<AlertSource, string> = {
-  strategy: 'Strategy',
-  price: 'Price',
-  indicator: 'Indicator',
-  risk: 'Risk',
-  market: 'Market',
-  system: 'System',
-};
+/**
+ * The orders these appear in. The labels themselves live in the
+ * translation bundle, so the wording is in one place rather than split
+ * between a bundle and a constant here.
+ */
+export const ALERT_SOURCES: readonly AlertSource[] = [
+  'strategy',
+  'price',
+  'indicator',
+  'risk',
+  'market',
+  'system',
+];
 
-export const REPEAT_LABELS: Record<RepeatMode, string> = {
-  every: 'Every signal',
-  once: 'Once, then stop',
-  once_per_bar: 'Once per bar',
-};
+export const REPEAT_MODES: readonly RepeatMode[] = ['every', 'once', 'once_per_bar'];
 
 export interface Destination {
   kind: DestinationKind;

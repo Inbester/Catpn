@@ -1,7 +1,6 @@
 /** Response shapes mirroring quanta/schemas on the API side. */
 
 export type Theme = 'graphite' | 'paper';
-export type Calendar = 'gregorian' | 'jalali';
 
 export interface User {
   id: string;
@@ -12,7 +11,6 @@ export interface User {
   theme: Theme;
   locale: string;
   timezone: string;
-  calendar: Calendar;
   created_at: string;
   last_login_at: string | null;
 }

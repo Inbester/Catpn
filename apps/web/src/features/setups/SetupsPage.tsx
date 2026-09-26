@@ -208,7 +208,7 @@ export function SetupsPage() {
                       <td className={styles.subCell}>
                         {usedIn(setup)
                           .map((use) => t(`setups.use.${use}`))
-                          .join('، ') || t('setups.nowhere')}
+                          .join(', ') || t('setups.nowhere')}
                       </td>
                       <td>
                         <button

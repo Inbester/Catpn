@@ -5,6 +5,10 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/jetbrains-mono/400.css';
 @import '@fontsource/jetbrains-mono/500.css';
+/* Vazirmatn carries the contextual Persian help and nothing else, so only
+   the Arabic subset is loaded — its Latin glyphs would never be drawn. */
+@import '@fontsource/vazirmatn/arabic-400.css';
+@import '@fontsource/vazirmatn/arabic-500.css';
 
 *,
 *::before,
@@ -29,11 +33,6 @@ body {
     'tnum' 1,
     'cv11' 1;
   overflow: hidden;
-}
-
-/* Persian UI is RTL chrome with LTR charts and numbers (SPEC D11). */
-[dir='rtl'] {
-  text-align: right;
 }
 
 /* Every price and value is monospaced with tabular figures. */

@@ -35,6 +35,15 @@ export default tseslint.config(
     },
   },
   {
+    // Dev-only entry points. They mount a root rather than exporting a
+    // component, so fast refresh has nothing to hold on to and does not
+    // need to: they are opened by hand, not edited while running.
+    files: ['src/dev/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
     files: ['**/*.test.{ts,tsx}', 'src/test/**'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

@@ -112,10 +112,17 @@ class MfaRequiredResponse(BaseModel):
 
 
 class PreferencesUpdate(BaseModel):
+    """What a user may change about their own account.
+
+    Neither the interface language nor the calendar is among them. The
+    interface is English and the calendar is Gregorian; Persian is
+    contextual help on hover, not a second interface. The columns stay on
+    the row with those values so the shape does not churn, but the API
+    will not set them to anything the app cannot render.
+    """
+
     theme: Literal["graphite", "paper"] | None = None
-    locale: Literal["en", "fa"] | None = None
     timezone: str | None = Field(default=None, max_length=64)
-    calendar: Literal["gregorian", "jalali"] | None = None
 
 
 class SessionResponse(BaseModel):

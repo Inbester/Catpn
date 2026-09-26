@@ -145,11 +145,32 @@ class TestProtectedRoutes:
         response = await client.patch(
             f"{api_prefix}/users/me/preferences",
             headers={"Authorization": f"Bearer {tokens['access_token']}"},
+            json={"theme": "paper", "timezone": "Asia/Tehran"},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert (body["theme"], body["timezone"]) == ("paper", "Asia/Tehran")
+
+    async def test_interface_language_and_calendar_are_not_settable(
+        self, client: AsyncClient, api_prefix: str
+    ) -> None:
+        """The interface is English and the calendar Gregorian.
+
+        An older client that still sends these must not be able to put the
+        account into a state the app cannot render. The fields are ignored
+        rather than rejected, so such a client keeps working.
+        """
+        await register(client, api_prefix)
+        tokens = await login(client, api_prefix)
+        response = await client.patch(
+            f"{api_prefix}/users/me/preferences",
+            headers={"Authorization": f"Bearer {tokens['access_token']}"},
             json={"theme": "paper", "locale": "fa", "calendar": "jalali"},
         )
         assert response.status_code == 200
         body = response.json()
-        assert (body["theme"], body["locale"], body["calendar"]) == ("paper", "fa", "jalali")
+        assert body["theme"] == "paper"
+        assert (body["locale"], body["calendar"]) == ("en", "gregorian")
 
     async def test_unknown_theme_is_rejected(self, client: AsyncClient, api_prefix: str) -> None:
         await register(client, api_prefix)

@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
@@ -17,13 +18,14 @@ import { useSetupsStore } from '@/features/setups/lib/store';
 import { useActiveAlerts } from './lib/activeAlerts';
 import * as alertsApi from './lib/api';
 import { AlertForm } from './components/AlertForm';
-import { REPEAT_LABELS, SOURCE_LABELS, type Alert, type AlertEvent } from './lib/types';
+import type { Alert, AlertEvent } from './lib/types';
 import { PaperPanel } from './components/PaperPanel';
 import styles from './AlertsPage.module.css';
 
 type Tab = 'alerts' | 'activity' | 'paper';
 
 export function AlertsPage() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('alerts');
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [events, setEvents] = useState<AlertEvent[]>([]);
@@ -52,9 +54,9 @@ export function AlertsPage() {
         .load()
         .catch(() => undefined);
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not load alerts.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -83,7 +85,7 @@ export function AlertsPage() {
       await alertsApi.deleteAlert(alert.id);
       await refresh();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not delete that alert.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.deleteFailed'));
     }
   };
 
@@ -93,7 +95,7 @@ export function AlertsPage() {
       setTab('activity');
       await refresh();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'The test send failed.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.testFailed'));
     }
   };
 
@@ -102,9 +104,9 @@ export function AlertsPage() {
       <nav className={styles.tabs}>
         {(
           [
-            ['alerts', `Alerts${alerts.length ? ` · ${alerts.length}` : ''}`],
-            ['activity', 'Activity'],
-            ['paper', 'Paper trading'],
+            ['alerts', `${t('alertsPage.tabAlerts')}${alerts.length ? ` · ${alerts.length}` : ''}`],
+            ['activity', t('alertsPage.tabActivity')],
+            ['paper', t('alertsPage.tabPaper')],
           ] as [Tab, string][]
         ).map(([key, label]) => (
           <button
@@ -131,7 +133,7 @@ export function AlertsPage() {
             }}
           >
             <Icon name="plus" size={14} />
-            New alert
+            {t('alertsPage.newAlert')}
           </button>
         ) : null}
       </nav>
@@ -145,58 +147,62 @@ export function AlertsPage() {
 
         {tab === 'alerts' ? (
           alerts.length === 0 ? (
-            <p className={styles.placeholder}>
-              No alerts yet. An alert is evaluated on the server, so it fires whether or not this
-              page is open.
-            </p>
+            <p className={styles.placeholder}>{t('alertsPage.empty')}</p>
           ) : (
             <div className={styles.list}>
               {alerts.map((alert) => (
                 <article key={alert.id} className={styles.card}>
                   <header className={styles.cardHeader}>
                     <span className={styles.cardTitle}>{alert.name}</span>
-                    <span className={styles.badge}>{SOURCE_LABELS[alert.source]}</span>
+                    <span className={styles.badge}>{t(`alertsPage.source.${alert.source}`)}</span>
                     <span className={styles.meta}>
                       {alert.symbol} · {alert.interval}
                     </span>
                     <span className={styles.spacer} />
                     {alert.enabled ? (
-                      <span className={styles.on}>on</span>
+                      <span className={styles.on}>{t('alertsPage.on')}</span>
                     ) : (
-                      <span className={styles.off}>off</span>
+                      <span className={styles.off}>{t('alertsPage.off')}</span>
                     )}
                   </header>
 
                   <dl className={styles.cardBody}>
                     <div>
-                      <dt>Fires</dt>
+                      <dt>{t('alertsPage.fires')}</dt>
                       <dd>
-                        {REPEAT_LABELS[alert.repeat_mode]} ·{' '}
-                        {alert.trigger_mode === 'bar_close' ? 'on bar close' : 'every tick'}
+                        {t(`alertsPage.repeat.${alert.repeat_mode}`)} ·{' '}
+                        {alert.trigger_mode === 'bar_close'
+                          ? t('alertsPage.onBarClose')
+                          : t('alertsPage.everyTick')}
                       </dd>
                     </div>
                     <div>
-                      <dt>Sends to</dt>
+                      <dt>{t('alertsPage.sendsTo')}</dt>
                       <dd>
                         {alert.destinations.length === 0
-                          ? 'nowhere yet'
+                          ? t('alertsPage.nowhereYet')
                           : alert.destinations.map((d) => d.kind).join(', ')}
                       </dd>
                     </div>
                     <div>
-                      <dt>Quiet hours</dt>
+                      <dt>{t('alertsPage.quietHours')}</dt>
                       <dd>
                         {alert.quiet_from_hour === null
-                          ? 'none'
-                          : `${alert.quiet_from_hour}:00–${alert.quiet_to_hour}:00, sent silently`}
+                          ? t('alertsPage.quietNone')
+                          : t('alertsPage.quietWindow', {
+                              from: alert.quiet_from_hour,
+                              to: alert.quiet_to_hour,
+                            })}
                       </dd>
                     </div>
                     <div>
-                      <dt>Fired</dt>
+                      <dt>{t('alertsPage.fired')}</dt>
                       <dd>
-                        {alert.fire_count} time{alert.fire_count === 1 ? '' : 's'}
+                        {t('alertsPage.firedCount', { count: alert.fire_count })}
                         {alert.last_fired_at
-                          ? ` · last ${new Date(alert.last_fired_at).toLocaleString()}`
+                          ? ` · ${t('alertsPage.lastAt', {
+                              when: new Date(alert.last_fired_at).toLocaleString(),
+                            })}`
                           : ''}
                       </dd>
                     </div>
@@ -210,7 +216,7 @@ export function AlertsPage() {
                         void test(alert);
                       }}
                     >
-                      Test send
+                      {t('alertsPage.testSend')}
                     </button>
                     <button
                       type="button"
@@ -220,7 +226,7 @@ export function AlertsPage() {
                         setCreating(false);
                       }}
                     >
-                      Edit
+                      {t('alertsPage.edit')}
                     </button>
                     <button
                       type="button"
@@ -229,7 +235,7 @@ export function AlertsPage() {
                         void remove(alert);
                       }}
                     >
-                      Delete
+                      {t('alertsPage.delete')}
                     </button>
                   </footer>
                 </article>
@@ -263,15 +269,11 @@ export function AlertsPage() {
 }
 
 function ActivityFeed({ events, alerts }: { events: AlertEvent[]; alerts: Alert[] }) {
+  const { t } = useTranslation();
   const names = new Map(alerts.map((alert) => [alert.id, alert.name]));
 
   if (events.length === 0) {
-    return (
-      <p className={styles.placeholder}>
-        Nothing has fired yet. Every firing shows up here with what happened at each destination,
-        including the ones a repeat rule suppressed.
-      </p>
-    );
+    return <p className={styles.placeholder}>{t('alertsPage.activityEmpty')}</p>;
   }
 
   return (
@@ -279,14 +281,18 @@ function ActivityFeed({ events, alerts }: { events: AlertEvent[]; alerts: Alert[
       {events.map((event) => (
         <article key={event.id} className={styles.event}>
           <header className={styles.eventHeader}>
-            <span className={styles.cardTitle}>{names.get(event.alert_id) ?? 'Alert'}</span>
+            <span className={styles.cardTitle}>
+              {names.get(event.alert_id) ?? t('alertsPage.tabAlerts')}
+            </span>
             <span className={styles.meta}>{new Date(event.created_at).toLocaleString()}</span>
             {event.merged_count > 1 ? (
-              <span className={styles.badge}>{event.merged_count} merged</span>
+              <span className={styles.badge}>
+                {t('alertsPage.merged', { count: event.merged_count })}
+              </span>
             ) : null}
             {event.quiet ? (
-              <span className={styles.badge} title="Sent silently, not skipped">
-                quiet hours
+              <span className={styles.badge} title={t('alertsPage.quietBadgeTitle')}>
+                {t('alertsPage.quietBadge')}
               </span>
             ) : null}
           </header>

@@ -16,6 +16,7 @@ import { AppRail, MENU_ITEMS } from './AppRail';
 import { JobsTray } from './JobsTray';
 import { SaveStatus } from './SaveStatus';
 import { toRows, useActiveAlerts, watchActiveAlerts } from '@/features/alerts/lib/activeAlerts';
+import { GlossaryTip } from '@/features/glossary/GlossaryTip';
 import { watchJobs } from '@/features/research/lib/jobs';
 import styles from './AppLayout.module.css';
 
@@ -111,6 +112,11 @@ export function AppLayout() {
           }}
         />
       ) : null}
+
+      {/* Persian help on hover, app-wide: the interface is English, and the
+          words it is made of are explained where they are read rather than
+          in a glossary page nobody opens. */}
+      <GlossaryTip />
     </div>
   );
 }

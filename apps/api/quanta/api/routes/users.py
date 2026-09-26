@@ -19,7 +19,7 @@ async def read_me(user: CurrentUser) -> UserResponse:
 async def update_preferences(
     payload: PreferencesUpdate, user: CurrentUser, db: DbDep
 ) -> UserResponse:
-    """Persist theme, locale, timezone and calendar choices."""
+    """Persist the theme and timezone choices."""
     for field, value in payload.model_dump(exclude_unset=True).items():
         if value is not None:
             setattr(user, field, value)

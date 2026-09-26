@@ -15,9 +15,9 @@ from quanta.schemas.strategy import BacktestConfigPayload
 class PeriodPayload(BaseModel):
     """One explicit time range.
 
-    Jalali presets are resolved in the browser, which already holds a
-    tested calendar implementation. Sending epoch milliseconds keeps a
-    single source of truth instead of a second converter that could drift.
+    Month presets are resolved in the browser, which is where the user
+    picked them. Sending epoch milliseconds keeps a single source of truth
+    instead of a second date implementation here that could drift.
     """
 
     label: str = Field(min_length=1, max_length=80)

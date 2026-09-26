@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
@@ -16,6 +17,7 @@ import type { PaperSession } from '../lib/types';
 import styles from './alerts.module.css';
 
 export function PaperPanel() {
+  const { t } = useTranslation();
   const [sessions, setSessions] = useState<PaperSession[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,9 +26,9 @@ export function PaperPanel() {
       setSessions(await alertsApi.listPaperSessions());
       setError(null);
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not load paper sessions.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.paper.loadFailed'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void refresh();
@@ -37,7 +39,7 @@ export function PaperPanel() {
       await alertsApi.promotePaper(session.id);
       await refresh();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not promote that session.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.paper.promoteFailed'));
     }
   };
 
@@ -50,12 +52,7 @@ export function PaperPanel() {
   }
 
   if (sessions.length === 0) {
-    return (
-      <p className={styles.placeholder}>
-        No paper sessions. Paper trading runs a Setup&rsquo;s own rules against live prices with no
-        money, and is what unlocks the bot stage.
-      </p>
-    );
+    return <p className={styles.placeholder}>{t('alertsPage.paper.empty')}</p>;
   }
 
   return (
@@ -64,54 +61,69 @@ export function PaperPanel() {
         <article key={session.id} className={styles.card}>
           <header className={styles.cardHeader}>
             <span className={styles.cardTitle}>
-              {session.state === 'promoted' ? 'Promoted' : 'Paper session'}
+              {session.state === 'promoted'
+                ? t('alertsPage.paper.promoted')
+                : t('alertsPage.paper.session')}
             </span>
             <span className={styles.badge}>{session.state}</span>
             <span className={styles.meta}>
-              since {new Date(session.started_at).toLocaleDateString()}
+              {t('alertsPage.paper.since', {
+                date: new Date(session.started_at).toLocaleDateString(),
+              })}
             </span>
             <span className={styles.spacer} />
             {session.promoted_by_override ? (
-              <span className={styles.warnBadge} title="A check was failing when this was promoted">
-                promoted on an override
+              <span className={styles.warnBadge} title={t('alertsPage.paper.overrideTitle')}>
+                {t('alertsPage.paper.overrideBadge')}
               </span>
             ) : null}
           </header>
 
           <dl className={styles.kpis}>
             <Kpi
-              label="Net"
+              label={t('alertsPage.paper.net')}
               value={`${session.net_percent >= 0 ? '+' : ''}${session.net_percent.toFixed(2)}%`}
               note={
                 session.expected.low_percent !== null && session.expected.high_percent !== null
-                  ? `expected ${session.expected.low_percent.toFixed(1)}% to ${session.expected.high_percent.toFixed(1)}%`
-                  : 'no expected range recorded'
+                  ? t('alertsPage.paper.expectedRange', {
+                      low: session.expected.low_percent.toFixed(1),
+                      high: session.expected.high_percent.toFixed(1),
+                    })
+                  : t('alertsPage.paper.noExpected')
               }
             />
             <Kpi
-              label="Max drawdown"
+              label={t('alertsPage.paper.maxDrawdown')}
               value={`${session.max_drawdown_percent.toFixed(2)}%`}
               note={
                 session.expected.drawdown_limit_percent !== null
-                  ? `limit ${session.expected.drawdown_limit_percent.toFixed(1)}%`
-                  : 'no limit set'
+                  ? t('alertsPage.paper.limit', {
+                      percent: session.expected.drawdown_limit_percent.toFixed(1),
+                    })
+                  : t('alertsPage.paper.noLimit')
               }
             />
-            <Kpi label="Fills" value={String(session.execution.fills)} note="live executions" />
             <Kpi
-              label="Drift"
+              label={t('alertsPage.paper.fills')}
+              value={String(session.execution.fills)}
+              note={t('alertsPage.paper.fillsNote')}
+            />
+            <Kpi
+              label={t('alertsPage.paper.drift')}
               value={`${session.execution.drift_percent.toFixed(4)}%`}
-              note={`${session.execution.mean_slippage_bps.toFixed(2)} bps against the assumption`}
+              note={t('alertsPage.paper.driftNote', {
+                bps: session.execution.mean_slippage_bps.toFixed(2),
+              })}
             />
             <Kpi
-              label="Latency"
+              label={t('alertsPage.paper.latency')}
               value={`${Math.round(session.execution.mean_latency_ms)} ms`}
-              note="signal to fill"
+              note={t('alertsPage.paper.latencyNote')}
             />
             <Kpi
-              label="Missed signals"
+              label={t('alertsPage.paper.missed')}
               value={String(session.missed_signals)}
-              note="no fill was recorded"
+              note={t('alertsPage.paper.missedNote')}
             />
           </dl>
 
@@ -132,7 +144,9 @@ export function PaperPanel() {
           <footer className={styles.cardFooter}>
             {session.state === 'promoted' ? (
               <span className={styles.meta}>
-                Promoted {session.promoted_at ? new Date(session.promoted_at).toLocaleString() : ''}
+                {t('alertsPage.paper.promotedAt', {
+                  when: session.promoted_at ? new Date(session.promoted_at).toLocaleString() : '',
+                })}
               </span>
             ) : (
               <>
@@ -142,18 +156,20 @@ export function PaperPanel() {
                   disabled={!session.promotion.ready}
                   title={
                     session.promotion.ready
-                      ? 'Unlock the bot stage for this setup'
+                      ? t('alertsPage.paper.promoteReady')
                       : session.promotion.blocking.join('; ')
                   }
                   onClick={() => {
                     void promote(session);
                   }}
                 >
-                  Promote to bot
+                  {t('alertsPage.paper.promote')}
                 </button>
                 {!session.promotion.ready ? (
                   <span className={styles.meta}>
-                    Still needed: {session.promotion.blocking.join(', ').toLowerCase()}
+                    {t('alertsPage.paper.stillNeeded', {
+                      blocking: session.promotion.blocking.join(', ').toLowerCase(),
+                    })}
                   </span>
                 ) : null}
               </>

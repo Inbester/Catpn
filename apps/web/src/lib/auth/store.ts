@@ -8,7 +8,7 @@
 import { create } from 'zustand';
 
 import { api, refreshSession, setAccessToken, setCsrfToken } from '@/lib/api/client';
-import type { Calendar, LoginResponse, Theme, TokenResponse, User } from '@/lib/api/types';
+import type { LoginResponse, Theme, TokenResponse, User } from '@/lib/api/types';
 import { isMfaRequired } from '@/lib/api/types';
 
 export type AuthStatus = 'unknown' | 'authenticated' | 'anonymous' | 'mfa-required';
@@ -24,12 +24,7 @@ interface AuthState {
   verifyMfa: (code: string) => Promise<void>;
   register: (email: string, displayName: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  updatePreferences: (changes: {
-    theme?: Theme;
-    locale?: string;
-    calendar?: Calendar;
-    timezone?: string;
-  }) => Promise<void>;
+  updatePreferences: (changes: { theme?: Theme; timezone?: string }) => Promise<void>;
   clearSession: () => void;
 }
 

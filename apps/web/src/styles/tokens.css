@@ -37,6 +37,10 @@
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* Every price and value is monospaced so digits do not shift on updates. */
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* Persian appears only in the hover glossary (features/glossary). The
+     fallbacks are the Persian-capable faces shipped with each platform,
+     so the tip stays readable before the webfont lands. */
+  --font-fa: 'Vazirmatn', 'Noto Naskh Arabic', 'Segoe UI', Tahoma, sans-serif;
 
   --text-xs: 11px;
   --text-sm: 12px;

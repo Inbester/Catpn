@@ -1,0 +1,63 @@
+.tip {
+  position: fixed;
+  z-index: 200;
+  /* Never a target: the tip must not intercept a click meant for the word
+     underneath it, or block a button it happens to overlap. */
+  pointer-events: none;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-popover);
+  /* Comes up rather than snapping, so it reads as an answer to resting
+     the pointer rather than as something that flashed. */
+  animation: appear 140ms ease-out;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-2);
+}
+
+.word {
+  font: 500 var(--text-xs) var(--font-sans);
+  color: var(--muted);
+  /* The English word is the thing being explained, so it stays LTR even
+     next to Persian. */
+  direction: ltr;
+}
+
+.fa {
+  font-family: var(--font-fa);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.explain {
+  margin: 0;
+  font-family: var(--font-fa);
+  font-size: var(--text-sm);
+  /* Persian needs more line height than Latin at the same size: the
+     ascenders and the dots below collide otherwise. */
+  line-height: 1.9;
+  color: var(--muted);
+}

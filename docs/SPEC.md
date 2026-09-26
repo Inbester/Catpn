@@ -50,7 +50,7 @@ Every menu (Test, Alerts, Bot) has a Setup picker in its header.
 | D8 | Global Jobs ring and active-alerts bell in the rail. Autosave and History. | ✅ approved |
 | D9 | Trading bot menu design | ⏳ **pending** (design in the next session, before phase 6) |
 | D10 | AI menu scope | ⏳ **pending** |
-| D11 | UI language | ⏳ Default: **English UI with an i18n-ready frontend**. Persian (RTL chrome, LTR charts and numbers) comes later. Jalali calendar support is required from day one. |
+| D11 | UI language | ✅ **settled (amended)**: the interface is **English only**, and the calendar is **Gregorian only**. Persian is not a second interface: resting the pointer on a term for about a second opens a small window under that word with its Persian translation and an explanation, set in Vazirmatn. The chrome never flips direction and there is no second bundle to keep in step. Supersedes the earlier default of a Persian RTL UI with Jalali support. |
 | D12 | Exchange | ⏳ Default: an **exchange adapter layer**. Bitunix is adapter #1. See §9 (legal). |
 | D13 | Formula authoring | ⏳ Default: a **safe DSL plus a visual builder**. Never `eval` user code. |
 | D14 | Local compute agent (Python app on the user's PC) | ⏳ Default: **deferred**. Browser and server compute first. |
@@ -302,7 +302,7 @@ In the second case, cross-indicator-only rules number 59,348.
 **Forward test** (the strategy version is frozen and hash-locked)
 
 *Period vs period* (the user's own idea)
-- Reference period vs test period, with **Jalali month presets**: same month this year, same month every year, next month, custom.
+- Reference period vs test period, with **Gregorian month presets**: same month this year, same month every year, next month, custom. Boundaries are UTC, because bars close on UTC.
 - A **Monte Carlo 90% band** built from the reference trades.
 - Verdict chip, e.g. HOLDS UP · WEAKER, plus checks.
 - Side-by-side table including **longest drawdown (days)**.
@@ -350,7 +350,7 @@ In the second case, cross-indicator-only rules number 59,348.
 
 **Message template**
 - Variables: `{{side_icon}} {{SIDE}} {{symbol}} {{tf}} {{strategy}} {{version}} {{price}} {{sl}} {{sl_pct}} {{tp}} {{tp_pct}} {{size}} {{leverage}} {{pnl}} {{rsi}} {{time_tehran}} {{chart_link}}`
-- Optional chart snapshot. English or Persian.
+- Optional chart snapshot. English or Persian: this is the language of the *message that is sent*, chosen per alert, and is the one place Persian is produced. The interface around it stays English (D11).
 - Every message ends with "Not financial advice".
 
 **Destinations**
@@ -568,14 +568,14 @@ Each phase ends runnable and tested.
 
 | Phase | Scope | Done when |
 |---|---|---|
-| **0** | Monorepo, Docker Compose (Postgres + Timescale, Redis), FastAPI skeleton, auth (Argon2 + TOTP), React/Vite/TS app shell, **design tokens A and B**, rail with 7 menus, Jobs ring and bell (stub), autosave framework (IndexedDB + server sync), i18n and Jalali utilities, CI, security headers | Log in, see the shell in both themes, CI green |
+| **0** | Monorepo, Docker Compose (Postgres + Timescale, Redis), FastAPI skeleton, auth (Argon2 + TOTP), React/Vite/TS app shell, **design tokens A and B**, rail with 7 menus, Jobs ring and bell (stub), autosave framework (IndexedDB + server sync), i18n, CI, security headers | Log in, see the shell in both themes, CI green |
 | **1** | Exchange adapter (Bitunix public), market-data service (one shared WebSocket, Redis fan-out, backfill to Timescale), **Chart**: live candles, countdown, timeframes, watchlist with instant search, symbol detail card, indicators (EMA, SMA, RSI, MACD, Volume, ATR, BB) with legend and pane controls, drawing toolbar (lines group, magnet, lock, hide, remove, object tree), selected-drawing toolbar, settings dialog, History tab, persistence | Live BTCUSDT chart with drawings that survive a refresh |
 | **2** | DSL and engine (AST, sandbox, hash versioning), Builder and Formula views, **Backtest** (next-open fills, 1m magnifier, fees, historical funding, mark-price liquidation with tiers), result tabs, list of trades, trade view on the chart, CSV export | Backtest reproduces hand-checked fixtures |
-| **3** | **Test**: period vs period (Jalali presets, Monte Carlo band, regime panel), walk-forward, drawdown panes everywhere, **Setups** (save, picker in all headers, overview) | Farvardin 1404 vs 1405 report runs |
+| **3** | **Test**: period vs period (Gregorian presets, Monte Carlo band, regime panel), walk-forward, drawdown panes everywhere, **Setups** (save, picker in all headers, overview) | March 2025 vs March 2026 report runs |
 | **4** | **Research**: range controls with live Bitunix limits and fee tiers, margin × leverage heatmap, trade risk (MAE), robustness (Monte Carlo, VaR, Kelly, stress), **Discover** (enumerator matching the §3.2 counts, FDR, out-of-sample), Resources/Compute (server job runner plus browser workers/WASM/WebGPU, allocation sliders, progress, checkpoint/resume) | Enumerator unit tests match 5,324 and 69,828 |
 | **5** | **Alerts**: server evaluator on bar close, notifier (Telegram DM/group/channel, Web Push, webhook, email), templates EN/FA, burst merge, quiet hours, delivery log, active-alerts bell; **paper trading** (live, execution-quality metrics, promotion checklist); Resources/Network (WireGuard import/validate/test/route) | Signal reaches a Telegram group within 2 s of bar close |
 | **6** | Finish the Trading bot design, then build: execution service, key vault, risk limits, kill switch, reconciliation, audit log, hedge-mode checks | Testnet or small live dry run passes a checklist |
-| **7** | AI menu (after its scope is defined), Persian UI, Local agent (optional), hardening, load tests, pen test | — |
+| **7** | AI menu (after its scope is defined), Local agent (optional), hardening, load tests, pen test | — |
 
 ---
 

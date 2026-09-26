@@ -9,14 +9,15 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
 import type { Setup } from '@/features/setups/lib/types';
 import * as alertsApi from '../lib/api';
 import {
-  REPEAT_LABELS,
-  SOURCE_LABELS,
+  ALERT_SOURCES,
+  REPEAT_MODES,
   type Alert,
   type AlertSource,
   type Destination,
@@ -44,6 +45,7 @@ export interface AlertFormProps {
 }
 
 export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(alert?.name ?? '');
   const [source, setSource] = useState<AlertSource>(alert?.source ?? 'price');
   const [setupId, setSetupId] = useState<string>(alert?.setup_id ?? '');
@@ -118,7 +120,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
       else await alertsApi.createAlert(payload);
       onSaved();
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'Could not save that alert.');
+      setError(caught instanceof ApiError ? caught.message : t('alertsPage.form.failed'));
     } finally {
       setBusy(false);
     }
@@ -135,15 +137,22 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="Alert">
+      <div
+        className={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('alertsPage.form.newTitle')}
+      >
         <header className={styles.header}>
-          <span className={styles.title}>{alert ? 'Edit alert' : 'New alert'}</span>
-          <span className={styles.note}>evaluated on the server</span>
+          <span className={styles.title}>
+            {alert ? t('alertsPage.form.editTitle') : t('alertsPage.form.newTitle')}
+          </span>
+          <span className={styles.note}>{t('alertsPage.form.note')}</span>
         </header>
 
         <div className={styles.body}>
           <label className={styles.field}>
-            <span className={styles.label}>Name</span>
+            <span className={styles.label}>{t('alertsPage.form.name')}</span>
             <input
               className={styles.input}
               value={name}
@@ -155,7 +164,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
 
           <div className={styles.row}>
             <label className={styles.field}>
-              <span className={styles.label}>Watches</span>
+              <span className={styles.label}>{t('alertsPage.form.watches')}</span>
               <select
                 className={styles.input}
                 value={source}
@@ -163,16 +172,16 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                   setSource(event.target.value as AlertSource);
                 }}
               >
-                {(Object.keys(SOURCE_LABELS) as AlertSource[]).map((key) => (
+                {ALERT_SOURCES.map((key) => (
                   <option key={key} value={key}>
-                    {SOURCE_LABELS[key]}
+                    {t(`alertsPage.source.${key}`)}
                   </option>
                 ))}
               </select>
             </label>
 
             <label className={styles.field}>
-              <span className={styles.label}>Symbol</span>
+              <span className={styles.label}>{t('alertsPage.form.symbol')}</span>
               <input
                 className={styles.input}
                 value={symbol}
@@ -183,7 +192,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
             </label>
 
             <label className={styles.field}>
-              <span className={styles.label}>Timeframe</span>
+              <span className={styles.label}>{t('alertsPage.form.timeframe')}</span>
               <select
                 className={styles.input}
                 value={interval}
@@ -202,7 +211,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
 
           {source === 'strategy' ? (
             <label className={styles.field}>
-              <span className={styles.label}>Setup</span>
+              <span className={styles.label}>{t('alertsPage.form.setup')}</span>
               <select
                 className={styles.input}
                 value={setupId}
@@ -210,24 +219,21 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                   setSetupId(event.target.value);
                 }}
               >
-                <option value="">Choose a setup…</option>
+                <option value="">{t('alertsPage.form.chooseSetup')}</option>
                 {setups.map((setup) => (
                   <option key={setup.id} value={setup.id}>
                     {setup.name} · {setup.strategy_version.slice(0, 8)}
                   </option>
                 ))}
               </select>
-              <span className={styles.hint}>
-                A strategy alert fires on the version the setup locked, not on whatever the draft
-                says today.
-              </span>
+              <span className={styles.hint}>{t('alertsPage.form.setupHint')}</span>
             </label>
           ) : null}
 
           {source === 'price' ? (
             <div className={styles.row}>
               <label className={styles.field}>
-                <span className={styles.label}>When price crosses</span>
+                <span className={styles.label}>{t('alertsPage.form.crosses')}</span>
                 <select
                   className={styles.input}
                   value={direction}
@@ -235,12 +241,12 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                     setDirection(event.target.value);
                   }}
                 >
-                  <option value="above">above</option>
-                  <option value="below">below</option>
+                  <option value="above">{t('alertsPage.form.above')}</option>
+                  <option value="below">{t('alertsPage.form.below')}</option>
                 </select>
               </label>
               <label className={styles.field}>
-                <span className={styles.label}>Level</span>
+                <span className={styles.label}>{t('alertsPage.form.level')}</span>
                 <input
                   className={styles.input}
                   type="number"
@@ -249,16 +255,14 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                     setPrice(event.target.value);
                   }}
                 />
-                <span className={styles.hint}>
-                  The crossing, not the state — otherwise it fires on every bar it stays there.
-                </span>
+                <span className={styles.hint}>{t('alertsPage.form.levelHint')}</span>
               </label>
             </div>
           ) : null}
 
           {source === 'indicator' ? (
             <label className={styles.field}>
-              <span className={styles.label}>Condition</span>
+              <span className={styles.label}>{t('alertsPage.form.condition')}</span>
               <input
                 className={styles.input}
                 value={expression}
@@ -272,7 +276,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
 
           <div className={styles.row}>
             <label className={styles.field}>
-              <span className={styles.label}>Repeat</span>
+              <span className={styles.label}>{t('alertsPage.form.repeat')}</span>
               <select
                 className={styles.input}
                 value={repeat}
@@ -280,16 +284,16 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                   setRepeat(event.target.value as RepeatMode);
                 }}
               >
-                {(Object.keys(REPEAT_LABELS) as RepeatMode[]).map((key) => (
+                {REPEAT_MODES.map((key) => (
                   <option key={key} value={key}>
-                    {REPEAT_LABELS[key]}
+                    {t(`alertsPage.repeat.${key}`)}
                   </option>
                 ))}
               </select>
             </label>
 
             <label className={styles.field}>
-              <span className={styles.label}>Quiet from</span>
+              <span className={styles.label}>{t('alertsPage.form.quietFrom')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -302,7 +306,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
               />
             </label>
             <label className={styles.field}>
-              <span className={styles.label}>Quiet until</span>
+              <span className={styles.label}>{t('alertsPage.form.quietUntil')}</span>
               <input
                 className={styles.input}
                 type="number"
@@ -324,7 +328,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                 setBarClose(event.target.checked);
               }}
             />
-            Evaluate on bar close
+            {t('alertsPage.form.barClose')}
             <span className={styles.hint}>
               A rule checked mid-bar can un-fire: the condition holds, the bar turns, and the signal
               was never real.
@@ -332,7 +336,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
           </label>
 
           <div className={styles.field}>
-            <span className={styles.label}>Sends to</span>
+            <span className={styles.label}>{t('alertsPage.form.destinations')}</span>
             {destinations.map((destination, index) => (
               <div key={index} className={styles.row}>
                 <select
@@ -354,7 +358,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                 <input
                   className={styles.input}
                   value={destination.target}
-                  placeholder="chat id, URL or address"
+                  placeholder={t('alertsPage.form.destinationPlaceholder')}
                   onChange={(event) => {
                     const target = event.target.value;
                     setDestinations((current) =>
@@ -375,12 +379,12 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
             ))}
             <button type="button" className={styles.button} onClick={addDestination}>
               <Icon name="plus" size={14} />
-              Add a destination
+              {t('alertsPage.form.addDestination')}
             </button>
           </div>
 
           <label className={styles.field}>
-            <span className={styles.label}>Message</span>
+            <span className={styles.label}>{t('alertsPage.form.message')}</span>
             <textarea
               className={styles.textarea}
               rows={4}
@@ -390,14 +394,12 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                 setTemplate(event.target.value);
               }}
             />
-            <span className={styles.hint}>
-              Leave it empty for the default. Variables are {'{{name}}'} only — no expressions.
-            </span>
+            <span className={styles.hint}>{t('alertsPage.form.messageHint')}</span>
           </label>
 
           <div className={styles.row}>
             <label className={styles.field}>
-              <span className={styles.label}>Language</span>
+              <span className={styles.label}>{t('alertsPage.form.language')}</span>
               <select
                 className={styles.input}
                 value={locale}
@@ -406,14 +408,17 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                 }}
               >
                 <option value="en">English</option>
-                <option value="fa">فارسی</option>
+                {/* Named in English like everything else on screen: this
+                    chooses the language of the message that is sent, not
+                    the language of the app. */}
+                <option value="fa">Persian</option>
               </select>
             </label>
           </div>
 
           {preview ? (
             <div className={styles.preview}>
-              <span className={styles.label}>What will be sent</span>
+              <span className={styles.label}>{t('alertsPage.form.preview')}</span>
               <pre className={styles.previewBody} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
                 {preview.message}
               </pre>
@@ -424,9 +429,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
                   as written.
                 </p>
               ) : null}
-              <p className={styles.hint}>
-                The last line is added to every message and cannot be removed.
-              </p>
+              <p className={styles.hint}>{t('alertsPage.form.disclaimerNote')}</p>
             </div>
           ) : null}
 
@@ -439,7 +442,7 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
 
         <footer className={styles.footer}>
           <button type="button" className={styles.button} onClick={onClose}>
-            Cancel
+            {t('alertsPage.form.cancel')}
           </button>
           <button
             type="button"
@@ -449,7 +452,11 @@ export function AlertForm({ alert, setups, onClose, onSaved }: AlertFormProps) {
               void save();
             }}
           >
-            {busy ? 'Saving…' : alert ? 'Save changes' : 'Create alert'}
+            {busy
+              ? t('alertsPage.form.saving')
+              : alert
+                ? t('alertsPage.form.saveChanges')
+                : t('alertsPage.form.create')}
           </button>
         </footer>
       </div>
