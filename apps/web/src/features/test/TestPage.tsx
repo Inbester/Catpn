@@ -13,6 +13,8 @@ import { Icon } from '@/components/Icon';
 import { ApiError } from '@/lib/api/client';
 import { useAuthStore } from '@/lib/auth/store';
 import { ForwardPanel } from '@/features/forward/ForwardPanel';
+import { SaveSetupDialog } from '@/features/setups/SaveSetupDialog';
+import { SetupPicker } from '@/features/setups/SetupPicker';
 import { EquityChart } from './components/EquityChart';
 import { CostsPanel } from './components/CostsPanel';
 import { KpiStrip } from './components/KpiStrip';
@@ -57,6 +59,7 @@ export function TestPage() {
   const [tab, setTab] = useState<ResultTab>('overview');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savingSetup, setSavingSetup] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -356,26 +359,44 @@ export function TestPage() {
 
       <div className={styles.main}>
         <header className={styles.header}>
-          <span className={styles.headerTitle}>{draft.name}</span>
-          {run ? (
-            <>
-              <span className={styles.chip}>
-                <Icon name="lock" size={12} />
-                {run.strategy_version.slice(0, 12)}
-              </span>
-              <span className={styles.chip}>
-                {run.symbol} · {run.interval}
-              </span>
-              <span className={styles.chip}>
-                {timestamp(run.start_time, timezone)} – {timestamp(run.end_time, timezone)}
-              </span>
-              <span className={styles.chip}>
-                {config.leverage}× {config.margin_mode}
-              </span>
-            </>
-          ) : null}
+          <SetupPicker />
 
-          <span className={styles.headerSpacer} />
+          {/* Only this middle strip scrolls, so the run's chips can never
+              push the actions off the end of the header. */}
+          <div className={styles.headerScroll}>
+            <span className={styles.headerTitle}>{draft.name}</span>
+            {run ? (
+              <>
+                <span className={styles.chip}>
+                  <Icon name="lock" size={12} />
+                  {run.strategy_version.slice(0, 12)}
+                </span>
+                <span className={styles.chip}>
+                  {run.symbol} · {run.interval}
+                </span>
+                <span className={styles.chip}>
+                  {timestamp(run.start_time, timezone)} – {timestamp(run.end_time, timezone)}
+                </span>
+                <span className={styles.chip}>
+                  {config.leverage}× {config.margin_mode}
+                </span>
+              </>
+            ) : null}
+          </div>
+
+          {run ? (
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => {
+                setSavingSetup(true);
+              }}
+              title="Lock this version, market and sizing together"
+            >
+              <Icon name="lock" size={14} />
+              Save as setup
+            </button>
+          ) : null}
 
           {run ? (
             <a className={styles.button} href={apiCalls.tradesCsvPath(run.id)} download>
@@ -506,6 +527,26 @@ export function TestPage() {
           </div>
         )}
       </div>
+
+      {savingSetup && run && selectedId ? (
+        <SaveSetupDialog
+          strategyId={selectedId}
+          strategyName={draft.name}
+          strategyVersion={run.strategy_version}
+          symbol={run.symbol}
+          interval={run.interval}
+          marginPercent={config.margin_percent}
+          leverage={config.leverage}
+          marginMode={config.margin_mode}
+          makerFee={config.maker_fee}
+          takerFee={config.taker_fee}
+          sourceRunId={run.id}
+          observedDrawdownPercent={run.stats.max_drawdown_percent}
+          onClose={() => {
+            setSavingSetup(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -95,7 +95,20 @@
   border-bottom: 1px solid var(--line);
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.headerScroll {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.headerScroll::-webkit-scrollbar {
+  display: none;
 }
 
 .headerTitle {
@@ -114,10 +127,6 @@
   font-size: var(--text-xs);
   color: var(--muted);
   font-family: var(--font-mono);
-}
-
-.headerSpacer {
-  flex: 1;
 }
 
 .tabs {

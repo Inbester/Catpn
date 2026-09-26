@@ -23,6 +23,9 @@ function usePageTitle(): string {
 
   const item = MENU_ITEMS.find((entry) => pathname.startsWith(entry.path));
   if (item) return t(item.labelKey);
+  // Setups has no rail entry: SPEC §3.2 files it under Research, which is
+  // phase 4, so until then it is reached from the picker in each header.
+  if (pathname.startsWith('/setups')) return t('nav.setups');
   if (pathname.startsWith('/settings')) return t('nav.settings');
   if (pathname.startsWith('/account')) return t('nav.account');
   return t('app.name');

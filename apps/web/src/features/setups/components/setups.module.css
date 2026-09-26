@@ -1,0 +1,41 @@
+/* Stage chips, shared by the picker and the overview table. */
+
+.stages {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.stage {
+  padding: 3px 5px;
+  border-radius: var(--radius-sm);
+  font: 600 9px var(--font-sans);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.stagesMd .stage {
+  font-size: 10px;
+  padding: 4px 6px;
+}
+
+/* Tinted from the status tokens rather than fixed hexes, so the chips
+   carry the same meaning in Paper as in Graphite. */
+.stageIdle {
+  background: var(--accent-bg);
+  color: var(--dim);
+}
+
+.stagePassed {
+  background: color-mix(in srgb, var(--up) 16%, transparent);
+  color: var(--up);
+}
+
+.stageRunning {
+  background: color-mix(in srgb, var(--drawing) 18%, transparent);
+  color: var(--drawing);
+}
+
+.stageFailed {
+  background: color-mix(in srgb, var(--down) 16%, transparent);
+  color: var(--down);
+}

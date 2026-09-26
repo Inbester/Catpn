@@ -9,6 +9,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AppLayout } from '@/components/shell/AppLayout';
 import { ChartPage } from '@/features/chart/ChartPage';
+import { SetupsPage } from '@/features/setups/SetupsPage';
 import { TestPage } from '@/features/test/TestPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
 
@@ -24,6 +25,10 @@ export const routes: RouteObject[] = [
         element: <PhasePlaceholder titleKey="nav.research" icon="research" phase={4} />,
       },
       { path: 'test', element: <TestPage /> },
+      // SPEC §3.2 puts the Setups overview inside Research, which is phase 4.
+      // It has its own route until then: the picker in every menu header has
+      // to lead somewhere, and Setups are a phase 3 deliverable.
+      { path: 'setups', element: <SetupsPage /> },
       {
         path: 'alerts',
         element: <PhasePlaceholder titleKey="nav.alerts" icon="alerts" phase={5} />,

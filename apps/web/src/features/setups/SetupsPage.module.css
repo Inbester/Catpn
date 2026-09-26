@@ -1,0 +1,215 @@
+.page {
+  display: grid;
+  grid-template-rows: var(--header-height, 56px) minmax(0, 1fr);
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.chip {
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--accent-bg);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.arrow {
+  margin-inline-end: var(--space-2);
+  color: var(--dim);
+}
+
+.body {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  overflow-y: auto;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.kpi {
+  background: var(--surface);
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.kpiLabel,
+.kpiNote {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.kpiValue {
+  font: 500 var(--text-lg) var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiNote {
+  font-family: var(--font-mono);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.panelTitle {
+  font: 500 var(--text-sm) var(--font-sans);
+}
+
+.panelNote {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table th {
+  text-align: start;
+  font: 500 var(--text-xs) var(--font-sans);
+  color: var(--muted);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line-2);
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 500;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.sub {
+  display: block;
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* The same muted style for a cell that is only that text, with no value
+   above it to sit under. */
+.subCell {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.archive {
+  background: none;
+  border: none;
+  color: var(--dim);
+  padding: var(--space-1);
+}
+
+.archive:hover:not(:disabled) {
+  color: var(--down);
+}
+
+.empty,
+.clear,
+.warning {
+  margin: 0;
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.clear,
+.warning {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: start;
+  border-bottom: 1px solid var(--line-2);
+}
+
+.warning:last-child,
+.clear:last-child {
+  border-bottom: none;
+}
+
+.warningSevere {
+  color: var(--text);
+}
+
+.warningSevere svg {
+  color: var(--amber);
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--down) 12%, transparent);
+  color: var(--down);
+  font-size: var(--text-sm);
+}

@@ -1,0 +1,160 @@
+.root {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--muted);
+  background: var(--accent-bg);
+  color: var(--text);
+  font: 500 var(--text-sm) var(--font-sans);
+  white-space: nowrap;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.triggerName {
+  font-weight: 500;
+}
+
+.triggerMeta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.dropdown {
+  /* Fixed and portalled: the menu headers this sits in scroll horizontally,
+     and a panel positioned inside one would be clipped by that. */
+  position: fixed;
+  z-index: 70;
+  width: min(640px, 90vw);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-popover);
+  overflow: hidden;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-3);
+  height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: 400 var(--text-sm) var(--font-sans);
+  outline: none;
+}
+
+.rows {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  text-align: start;
+  color: var(--text);
+  position: relative;
+}
+
+.row:hover {
+  background: var(--accent-bg);
+}
+
+.rowActive {
+  background: var(--accent-bg);
+}
+
+.rowActive::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  width: 2px;
+  background: var(--accent);
+}
+
+.rowText {
+  min-width: 0;
+}
+
+.rowName {
+  display: block;
+  font: 500 var(--text-sm) var(--font-sans);
+}
+
+.rowMeta {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  margin: 0;
+  padding: var(--space-5) var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.clear,
+.manage {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: 400 var(--text-xs) var(--font-sans);
+  text-decoration: none;
+}
+
+.manage {
+  color: var(--text);
+  font-weight: 500;
+}
