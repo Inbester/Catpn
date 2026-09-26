@@ -17,6 +17,12 @@ from quanta.models.compute import (
 )
 from quanta.models.job import JOB_STATES, JobRecord
 from quanta.models.market import BackfillState, FundingRate, InstrumentMeta, Kline
+from quanta.models.network import (
+    ROUTABLE_FEATURES,
+    UNROUTABLE,
+    FeatureRoute,
+    Tunnel,
+)
 from quanta.models.paper import PaperFill, PaperSession
 from quanta.models.setup import PIPELINE_STAGES, SETUP_COLORS, Setup
 from quanta.models.strategy import BacktestRun, StrategyRecord
@@ -32,8 +38,10 @@ __all__ = [
     "DOCUMENT_KINDS",
     "JOB_STATES",
     "PIPELINE_STAGES",
+    "ROUTABLE_FEATURES",
     "SERVER_ONLY",
     "SETUP_COLORS",
+    "UNROUTABLE",
     "Alert",
     "AlertEvent",
     "AuditEvent",
@@ -42,6 +50,7 @@ __all__ = [
     "BacktestRun",
     "Channel",
     "ComputePreference",
+    "FeatureRoute",
     "FundingRate",
     "InstrumentMeta",
     "JobRecord",
@@ -50,6 +59,7 @@ __all__ = [
     "PaperSession",
     "Setup",
     "StrategyRecord",
+    "Tunnel",
     "User",
     "WorkspaceDocument",
     "WorkspaceRevision",
