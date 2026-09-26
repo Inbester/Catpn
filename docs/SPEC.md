@@ -391,10 +391,17 @@ including the user who typed it.
 sent, what came back, and how long it took, plus every reconciliation, every
 risk trip and every start, stop and kill, with who did it.
 
-*Kill switch* — in the menu header, on every tab. It stops every bot and
-cancels every open order, and it takes 2FA. It is a header button rather
-than a per-bot action because the moment you want it is the moment you do
-not want to be choosing from a list.
+*Kill switch* — in the menu header, on every tab. It takes 2FA and does
+three things in this order: halts every bot so nothing new is sent, cancels
+every open order, then closes every open position with reduce-only market
+orders. Flattening is part of it by decision (2026-09-26): stopping the
+bots but leaving a leveraged position open is not a kill switch, it is a
+pause. The confirmation says plainly that positions will be closed at
+market, because that is a real cost at a bad moment and the user is
+choosing to pay it.
+
+It is a header button rather than a per-bot action because the moment you
+want it is the moment you do not want to be choosing from a list.
 
 **States.** `stopped → armed → running`, and `halted` from any of them.
 *Armed* means it has passed pre-flight and will act on its next signal;
