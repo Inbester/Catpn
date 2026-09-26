@@ -2,7 +2,7 @@
  * The application shell: rail, top bar with save status, and the routed page.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +15,7 @@ import { AlertsTray } from './AlertsTray';
 import { AppRail, MENU_ITEMS } from './AppRail';
 import { JobsTray } from './JobsTray';
 import { SaveStatus } from './SaveStatus';
+import { watchJobs } from '@/features/research/lib/jobs';
 import styles from './AppLayout.module.css';
 
 function usePageTitle(): string {
@@ -35,6 +36,11 @@ export function AppLayout() {
   const { t } = useTranslation();
   const title = usePageTitle();
   const [openTray, setOpenTray] = useState<'jobs' | 'alerts' | null>(null);
+
+  // The rail's ring shows server jobs from every menu, so a search keeps
+  // counting while the user is somewhere else. Polling lives here rather
+  // than in the Research page for exactly that reason.
+  useEffect(() => watchJobs(), []);
 
   const user = useAuthStore((state) => state.user);
   const updatePreferences = useAuthStore((state) => state.updatePreferences);

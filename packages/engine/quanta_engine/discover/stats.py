@@ -91,12 +91,22 @@ def score(
     *,
     side: str,
     cost_percent: float,
+    horizon: int = 1,
 ) -> tuple[int, float, float, float, float, float]:
     """Signals, gross mean, net mean, t, p and win rate for one test.
 
     The t-test is two-sided against a zero mean. It is a screen, not a
     claim that returns are normal: the correction that follows only needs
     the p-values to be comparable to each other.
+
+    Overlapping windows are the reason ``horizon`` is taken. A 24-bar
+    forward return measured from every bar shares 23 of its 24 bars with
+    its neighbour, so 2,000 such signals are nowhere near 2,000
+    independent observations. Treating them as independent inflates every
+    t-statistic by roughly the square root of the horizon, and a search
+    over hundreds of thousands of rules will find whatever that inflation
+    lets through. The effective sample size is taken as n / horizon, which
+    is the standard conservative reading.
     """
     usable = mask & np.isfinite(returns)
     n = int(np.count_nonzero(usable))
@@ -116,11 +126,15 @@ def score(
     if spread == 0.0:
         return n, mean, net, 0.0, 1.0, float(np.mean(sample > 0))
 
-    t = mean / (spread / math.sqrt(n))
-    return n, mean, net, t, _two_sided_p(t, n - 1), float(np.mean(sample > 0))
+    effective = max(1.0, n / max(1, horizon))
+    if effective < MIN_SIGNALS:
+        return n, mean, net, 0.0, 1.0, float(np.mean(sample > 0))
+
+    t = mean / (spread / math.sqrt(effective))
+    return n, mean, net, t, _two_sided_p(t, effective - 1), float(np.mean(sample > 0))
 
 
-def _two_sided_p(t: float, degrees: int) -> float:
+def _two_sided_p(t: float, degrees: float) -> float:
     """Two-sided p for a t-statistic, without pulling in SciPy.
 
     Uses the normal approximation, which is within a thousandth of the

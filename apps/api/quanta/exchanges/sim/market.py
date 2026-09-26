@@ -45,6 +45,19 @@ def _seed(symbol: str) -> int:
     return int.from_bytes(digest[:4], "big")
 
 
+def _hash_unit(index: int, seed: int) -> float:
+    """A stable value in [-1, 1) for a grid point.
+
+    SplitMix64's finaliser: cheap, and it decorrelates neighbouring
+    indices well enough that the octaves do not line up into a pattern.
+    """
+    x = (index * 0x9E3779B97F4A7C15 + seed) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 30)) * 0xBF58476D1CE4E5B9) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 27)) * 0x94D049BB133111EB) & 0xFFFFFFFFFFFFFFFF
+    x ^= x >> 31
+    return (x / 0xFFFFFFFFFFFFFFFF) * 2.0 - 1.0
+
+
 def _quantize(value: Decimal, anchor: Decimal) -> Decimal:
     """Round to a sensible tick for the price's magnitude."""
     if anchor >= 1000:
@@ -73,22 +86,56 @@ class SyntheticMarket:
         return Decimal(_seed(self.symbol) % 50_000) / Decimal(100) + Decimal("0.5")
 
     def _price_at(self, timestamp_ms: int) -> float:
-        """A smooth price path: several sine waves plus a hash-based wobble.
+        """A price path that behaves like a market, addressable in O(1).
 
-        Deterministic in the timestamp, so any window can be generated
-        directly without replaying from the beginning.
+        Two properties have to hold at once, and they pull against each
+        other. The path must be *directly* computable at any timestamp, so
+        that a request for one week of 2025 does not replay from an origin.
+        And its returns must look like a market's: near-zero correlation
+        from one bar to the next.
+
+        An earlier version was a sum of sine waves with a small random
+        nudge, which satisfied the first and badly failed the second. Its
+        lag-2 return autocorrelation measured -0.87 where a real market
+        sits near zero, and a Discover search over it duly "found" that a
+        bar turning up predicted the next bar 96% of the time. That is a
+        property of a sine wave, not of a market, and research run against
+        it would have been measuring the generator.
+
+        This is value noise summed over octaves instead: at each doubling
+        of wavelength, a hash-derived value interpolated between grid
+        points, with amplitude scaled by the square root of the wavelength.
+        Summing those approximates Brownian motion, which is the cheapest
+        honest model of a price — the increments are near-independent, so
+        nothing in the path rewards predicting it.
         """
         seed = _seed(self.symbol)
-        t = timestamp_ms / 60_000.0  # minutes
+        minutes = timestamp_ms / 60_000.0
 
-        trend = math.sin((t + seed % 1000) / 5_000.0) * 0.08
-        swing = math.sin((t + seed % 300) / 620.0) * 0.035
-        ripple = math.sin((t + seed % 97) / 41.0) * 0.012
+        total = 0.0
+        # 1 minute to about 11 days. Fewer octaves leaves visible steps at
+        # the coarse end; more adds cost for movement no chart can show.
+        for octave in range(15):
+            wavelength = float(1 << octave)
+            # Brownian scaling: variance grows with time, so amplitude
+            # grows with its square root.
+            total += self._octave(minutes / wavelength, seed + octave * 7919) * math.sqrt(
+                wavelength
+            )
 
-        # A per-minute pseudo-random nudge, stable for a given minute.
-        bucket = int(t) ^ seed
-        noise = ((bucket * 1_103_515_245 + 12_345) % 10_000) / 10_000.0 - 0.5
-        return 1.0 + trend + swing + ripple + noise * 0.004
+        # Scaled so a day moves about 3-4%, which is BTC-like.
+        return 1.0 + total * 0.0007
+
+    @staticmethod
+    def _octave(position: float, seed: int) -> float:
+        """One layer of value noise: interpolated hashes at unit spacing."""
+        index = math.floor(position)
+        fraction = position - index
+        left = _hash_unit(index, seed)
+        right = _hash_unit(index + 1, seed)
+        # Smoothstep, so the path has no corners where octaves meet.
+        weight = fraction * fraction * (3.0 - 2.0 * fraction)
+        return left + (right - left) * weight
 
     def bar(
         self,

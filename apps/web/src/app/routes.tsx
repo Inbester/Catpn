@@ -9,6 +9,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AppLayout } from '@/components/shell/AppLayout';
 import { ChartPage } from '@/features/chart/ChartPage';
+import { ResearchPage } from '@/features/research/ResearchPage';
 import { SetupsPage } from '@/features/setups/SetupsPage';
 import { TestPage } from '@/features/test/TestPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
@@ -20,10 +21,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="/chart" replace /> },
       { path: 'chart', element: <ChartPage /> },
-      {
-        path: 'research',
-        element: <PhasePlaceholder titleKey="nav.research" icon="research" phase={4} />,
-      },
+      { path: 'research', element: <ResearchPage /> },
       { path: 'test', element: <TestPage /> },
       // SPEC §3.2 puts the Setups overview inside Research, which is phase 4.
       // It has its own route until then: the picker in every menu header has

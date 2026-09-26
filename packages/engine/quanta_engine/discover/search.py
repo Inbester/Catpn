@@ -92,6 +92,7 @@ def run_search(
                     returns[horizon],
                     side=side,
                     cost_percent=config.cost_percent,
+                    horizon=horizon,
                 )
                 outcomes.append(
                     Outcome(
@@ -123,6 +124,7 @@ def run_search(
             returns[outcome.horizon],
             side=outcome.side,
             cost_percent=config.cost_percent,
+            horizon=outcome.horizon,
         )
         hits.append(
             replace(

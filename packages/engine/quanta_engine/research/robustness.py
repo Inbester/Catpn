@@ -291,7 +291,10 @@ def _without_best_trades(
         name=f"Best {count} trades removed",
         description=(
             "How much of the return came from a handful of trades. A "
-            "strategy that needs its top five is a bet on those five."
+            "strategy that needs its top five is a bet on those five. "
+            "Both figures are the trades added up against starting capital, "
+            "not a compounded curve, so a number past -100% is the sum "
+            "saying so rather than an account losing more than it held."
         ),
         net_percent=net,
         max_drawdown_percent=float(result.stats["max_drawdown_percent"]),

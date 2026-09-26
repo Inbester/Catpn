@@ -179,3 +179,36 @@ class TestSplit:
     def test_always_leaves_a_bar_on_each_side(self) -> None:
         assert split_index(2) == 1
         assert split_index(3, share=0.99) == 2
+
+
+class TestOverlappingWindows:
+    """A 24-bar return from every bar is not 2,000 independent readings."""
+
+    def test_a_long_horizon_is_judged_on_fewer_effective_signals(self) -> None:
+        rng = np.random.default_rng(4)
+        mask = np.ones(2400, dtype=bool)
+        returns = rng.normal(0.05, 1.0, 2400)
+
+        naive = score(mask, returns, side="long", cost_percent=0.0, horizon=1)
+        overlapping = score(mask, returns, side="long", cost_percent=0.0, horizon=24)
+
+        # Same data, same mean — but a 24-bar window shares 23 of its 24
+        # bars with its neighbour, so the evidence is far thinner.
+        assert overlapping[1] == pytest.approx(naive[1])
+        assert abs(overlapping[3]) < abs(naive[3])
+        assert overlapping[4] > naive[4]
+
+    def test_the_inflation_is_about_the_square_root_of_the_horizon(self) -> None:
+        rng = np.random.default_rng(5)
+        mask = np.ones(2400, dtype=bool)
+        returns = rng.normal(0.05, 1.0, 2400)
+
+        naive = score(mask, returns, side="long", cost_percent=0.0, horizon=1)
+        overlapping = score(mask, returns, side="long", cost_percent=0.0, horizon=16)
+        assert abs(naive[3]) / abs(overlapping[3]) == pytest.approx(4.0, rel=0.02)
+
+    def test_a_horizon_that_leaves_too_few_effective_signals_is_refused(self) -> None:
+        mask = np.ones(100, dtype=bool)
+        returns = np.full(100, 1.0)
+        # 100 bars at a 24-bar horizon is four independent readings.
+        assert score(mask, returns, side="long", cost_percent=0.0, horizon=24)[4] == 1.0
