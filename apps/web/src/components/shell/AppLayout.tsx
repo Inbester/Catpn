@@ -15,6 +15,7 @@ import { AlertsTray } from './AlertsTray';
 import { AppRail, MENU_ITEMS } from './AppRail';
 import { JobsTray } from './JobsTray';
 import { SaveStatus } from './SaveStatus';
+import { toRows, useActiveAlerts, watchActiveAlerts } from '@/features/alerts/lib/activeAlerts';
 import { watchJobs } from '@/features/research/lib/jobs';
 import styles from './AppLayout.module.css';
 
@@ -41,6 +42,10 @@ export function AppLayout() {
   // counting while the user is somewhere else. Polling lives here rather
   // than in the Research page for exactly that reason.
   useEffect(() => watchJobs(), []);
+  // The bell was built in phase 0 with nothing behind it; these are the
+  // alerts that are actually enabled.
+  useEffect(() => watchActiveAlerts(), []);
+  const activeAlerts = useActiveAlerts((state) => state.alerts);
 
   const user = useAuthStore((state) => state.user);
   const updatePreferences = useAuthStore((state) => state.updatePreferences);
@@ -60,6 +65,7 @@ export function AppLayout() {
   return (
     <div className={styles.app}>
       <AppRail
+        activeAlertCount={activeAlerts.length}
         onOpenJobs={() => {
           setOpenTray((current) => (current === 'jobs' ? null : 'jobs'));
         }}
@@ -99,6 +105,7 @@ export function AppLayout() {
       ) : null}
       {openTray === 'alerts' ? (
         <AlertsTray
+          alerts={toRows(activeAlerts)}
           onClose={() => {
             setOpenTray(null);
           }}

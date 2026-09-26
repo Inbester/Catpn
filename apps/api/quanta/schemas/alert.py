@@ -132,3 +132,37 @@ class PreviewResponse(BaseModel):
     message: str
     # Variables the template names that nothing will fill in.
     unknown_variables: list[str]
+
+
+class PaperStartRequest(BaseModel):
+    setup_id: uuid.UUID
+    initial_capital: float = Field(default=10_000.0, gt=0)
+    # The band the backtest said to expect, so live has something to be
+    # read against rather than nothing.
+    expected_net_percent: float | None = None
+    expected_low_percent: float | None = None
+    expected_high_percent: float | None = None
+    drawdown_limit_percent: float | None = Field(default=None, lt=0, ge=-100)
+
+
+class PaperFillRequest(BaseModel):
+    """A fill from the live feed, with what it actually cost."""
+
+    side: Literal["long", "short"]
+    action: Literal["entry", "exit"] = "entry"
+    bar_time: int = Field(ge=0)
+    signal_price: float = Field(gt=0)
+    fill_price: float = Field(gt=0)
+    quantity: float = Field(default=0, ge=0)
+    latency_ms: int = Field(default=0, ge=0)
+    fee: float = 0.0
+    funding: float = 0.0
+    net_pnl: float = 0.0
+
+
+class PromoteRequest(BaseModel):
+    # SPEC §3.3 allows promotion past a failing check behind 2FA. It is
+    # recorded, because a bot promoted on an override is not the same
+    # thing as one that passed.
+    override: bool = False
+    totp_code: str = Field(default="", max_length=10)

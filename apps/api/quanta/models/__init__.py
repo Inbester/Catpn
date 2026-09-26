@@ -17,6 +17,7 @@ from quanta.models.compute import (
 )
 from quanta.models.job import JOB_STATES, JobRecord
 from quanta.models.market import BackfillState, FundingRate, InstrumentMeta, Kline
+from quanta.models.paper import PaperFill, PaperSession
 from quanta.models.setup import PIPELINE_STAGES, SETUP_COLORS, Setup
 from quanta.models.strategy import BacktestRun, StrategyRecord
 from quanta.models.user import AuthSession, User
@@ -45,6 +46,8 @@ __all__ = [
     "InstrumentMeta",
     "JobRecord",
     "Kline",
+    "PaperFill",
+    "PaperSession",
     "Setup",
     "StrategyRecord",
     "User",

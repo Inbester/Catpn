@@ -8,6 +8,7 @@
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AppLayout } from '@/components/shell/AppLayout';
+import { AlertsPage } from '@/features/alerts/AlertsPage';
 import { ChartPage } from '@/features/chart/ChartPage';
 import { ResearchPage } from '@/features/research/ResearchPage';
 import { ResourcesPage } from '@/features/resources/ResourcesPage';
@@ -28,10 +29,7 @@ export const routes: RouteObject[] = [
       // It has its own route until then: the picker in every menu header has
       // to lead somewhere, and Setups are a phase 3 deliverable.
       { path: 'setups', element: <SetupsPage /> },
-      {
-        path: 'alerts',
-        element: <PhasePlaceholder titleKey="nav.alerts" icon="alerts" phase={5} />,
-      },
+      { path: 'alerts', element: <AlertsPage /> },
       {
         path: 'bot',
         element: <PhasePlaceholder titleKey="nav.bot" icon="bot" phase={6} />,

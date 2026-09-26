@@ -8,6 +8,7 @@ from quanta.api.routes import (
     forward,
     health,
     market,
+    paper,
     research,
     strategies,
     users,
@@ -29,3 +30,4 @@ api_router.include_router(research.jobs_router)
 api_router.include_router(research.compute_router)
 api_router.include_router(alerts.router)
 api_router.include_router(alerts.channels_router)
+api_router.include_router(paper.router)
