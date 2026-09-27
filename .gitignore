@@ -40,3 +40,8 @@ coverage/
 # Runtime snapshots written where a server happened to be started.
 dump.rdb
 *.rdb
+
+# Deploy target and backups: machine-specific, and backups hold the
+# sealed exchange keys.
+scripts/deploy.env
+backups/

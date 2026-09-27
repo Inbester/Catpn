@@ -1,0 +1,65 @@
+# The API image.
+#
+# Built from the repository root:
+#   docker build -f infra/Dockerfile.api -t quanta-api .
+#
+# Two stages so the runtime image carries no build tools and no compilers.
+
+# --- Build ---------------------------------------------------------------
+FROM python:3.11-slim AS build
+
+# uv resolves and installs far faster than pip, and the lockfile is its
+# format. Pinned so the image does not change under us.
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /usr/local/bin/uv
+
+WORKDIR /build
+ENV UV_LINK_MODE=copy \
+    UV_COMPILE_BYTECODE=1
+
+# The engine is a path dependency, so it has to be present before the API
+# can be resolved.
+COPY packages/engine /build/packages/engine
+COPY apps/api/pyproject.toml apps/api/uv.lock /build/apps/api/
+
+WORKDIR /build/apps/api
+# --frozen: install exactly what the lockfile says, and fail if the
+# lockfile is out of date. A deploy is the wrong moment to resolve fresh
+# versions.
+RUN uv venv /opt/venv \
+ && VIRTUAL_ENV=/opt/venv uv sync --frozen --no-dev --no-install-project
+
+COPY apps/api /build/apps/api
+RUN VIRTUAL_ENV=/opt/venv uv sync --frozen --no-dev
+
+# --- Runtime -------------------------------------------------------------
+FROM python:3.11-slim AS runtime
+
+# curl is here for the container healthcheck and nothing else.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Not root. A process that never needs to write outside its own data has
+# no business being able to.
+RUN useradd --create-home --shell /usr/sbin/nologin quanta
+
+COPY --from=build /opt/venv /opt/venv
+COPY --from=build /build/packages/engine /app/packages/engine
+COPY --from=build /build/apps/api /app/apps/api
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app/apps/api
+USER quanta
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:8000/api/v1/health || exit 1
+
+# One worker. The market-data loop, the alert runner and the job runner
+# all live in-process and hold state; a second worker would run a second
+# copy of each. Scale by splitting those out, not by adding workers.
+CMD ["uvicorn", "quanta.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

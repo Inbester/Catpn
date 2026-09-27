@@ -1,0 +1,69 @@
+# Caddy serves the built app and proxies the API.
+#
+# SITE_ADDRESS decides how it is reached, and it is the one setting worth
+# thinking about:
+#
+#   :80                     plain HTTP. Only sane behind a VPN, and even
+#                           then cookies marked Secure will not be sent,
+#                           so the app will not log you in. Use for a
+#                           quick check, not for real use.
+#
+#   quanta.internal         Caddy issues a certificate from its own local
+#                           CA (`tls internal` below). Real TLS, no public
+#                           exposure, no DNS. You trust Caddy's root once
+#                           on each device — it prints where to find it.
+#                           This is the recommended VPN setup.
+#
+#   quanta.example.com      A real certificate from Let's Encrypt. With
+#                           the DNS challenge this works even when the
+#                           host is not reachable from the internet, which
+#                           is how you get a trusted certificate on a
+#                           private address. Needs a DNS provider module.
+
+{
+	# No admin API: nothing needs to reconfigure Caddy at runtime, and an
+	# open admin socket is an unnecessary door.
+	admin off
+	email {$ACME_EMAIL:admin@localhost}
+}
+
+{$SITE_ADDRESS::80} {
+	encode gzip zstd
+
+	# The API. The trailing path is preserved, so /api/v1/... arrives as
+	# written.
+	handle /api/* {
+		reverse_proxy api:8000 {
+			# The app's own security headers come from FastAPI; these two
+			# are the ones only the proxy knows.
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+
+			# A research job or a long backfill can outlast the default.
+			transport http {
+				read_timeout 300s
+			}
+		}
+	}
+
+	# Everything else is the single-page app.
+	handle {
+		root * /srv
+		# index.html for any path the build does not have a file for:
+		# /chart and /alerts are routes in the app, not files on disk.
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Caddy's local CA, used when SITE_ADDRESS is a name with no public
+	# DNS. Ignored for :80 and for a real domain.
+	tls internal
+
+	log {
+		output stdout
+		format console
+		# The access log is not the place for tokens.
+		level INFO
+	}
+}
