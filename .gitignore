@@ -36,3 +36,7 @@ coverage/
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Runtime snapshots written where a server happened to be started.
+dump.rdb
+*.rdb
