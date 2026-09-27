@@ -125,8 +125,17 @@ class KeyVault:
 
     @classmethod
     def local(cls, settings: Settings | None = None) -> KeyVault:
+        """The vault this deployment uses.
+
+        `vault_master_key` is its own secret, not the one that signs
+        sessions: the web process holds `secret_key`, and one leak should
+        not also hand over the keys that can place orders. In development
+        it may be unset and falls back, which production refuses — see the
+        configuration guard.
+        """
         resolved = settings or get_settings()
-        return cls(LocalMasterKey(resolved.secret_key), settings=resolved)
+        master = resolved.vault_master_key or resolved.secret_key
+        return cls(LocalMasterKey(master), settings=resolved)
 
     # --- Sealing ---------------------------------------------------------
 
@@ -177,9 +186,8 @@ class KeyVault:
         does not produce the same fingerprint and nobody can confirm a
         guessed key offline from a leaked fingerprint alone.
         """
-        digest = hmac.new(
-            self._settings.secret_key.encode(), api_key.encode(), hashlib.sha256
-        ).hexdigest()
+        keyed = self._settings.vault_master_key or self._settings.secret_key
+        digest = hmac.new(keyed.encode(), api_key.encode(), hashlib.sha256).hexdigest()
         return digest[:16]
 
     @staticmethod

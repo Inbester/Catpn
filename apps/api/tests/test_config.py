@@ -61,7 +61,13 @@ def test_debug_is_refused_in_production() -> None:
 
 
 def test_valid_production_config_is_accepted() -> None:
-    settings = make(environment="production", secret_key="k" * 48, cookie_secure=True)
+    settings = make(
+        environment="production",
+        secret_key="k" * 48,
+        # Its own secret, not the session one: see TestVaultMasterKey.
+        vault_master_key="v" * 48,
+        cookie_secure=True,
+    )
     assert settings.is_production is True
     assert settings.secret_key != DEV_SECRET_KEY
 
@@ -76,3 +82,71 @@ def test_valid_production_config_is_accepted() -> None:
 )
 def test_cors_origins_accepts_both_formats(raw: str, expected: list[str]) -> None:
     assert make(cors_origins=raw).cors_origins == expected
+
+
+class TestVaultMasterKey:
+    """SPEC §5: the exchange-key vault must not share the session secret.
+
+    One leak should not cost both the sessions and the keys that can place
+    orders, so production refuses a deployment where they are the same —
+    or where the vault key is missing entirely.
+    """
+
+    def test_production_refuses_a_missing_vault_key(self) -> None:
+        with pytest.raises(ValidationError, match="VAULT_MASTER_KEY must be set"):
+            make(
+                environment="production",
+                secret_key="a" * 48,
+                vault_master_key="",
+                cookie_secure=True,
+                debug=False,
+            )
+
+    def test_production_refuses_a_vault_key_equal_to_the_session_key(self) -> None:
+        shared = "a" * 48
+        with pytest.raises(ValidationError, match="must differ from SECRET_KEY"):
+            make(
+                environment="production",
+                secret_key=shared,
+                vault_master_key=shared,
+                cookie_secure=True,
+                debug=False,
+            )
+
+    def test_production_refuses_a_short_vault_key(self) -> None:
+        with pytest.raises(ValidationError, match="at least 32"):
+            make(
+                environment="production",
+                secret_key="a" * 48,
+                vault_master_key="short",
+                cookie_secure=True,
+                debug=False,
+            )
+
+    def test_two_distinct_strong_keys_are_accepted(self) -> None:
+        settings = make(
+            environment="production",
+            secret_key="a" * 48,
+            vault_master_key="b" * 48,
+            cookie_secure=True,
+            debug=False,
+        )
+        assert settings.vault_master_key != settings.secret_key
+
+    def test_development_may_leave_it_unset(self) -> None:
+        """Falling back keeps `docker compose up` a one-liner locally."""
+        settings = make(environment="development", secret_key="a" * 48)
+        assert settings.vault_master_key == ""
+
+    def test_the_vault_uses_its_own_key_when_one_is_set(self) -> None:
+        """A row sealed under the vault key must not open under the
+        session key, or separating them bought nothing."""
+        from quanta.services.keyvault import KeyVault, LocalMasterKey, VaultError
+
+        settings = make(secret_key="a" * 48, vault_master_key="b" * 48)
+        vault = KeyVault.local(settings)
+        sealed = vault.seal("exchange-secret", context="ctx")
+
+        session_keyed = KeyVault(LocalMasterKey(settings.secret_key), settings=settings)
+        with pytest.raises(VaultError):
+            session_keyed.open(sealed, context="ctx")

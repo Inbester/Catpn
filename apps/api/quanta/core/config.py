@@ -46,6 +46,15 @@ class Settings(BaseSettings):
     # --- Auth --------------------------------------------------------------
     # 32+ random bytes. Generate with: python -c "import secrets;print(secrets.token_urlsafe(48))"
     secret_key: str = DEV_SECRET_KEY
+
+    # The exchange-key vault's master secret (SPEC §3.5, §5).
+    #
+    # Separate from secret_key on purpose. secret_key signs sessions and is
+    # held in the web process; this one unwraps the keys that can place
+    # orders. Sharing them would mean one leak costs both, so in production
+    # this is required and must differ. Empty falls back to secret_key,
+    # which is fine in development and refused in production.
+    vault_master_key: str = ""
     jwt_algorithm: str = "HS256"
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 30
@@ -130,6 +139,15 @@ class Settings(BaseSettings):
             problems.append("SECRET_KEY is still the development placeholder")
         if len(self.secret_key) < 32:
             problems.append("SECRET_KEY must be at least 32 characters")
+        if not self.vault_master_key:
+            problems.append(
+                "VAULT_MASTER_KEY must be set: exchange keys must not be protected "
+                "by the same secret that signs sessions"
+            )
+        elif len(self.vault_master_key) < 32:
+            problems.append("VAULT_MASTER_KEY must be at least 32 characters")
+        elif self.vault_master_key == self.secret_key:
+            problems.append("VAULT_MASTER_KEY must differ from SECRET_KEY")
         if not self.cookie_secure:
             problems.append("COOKIE_SECURE must be true")
         if self.debug:

@@ -86,6 +86,9 @@ jobs:
       TEST_DATABASE_URL: postgresql+asyncpg://quanta:quanta_dev_password@localhost:5432/quanta_test
       REDIS_URL: redis://localhost:6379/0
       SECRET_KEY: ci-secret-key-not-used-outside-continuous-integration
+      # Distinct from SECRET_KEY, so CI exercises the same separation a
+      # deployment is required to have.
+      VAULT_MASTER_KEY: ci-vault-master-key-not-used-outside-continuous-int
       COOKIE_SECURE: 'false'
 
     steps:
@@ -127,6 +130,36 @@ jobs:
 
       - name: Test
         run: .venv/bin/pytest -q
+
+      # The web job audits npm; this is the other half. A trading
+      # platform's dependency tree is worth watching in both languages.
+      #
+      # The lockfile is audited rather than the installed environment, so
+      # what CI checks is exactly what a deployment would install. The two
+      # workspace packages are stripped: they are this repository's own
+      # code, not a third-party supply chain, and pip-audit cannot resolve
+      # an editable install against PyPI anyway.
+      - name: Audit dependencies
+        run: |
+          uv pip install pip-audit
+          uv export --no-emit-project --no-dev --format requirements-txt \
+            | grep -v '^-e ' > /tmp/requirements-audit.txt
+          .venv/bin/pip-audit -r /tmp/requirements-audit.txt --strict --desc
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # gitleaks needs history to scan commits, not just the tree: a
+          # key committed and then deleted is still in the repository.
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   web:
     name: Web

@@ -1,15 +1,29 @@
 name: quanta
 
+# Postgres and Redis are bound to the loopback address, not to every
+# interface. The default `- "5432:5432"` publishes on 0.0.0.0, which on a
+# server with a public address puts the database on the internet — and a
+# trading platform's database holds the sealed exchange keys.
+#
+# Only the API talks to these, and it runs on the same host, so 127.0.0.1
+# is the whole requirement. Override the bind address deliberately if you
+# ever split the tiers, and put them on a private network when you do.
+
 services:
   postgres:
     image: timescale/timescaledb:2.17.2-pg16
     container_name: quanta-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-quanta}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quanta_dev_password}
+      # No default. A development password that works everywhere is a
+      # production password that works everywhere: compose refuses to
+      # start rather than quietly using one that is published in this
+      # repository. Generate one with:
+      #   python -c "import secrets; print(secrets.token_urlsafe(32))"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}
       POSTGRES_DB: ${POSTGRES_DB:-quanta}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d:ro
@@ -23,17 +37,22 @@ services:
   redis:
     image: redis:7.4-alpine
     container_name: quanta-redis
+    # Redis has no authentication at all unless it is given a password,
+    # and it holds session rate-limit state and the live market fan-out.
     command: >
       redis-server
+      --requirepass ${REDIS_PASSWORD:?set REDIS_PASSWORD in infra/.env}
       --appendonly yes
       --maxmemory 512mb
       --maxmemory-policy allkeys-lru
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_BIND:-127.0.0.1}:${REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # The password is needed here too, or the check fails and the
+      # container is reported unhealthy forever.
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
