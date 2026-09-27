@@ -12,6 +12,7 @@ import { AlertsPage } from '@/features/alerts/AlertsPage';
 import { ChartPage } from '@/features/chart/ChartPage';
 import { ResearchPage } from '@/features/research/ResearchPage';
 import { ResourcesPage } from '@/features/resources/ResourcesPage';
+import { SettingsPage } from '@/features/settings/SettingsPage';
 import { SetupsPage } from '@/features/setups/SetupsPage';
 import { TestPage } from '@/features/test/TestPage';
 import { PhasePlaceholder } from '@/features/placeholder/PhasePlaceholder';
@@ -39,24 +40,10 @@ export const routes: RouteObject[] = [
         path: 'ai',
         element: <PhasePlaceholder titleKey="nav.ai" icon="ai" phase={7} />,
       },
-      // The API behind both of these is built (2FA, sessions, exchange
-      // keys); only the pages are missing, so they say that rather than
-      // naming a phase that has already passed.
-      {
-        path: 'settings',
-        element: (
-          <PhasePlaceholder
-            titleKey="nav.settings"
-            icon="settings"
-            phase={6}
-            note="Two-factor authentication, sessions and exchange keys are ready on the server. This page is next."
-          />
-        ),
-      },
-      {
-        path: 'account',
-        element: <Navigate to="/settings" replace />,
-      },
+      { path: 'settings', element: <SettingsPage /> },
+      // Account was a second entry for the same things; Settings owns
+      // them now (SPEC §3.6).
+      { path: 'account', element: <Navigate to="/settings" replace /> },
       { path: '*', element: <Navigate to="/chart" replace /> },
     ],
   },
