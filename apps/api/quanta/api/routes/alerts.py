@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 from sqlalchemy import select
 
 from quanta.api.deps import CurrentUser, DbDep
+from quanta.api.network_runtime import get_notifier, get_tunnels
 from quanta.models.alert import Alert, AlertEvent, Channel
 from quanta.models.setup import Setup
 from quanta.schemas.alert import (
@@ -20,7 +21,7 @@ from quanta.schemas.alert import (
     PreviewResponse,
     TestSendRequest,
 )
-from quanta.services import alert_service
+from quanta.services import alert_service, routing
 from quanta.services.alert_templates import VARIABLE_PATTERN, build_context, render
 from quanta.services.notifier import Notifier
 
@@ -154,8 +155,12 @@ async def test_send(
     )
     message = payload.message or render(alert.template, context, alert.locale)
 
-    notifier = Notifier()
-    deliveries = await notifier.deliver(alert.destinations, message, quiet=False)
+    # The live notifier when the app is running, so a test send takes the
+    # same route — tunnel or server — that a real firing would.
+    notifier = get_notifier() or Notifier()
+    deliveries = await routing.deliver(
+        db, notifier, get_tunnels(), user.id, alert.destinations, message
+    )
 
     event = AlertEvent(
         alert_id=alert.id,

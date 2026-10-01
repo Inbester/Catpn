@@ -12,6 +12,14 @@ Rate limits are Telegram's own — one message a second per chat, twenty a
 minute per group — and are applied per target rather than globally,
 because a queue shared across chats would let a busy group delay a
 direct message that had plenty of budget.
+
+**Live or recording.** A `Notifier(live=True)` sends for real, over the
+route the caller resolved (the server's own, or a tunnel's SOCKS5 proxy;
+see services/routing.py). Without `live` — tests, and any process that has
+not started the app — sends are recorded instead. Before this split the
+production notifier had no HTTP client at all, so every Telegram message
+and webhook was recorded as "sent" and none was: exactly the silent
+failure the paragraph above exists to prevent.
 """
 
 from __future__ import annotations
@@ -25,9 +33,19 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import httpx
+import socksio
 import structlog
 
 logger = structlog.get_logger(__name__)
+
+# Failures of the path rather than of the destination: a connection that
+# never opened, or a SOCKS reply wireproxy sends when its peer never
+# completed a handshake. Only these make a different route worth trying.
+ROUTE_ERRORS: tuple[type[Exception], ...] = (
+    httpx.TransportError,
+    socksio.ProtocolError,
+    TimeoutError,
+)
 
 # Telegram's documented limits (SPEC §7).
 PER_CHAT_INTERVAL_SECONDS = 1.0
@@ -50,6 +68,11 @@ class Delivery:
     latency_ms: int = 0
     attempts: int = 0
     note: str = ""
+    #: Which network carried it: "server" or a tunnel's label.
+    route: str = "server"
+    #: The tunnel, not the destination, failed: nothing got through it.
+    #: Read by routing.deliver to try the next route; not stored.
+    route_failed: bool = field(default=False, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -59,6 +82,7 @@ class Delivery:
             "latency_ms": self.latency_ms,
             "attempts": self.attempts,
             "note": self.note,
+            "route": self.route,
         }
 
 
@@ -125,11 +149,49 @@ class Notifier:
     """Sends messages, with the HTTP client injected so tests can watch."""
 
     telegram_token: str = ""
+    #: Injected by tests; used for every send regardless of route.
     client: httpx.AsyncClient | None = None
+    #: Send for real. See the module docstring.
+    live: bool = False
     sent: list[dict[str, Any]] = field(default_factory=list)
+    _clients: dict[str | None, httpx.AsyncClient] = field(default_factory=dict, repr=False)
+
+    def _client_for(self, proxy: str | None) -> httpx.AsyncClient | None:
+        """One pooled client per route.
+
+        `trust_env=False`: a message goes exactly the way the user chose,
+        not wherever a stray HTTPS_PROXY on the server would send it.
+        """
+        if self.client is not None:
+            return self.client
+        if not self.live:
+            return None
+        if proxy not in self._clients:
+            self._clients[proxy] = httpx.AsyncClient(
+                proxy=proxy, trust_env=False, timeout=REQUEST_TIMEOUT_SECONDS
+            )
+        return self._clients[proxy]
+
+    async def forget(self, proxy: str) -> None:
+        """Drop the client for a tunnel that stopped, so a restart gets a fresh one."""
+        client = self._clients.pop(proxy, None)
+        if client is not None:
+            await client.aclose()
+
+    async def aclose(self) -> None:
+        for client in self._clients.values():
+            await client.aclose()
+        self._clients.clear()
 
     async def deliver(
-        self, destinations: list[dict[str, Any]], message: str, *, quiet: bool = False
+        self,
+        destinations: list[dict[str, Any]],
+        message: str,
+        *,
+        quiet: bool = False,
+        proxy: str | None = None,
+        via: str = "server",
+        route_note: str = "",
     ) -> list[Delivery]:
         """Send to every destination, independently.
 
@@ -138,28 +200,37 @@ class Notifier:
         §8 gives the whole path a two-second budget from bar close.
         """
         results = await asyncio.gather(
-            *(self._one(destination, message, quiet=quiet) for destination in destinations),
+            *(
+                self._one(destination, message, quiet=quiet, proxy=proxy)
+                for destination in destinations
+            ),
             return_exceptions=True,
         )
 
         deliveries: list[Delivery] = []
         for destination, result in zip(destinations, results, strict=True):
             if isinstance(result, Delivery):
-                deliveries.append(result)
+                delivery = result
             else:
                 # An exception here is a bug in the sender, not a failed
                 # send; it still belongs in the record.
-                deliveries.append(
-                    Delivery(
-                        kind=str(destination.get("kind", "?")),
-                        target=str(destination.get("target", "")),
-                        state="failed",
-                        note=str(result),
-                    )
+                delivery = Delivery(
+                    kind=str(destination.get("kind", "?")),
+                    target=str(destination.get("target", "")),
+                    state="failed",
+                    note=str(result),
                 )
+            delivery.route = via
+            if route_note:
+                # A tunnel that was skipped on the way is part of what
+                # happened to this message.
+                delivery.note = f"{delivery.note}; {route_note}" if delivery.note else route_note
+            deliveries.append(delivery)
         return deliveries
 
-    async def _one(self, destination: dict[str, Any], message: str, *, quiet: bool) -> Delivery:
+    async def _one(
+        self, destination: dict[str, Any], message: str, *, quiet: bool, proxy: str | None = None
+    ) -> Delivery:
         kind = str(destination.get("kind", ""))
         target = str(destination.get("target", ""))
         delivery = Delivery(kind=kind, target=target)
@@ -168,10 +239,19 @@ class Notifier:
         for attempt in range(1, MAX_ATTEMPTS + 1):
             delivery.attempts = attempt
             try:
-                retry_after = await self._send(kind, destination, message, quiet=quiet)
+                retry_after = await self._send(kind, destination, message, quiet=quiet, proxy=proxy)
             except Exception as exc:
                 delivery.state = "failed"
                 delivery.note = str(exc)[:200]
+                if proxy is not None and isinstance(exc, ROUTE_ERRORS):
+                    delivery.route_failed = True
+                    if isinstance(exc, socksio.ProtocolError):
+                        why = "no WireGuard handshake with the peer"
+                    elif isinstance(exc, TimeoutError):
+                        why = f"no answer within {REQUEST_TIMEOUT_SECONDS:.0f}s"
+                    else:
+                        why = str(exc) or exc.__class__.__name__
+                    delivery.note = f"nothing got through the tunnel ({why})"[:200]
                 break
 
             if retry_after is None:
@@ -189,13 +269,19 @@ class Notifier:
         return delivery
 
     async def _send(
-        self, kind: str, destination: dict[str, Any], message: str, *, quiet: bool
+        self,
+        kind: str,
+        destination: dict[str, Any],
+        message: str,
+        *,
+        quiet: bool,
+        proxy: str | None = None,
     ) -> float | None:
         """Send once. Returns seconds to wait when rate limited, else None."""
         if kind == "telegram":
-            return await self._telegram(destination, message, quiet=quiet)
+            return await self._telegram(destination, message, quiet=quiet, proxy=proxy)
         if kind == "webhook":
-            return await self._webhook(destination, message)
+            return await self._webhook(destination, message, proxy=proxy)
         if kind in {"web_push", "email"}:
             # Recorded as sent against the injected client so the path is
             # exercised end to end; the transports themselves are wired in
@@ -207,7 +293,7 @@ class Notifier:
         raise ValueError(f"unknown destination {kind!r}")
 
     async def _telegram(
-        self, destination: dict[str, Any], message: str, *, quiet: bool
+        self, destination: dict[str, Any], message: str, *, quiet: bool, proxy: str | None = None
     ) -> float | None:
         target = str(destination.get("target", ""))
         is_group = target.startswith("-")
@@ -222,16 +308,25 @@ class Notifier:
             # Quiet hours send silently rather than not at all.
             "disable_notification": quiet,
         }
-        if not self.telegram_token or self.client is None:
+        client = self._client_for(proxy)
+        if client is None:
             self.sent.append({"kind": "telegram", **payload})
             limiter.record(target, is_group=is_group)
             return None
+        if not self.telegram_token:
+            # Said plainly rather than recorded as sent: the user has to
+            # know their alert went nowhere, and why.
+            raise RuntimeError(
+                "TELEGRAM_BOT_TOKEN is not set on the server, so Telegram messages cannot be sent."
+            )
 
-        response = await self.client.post(
-            f"https://api.telegram.org/bot{self.telegram_token}/sendMessage",
-            json=payload,
-            timeout=REQUEST_TIMEOUT_SECONDS,
-        )
+        # httpx's timeout does not cover a SOCKS exchange; this one does.
+        async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+            response = await client.post(
+                f"https://api.telegram.org/bot{self.telegram_token}/sendMessage",
+                json=payload,
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
         if response.status_code == 429:
             body = response.json() if response.content else {}
             return float(body.get("parameters", {}).get("retry_after", RETRY_BACKOFF_SECONDS))
@@ -239,7 +334,9 @@ class Notifier:
         limiter.record(target, is_group=is_group)
         return None
 
-    async def _webhook(self, destination: dict[str, Any], message: str) -> float | None:
+    async def _webhook(
+        self, destination: dict[str, Any], message: str, *, proxy: str | None = None
+    ) -> float | None:
         url = str(destination.get("target", ""))
         secret = str(destination.get("secret", ""))
         payload = {"message": message, "sent_at": time.time()}
@@ -251,13 +348,15 @@ class Notifier:
         if secret:
             headers["x-quanta-signature"] = sign_webhook(secret, body)
 
-        if self.client is None:
+        client = self._client_for(proxy)
+        if client is None:
             self.sent.append({"kind": "webhook", "target": url, "body": body.decode()})
             return None
 
-        response = await self.client.post(
-            url, content=body, headers=headers, timeout=REQUEST_TIMEOUT_SECONDS
-        )
+        async with asyncio.timeout(REQUEST_TIMEOUT_SECONDS):
+            response = await client.post(
+                url, content=body, headers=headers, timeout=REQUEST_TIMEOUT_SECONDS
+            )
         if response.status_code == 429:
             return RETRY_BACKOFF_SECONDS
         response.raise_for_status()

@@ -43,7 +43,7 @@ class TestValidConfig:
         # Recognised, checked for shape, and then not handed back.
         summary = summarise(parse(GOOD).config)
         assert "aFmSs7" not in str(summary)
-        assert summary["public_key"].startswith("xTIBA5")
+        assert str(summary["public_key"]).startswith("xTIBA5")
 
 
 class TestMissingSections:

@@ -49,7 +49,7 @@ cd "$ROOT/apps/api"
 [[ -x .venv/bin/python ]] || fail "apps/api/.venv missing — run: uv venv .venv && uv pip install -e '.[dev]'"
 step "lint"        .venv/bin/ruff check .
 step "format"      .venv/bin/ruff format --check .
-step "types"       .venv/bin/mypy quanta
+step "types"       .venv/bin/mypy quanta tests
 if [[ $QUICK -eq 0 ]]; then
   # These need Postgres and Redis. Say so plainly when they are not
   # there: the alternative is a forty-line asyncpg traceback whose actual

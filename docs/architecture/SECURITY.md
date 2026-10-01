@@ -40,6 +40,26 @@ which is the cheapest way to keep that true. WireGuard routing in
 Resources/Network covers alert delivery and AI only — exchange traffic is
 deliberately excluded.
 
+Tunnels are SOCKS5 proxies on loopback, one wireproxy process each, never
+routes in the host's table — so a tunnel can only carry what is explicitly
+handed to it. The exchange clients set `trust_env=False` (and the
+websocket `proxy=None`), because both libraries otherwise follow
+`HTTPS_PROXY` from the environment and one stray variable would move order
+traffic off the static IP. Details: [`NETWORK.md`](NETWORK.md).
+
+- Enforced: `tests/test_network_isolation.py` fails the build if a module
+  on the exchange path imports the tunnel code, passes a proxy, or builds a
+  client that trusts the environment.
+
+## Tunnel configs
+
+**A WireGuard private key is a credential.** Sealed at rest with a key
+derived from `VAULT_MASTER_KEY`, never returned by the API. When a tunnel
+starts, the rendered config is written `0600`, read once by wireproxy, and
+deleted as soon as the proxy listens. Host commands in an imported file
+(`PostUp`, `PreDown`, …) are stripped before anything is written; nothing
+in a config can make the server run a command.
+
 **No feature may exist to evade geo-restrictions.** Bitunix restricts Iran
 among other regions. The adapter layer stays pluggable so a compliant
 venue can replace it.

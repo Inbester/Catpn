@@ -21,8 +21,13 @@ from tests.test_forward_routes import T0, auth
 HOUR = 3_600_000
 
 
-async def seed_rising(db: AsyncSession, *, symbol: str = "BTCUSDT", count: int = 60) -> None:
-    """A series that crosses 100 on the last closed bar."""
+async def seed_rising(db: AsyncSession, *, symbol: str = "BTCUSDT", count: int = 22) -> None:
+    """A series that, at the default count, crosses 100 on the last closed bar.
+
+    It rises 0.5 a bar from 90, so bar 21 closes at 100.5 from 100.0. A
+    longer series has crossed long before its last bar and fires nothing,
+    which is how a test of delivery can pass without delivering.
+    """
     bars = []
     for i in range(count):
         price = 90 + i * 0.5
@@ -156,7 +161,9 @@ class TestEvaluation:
         second = await alert_service.evaluate_alert(db, alert)
         await db.commit()
 
-        assert first is None or second is None or second.deliveries[0]["state"] == "suppressed"
+        assert first is not None
+        assert first.deliveries == [] or first.deliveries[0]["state"] != "suppressed"
+        assert second is None or second.deliveries[0]["state"] == "suppressed"
 
     async def test_the_forming_bar_is_never_evaluated(
         self, client: AsyncClient, api_prefix: str, db: AsyncSession
@@ -206,8 +213,8 @@ class TestEvaluation:
 
         event = await alert_service.evaluate_alert(db, alert)
         await db.commit()
-        if event is not None:
-            assert event.deliveries[0]["state"] == "suppressed"
+        assert event is not None
+        assert event.deliveries[0]["state"] == "suppressed"
 
 
 class TestNotifier:
@@ -278,9 +285,9 @@ class TestAcceptance:
         elapsed = time.perf_counter() - started
 
         assert elapsed < 2.0, f"took {elapsed:.2f}s from bar close to delivery"
-        if events:
-            assert events[0].deliveries[0]["state"] == "sent"
-            assert notifier.sent
+        assert events, "the seeded bars cross the level on the last bar"
+        assert events[0].deliveries[0]["state"] == "sent"
+        assert notifier.sent
 
     async def test_one_broken_alert_does_not_silence_the_others(
         self, client: AsyncClient, api_prefix: str, db: AsyncSession

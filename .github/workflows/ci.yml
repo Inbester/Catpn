@@ -113,6 +113,21 @@ jobs:
           PGPASSWORD=quanta_dev_password psql -h localhost -U quanta -d quanta \
             -c "CREATE DATABASE quanta_test OWNER quanta;"
 
+      # The tunnel tests run against the real WireGuard client too, two
+      # peers and a real handshake; without the binary they are skipped,
+      # so CI builds the same pinned version the image ships.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+
+      - name: Build wireproxy
+        run: |
+          CGO_ENABLED=0 GOBIN="$RUNNER_TEMP/bin" \
+            go install github.com/windtf/wireproxy/cmd/wireproxy@v1.1.3
+          echo "WIREPROXY_TEST_BINARY=$RUNNER_TEMP/bin/wireproxy" >> "$GITHUB_ENV"
+
       - name: Lint
         run: .venv/bin/ruff check .
 

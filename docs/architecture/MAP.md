@@ -61,8 +61,20 @@ Paths are from the repository root. `api/` means `apps/api/quanta/`,
 | The background loop | `api/services/alert_runner.py` |
 | Message rendering, disclaimer | `api/services/alert_templates.py` |
 | Telegram, web push, webhook, email | `api/services/notifier.py` |
+| Which network a message takes | `api/services/routing.py` — see [`NETWORK.md`](NETWORK.md) |
 | Models | `api/models/alert.py` |
 | UI | `web/features/alerts/` |
+
+### "Tunnels, WireGuard, which network a feature uses"
+| | |
+|---|---|
+| **Start here** | [`NETWORK.md`](NETWORK.md) |
+| Running tunnels, sealing, measuring | `api/services/tunnels.py` |
+| Picking a route for one send | `api/services/routing.py` |
+| Config validation | `api/services/wireguard.py` |
+| Routes | `api/api/routes/network.py` |
+| UI | `web/features/resources/NetworkTab.tsx` |
+| The guard that keeps exchange traffic off tunnels | `apps/api/tests/test_network_isolation.py` |
 
 ### "Paper trading"
 | | |
@@ -74,7 +86,7 @@ Paths are from the repository root. `api/` means `apps/api/quanta/`,
 ### "The trading bot" (SPEC §3.5)
 | | |
 |---|---|
-| **Start here** | [`TRADING.md`](TRADING.md) |
+| **Start here** | the "Order traffic" and "The bot" sections of [`SECURITY.md`](SECURITY.md) |
 | Protocol and types | `api/exchanges/trading.py` |
 | Bitunix implementation | `api/exchanges/bitunix_trading.py` |
 | Offline venue for tests | `api/exchanges/sim/trading.py` |

@@ -79,6 +79,10 @@ services:
       EXCHANGE_REST_URL: ${EXCHANGE_REST_URL:-https://fapi.bitunix.com}
       EXCHANGE_WS_URL: ${EXCHANGE_WS_URL:-wss://fapi.bitunix.com/public/}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+
+      # User tunnels (Resources -> Network). wireproxy is in the image; an
+      # AmneziaWG build is optional and, when set, runs AmneziaWG configs.
+      WIREPROXY_AWG_COMMAND: ${WIREPROXY_AWG_COMMAND:-}
     depends_on:
       postgres:
         condition: service_healthy

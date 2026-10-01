@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from redis.asyncio import Redis
 
 from quanta.api.market_runtime import set_market_service
+from quanta.api.network_runtime import set_runtime
 from quanta.api.router import api_router
 from quanta.core.config import Settings, get_settings
 from quanta.core.logging import configure_logging
@@ -27,6 +28,7 @@ from quanta.services import jobs
 from quanta.services.alert_runner import AlertRunner
 from quanta.services.market_data import MarketDataService
 from quanta.services.notifier import Notifier
+from quanta.services.tunnels import TunnelManager
 
 logger = structlog.get_logger(__name__)
 
@@ -55,17 +57,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     market = await _start_market_data(settings, redis)
 
+    tunnels = TunnelManager.from_settings(settings)
+    if not tunnels.available:
+        logger.info("tunnels_unavailable", command=settings.wireproxy_command)
+    notifier = Notifier(telegram_token=settings.telegram_bot_token, live=True)
+    set_runtime(tunnels, notifier)
+
     # The only always-on component: alerts have to fire with every browser
     # closed, which is the whole reason evaluation lives here.
-    alert_runner = AlertRunner(
-        get_session_factory(), Notifier(telegram_token=settings.telegram_bot_token)
-    )
+    alert_runner = AlertRunner(get_session_factory(), notifier, tunnels)
     if settings.alerts_enabled:
         await alert_runner.start()
 
     yield
 
     await alert_runner.stop()
+    # Tunnels are child processes; leaving them behind would leave proxies
+    # listening after the app that owns them is gone.
+    await tunnels.stop_all()
+    await notifier.aclose()
+    set_runtime(None, None)
     if market is not None:
         await market.stop()
     set_market_service(None)

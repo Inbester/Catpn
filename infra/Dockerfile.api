@@ -3,7 +3,17 @@
 # Built from the repository root:
 #   docker build -f infra/Dockerfile.api -t quanta-api .
 #
-# Two stages so the runtime image carries no build tools and no compilers.
+# Separate build stages so the runtime image carries no build tools and no
+# compilers.
+
+# --- WireGuard client ------------------------------------------------------
+# wireproxy runs each user tunnel as a userspace WireGuard client exposing
+# a loopback SOCKS5 proxy (apps/api/quanta/services/tunnels.py). Built from
+# a pinned tag, with no cgo, so the binary is static and the runtime image
+# needs nothing else: no kernel module, no NET_ADMIN, no root.
+FROM golang:1.26-bookworm AS wireproxy
+ENV CGO_ENABLED=0 GOBIN=/out
+RUN go install github.com/windtf/wireproxy/cmd/wireproxy@v1.1.3
 
 # --- Build ---------------------------------------------------------------
 FROM python:3.11-slim AS build
@@ -44,6 +54,7 @@ RUN apt-get update \
 RUN useradd --create-home --shell /usr/sbin/nologin quanta
 
 COPY --from=build /opt/venv /opt/venv
+COPY --from=wireproxy /out/wireproxy /usr/local/bin/wireproxy
 COPY --from=build /build/packages/engine /app/packages/engine
 COPY --from=build /build/apps/api /app/apps/api
 

@@ -107,6 +107,13 @@ cd /opt/quanta
 | `BIND_ADDRESS` | The server's **VPN** address. Leave at `127.0.0.1` if you tunnel. |
 | `EXCHANGE_STATIC_IP` | The address orders leave from. Without it no exchange key can be added at all. |
 | `BACKUP_RECIPIENT` | Your `age` public key. |
+| `TELEGRAM_BOT_TOKEN` | From @BotFather. Without it Telegram alerts are recorded as failed, with that reason. |
+| `WIREPROXY_AWG_COMMAND` | Optional. Path to an AmneziaWG build of wireproxy; only needed for AmneziaWG configs. |
+
+WireGuard tunnels need nothing on the host: wireproxy is built into the API
+image and runs as the app's own user. The server only has to be able to
+reach each tunnel's endpoint over **UDP** — if a firewall blocks outbound
+UDP, every tunnel will fail its Test with a timeout.
 
 **Backup keys:**
 
@@ -239,3 +246,9 @@ deliberate: a key admitted without a whitelist is worse than no key.
 
 **The browser will not trust the site.** Caddy's local CA has not been
 trusted on that device — see Part 2.
+
+**A tunnel says "Failed".** The reason under it is wireproxy's own. A
+timeout usually means outbound UDP to the endpoint is blocked; "no such
+host" means the endpoint name does not resolve from the server. Tunnels
+only ever carry alert delivery (and AI later); if they are all down,
+alerts go from the server and each delivery says so.

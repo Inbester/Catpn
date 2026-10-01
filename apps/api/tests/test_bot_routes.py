@@ -9,6 +9,7 @@ one is a way for the product to lose someone money.
 from __future__ import annotations
 
 import uuid
+from collections.abc import Iterator
 from decimal import Decimal
 
 import pyotp
@@ -48,7 +49,7 @@ LIMITS = {
 
 
 @pytest.fixture(autouse=True)
-def venue() -> SimulatedTradingAdapter:
+def venue() -> Iterator[SimulatedTradingAdapter]:
     """Point the routes at the simulator, and put the static IP in settings."""
     adapter = SimulatedTradingAdapter(prices={SYMBOL: Decimal(100)})
     adapter.add_account(API_KEY)
@@ -80,6 +81,7 @@ async def enable_2fa(db: AsyncSession) -> str:
     user.totp_enabled = True
     user.last_totp_counter = None
     await db.commit()
+    assert user.totp_secret is not None
     return pyotp.TOTP(user.totp_secret).now()
 
 
@@ -92,6 +94,7 @@ async def fresh_code(db: AsyncSession) -> str:
     user = await current_user(db)
     user.last_totp_counter = None
     await db.commit()
+    assert user.totp_secret is not None
     return pyotp.TOTP(user.totp_secret).now()
 
 
@@ -426,6 +429,7 @@ class TestHalts:
         code = await enable_2fa(db)
 
         bot = await db.get(Bot, uuid.UUID(created["id"]))
+        assert bot is not None
         bot_service.halt(bot, "daily_loss", "Down 700 today against a limit of 500.")
         await db.commit()
 
@@ -442,6 +446,7 @@ class TestHalts:
         headers = await auth(client, api_prefix)
         created = await make_bot(client, api_prefix, headers, db)
         bot = await db.get(Bot, uuid.UUID(created["id"]))
+        assert bot is not None
         bot_service.halt(bot, "max_drawdown", "Down 30% from its peak.")
         await db.commit()
 

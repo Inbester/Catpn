@@ -15,7 +15,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -80,7 +80,7 @@ class Alert(UUIDPrimaryKey, Timestamped, Base):
     last_fired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # The open time of the bar that last fired, so once-per-bar can tell
     # a new bar from a re-evaluation of the same one.
-    last_fired_bar: Mapped[int | None] = mapped_column(nullable=True)
+    last_fired_bar: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     fire_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
@@ -97,7 +97,7 @@ class AlertEvent(UUIDPrimaryKey, Timestamped, Base):
         PgUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
 
-    bar_time: Mapped[int] = mapped_column(nullable=False)
+    bar_time: Mapped[int] = mapped_column(BigInteger, nullable=False)
     price: Mapped[str] = mapped_column(String(32), nullable=False, default="")
     message: Mapped[str] = mapped_column(Text, nullable=False, default="")
     # The values the template was rendered from, kept so a message can be

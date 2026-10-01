@@ -22,9 +22,10 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from quanta.models.alert import AlertEvent
-from quanta.services import alert_service
+from quanta.services import alert_service, routing
 from quanta.services.alert_templates import merge_messages
 from quanta.services.notifier import Notifier
+from quanta.services.tunnels import TunnelManager
 
 logger = structlog.get_logger(__name__)
 
@@ -34,7 +35,11 @@ TICK_SECONDS = 2.0
 
 
 async def run_once(
-    db: AsyncSession, notifier: Notifier, *, now: datetime | None = None
+    db: AsyncSession,
+    notifier: Notifier,
+    *,
+    now: datetime | None = None,
+    tunnels: TunnelManager | None = None,
 ) -> list[AlertEvent]:
     """Evaluate every enabled alert once and deliver what fired."""
     now = now or datetime.now(UTC)
@@ -53,7 +58,7 @@ async def run_once(
         if event is not None:
             fired.append((alert, event))
 
-    await _deliver(db, notifier, fired, quiet_override=None)
+    await _deliver(db, notifier, fired, quiet_override=None, tunnels=tunnels)
     await db.commit()
     return [event for _, event in fired]
 
@@ -64,6 +69,7 @@ async def _deliver(
     fired: list[tuple[Any, AlertEvent]],
     *,
     quiet_override: bool | None,
+    tunnels: TunnelManager | None = None,
 ) -> None:
     """Send the firings, folding bursts to one message per destination."""
     # Grouped by alert: two different alerts firing together are two
@@ -88,7 +94,11 @@ async def _deliver(
                 ]
 
         quiet = primary.quiet if quiet_override is None else quiet_override
-        deliveries = await notifier.deliver(alert.destinations, primary.message, quiet=quiet)
+        # By the user's chosen network. A tunnel found dead here is passed
+        # over for the rest of the burst, not retried per alert.
+        deliveries = await routing.deliver(
+            db, notifier, tunnels, alert.user_id, alert.destinations, primary.message, quiet=quiet
+        )
         primary.deliveries = [d.to_dict() for d in deliveries]
         db.add(primary)
 
@@ -96,9 +106,15 @@ async def _deliver(
 class AlertRunner:
     """The background loop. Started at boot, stopped at shutdown."""
 
-    def __init__(self, sessions: async_sessionmaker[AsyncSession], notifier: Notifier) -> None:
+    def __init__(
+        self,
+        sessions: async_sessionmaker[AsyncSession],
+        notifier: Notifier,
+        tunnels: TunnelManager | None = None,
+    ) -> None:
         self._sessions = sessions
         self._notifier = notifier
+        self._tunnels = tunnels
         self._task: asyncio.Task[None] | None = None
         self._stop = asyncio.Event()
 
@@ -120,7 +136,7 @@ class AlertRunner:
         while not self._stop.is_set():
             try:
                 async with self._sessions() as db:
-                    await run_once(db, self._notifier)
+                    await run_once(db, self._notifier, tunnels=self._tunnels)
             except asyncio.CancelledError:
                 raise
             except Exception as exc:

@@ -19,7 +19,7 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, Numeric, String
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Index, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -58,7 +58,7 @@ class PaperSession(UUIDPrimaryKey, Timestamped, Base):
 
     # Signals the engine produced that no fill was recorded for.
     missed_signals: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_bar_time: Mapped[int | None] = mapped_column(nullable=True)
+    last_bar_time: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
     promoted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # True when promotion was taken despite a failing check, which SPEC
@@ -79,7 +79,7 @@ class PaperFill(UUIDPrimaryKey, Timestamped, Base):
 
     side: Mapped[str] = mapped_column(String(8), nullable=False)
     action: Mapped[str] = mapped_column(String(8), nullable=False, default="entry")
-    bar_time: Mapped[int] = mapped_column(nullable=False)
+    bar_time: Mapped[int] = mapped_column(BigInteger, nullable=False)
     signal_price: Mapped[float] = mapped_column(Numeric(18, 8), nullable=False)
     fill_price: Mapped[float] = mapped_column(Numeric(18, 8), nullable=False)
     quantity: Mapped[float] = mapped_column(Numeric(18, 8), nullable=False, default=0)

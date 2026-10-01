@@ -19,7 +19,8 @@ dependencies = [
     "pyotp>=2.9.0",
     "qrcode[pil]>=8.0",
     "redis>=5.2.0",
-    "httpx>=0.28.0",
+    # [socks]: tunnels are reached as SOCKS5 proxies (services/tunnels.py).
+    "httpx[socks]>=0.28.0",
     "structlog>=24.4.0",
     "numpy>=2.1.0",
     "quanta-engine",

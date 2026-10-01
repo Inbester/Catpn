@@ -86,6 +86,24 @@ class Settings(BaseSettings):
     # right failure: a key admitted without a whitelist is worse than none.
     exchange_static_ip: str = ""
 
+    # --- Tunnels (SPEC §3.6) -----------------------------------------------
+    # Each WireGuard config a user imports runs as its own wireproxy: a
+    # userspace client exposing a SOCKS5 proxy on a loopback port. No root,
+    # no kernel module, no change to the server's routing table — which is
+    # what keeps a misconfigured tunnel from ever capturing exchange traffic.
+    # Empty disables tunnels; the page then says so instead of pretending.
+    wireproxy_command: str = "wireproxy"
+    # AmneziaWG configs need the AWG build. Plain wireproxy accepts their
+    # extra keys and silently ignores them, then never completes a
+    # handshake — so without this they are refused, not attempted.
+    wireproxy_awg_command: str = ""
+    # Where rendered configs live for the moment a tunnel starts. Each file
+    # holds a private key and is deleted once the tunnel is listening.
+    tunnel_runtime_dir: str = ""
+    # Returns the caller's address as `ip=…`, which is how a test learns
+    # the exit IP rather than inventing one.
+    tunnel_probe_url: str = "https://www.cloudflare.com/cdn-cgi/trace"
+
     exchange_rest_url: str = "https://fapi.bitunix.com"
     exchange_ws_url: str = "wss://fapi.bitunix.com/public/"
     # Symbols warmed up on boot so the chart opens on stored data.

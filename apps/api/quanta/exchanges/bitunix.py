@@ -124,6 +124,10 @@ class BitunixAdapter:
             base_url=self._rest_url,
             timeout=timeout,
             headers={"Content-Type": "application/json"},
+            # httpx follows HTTPS_PROXY by default. Exchange traffic leaves
+            # from the server's own address and nowhere else (SPEC §9), so
+            # a stray variable in the environment must not reroute it.
+            trust_env=False,
         )
         self._throttle = AsyncRateLimiter(REST_RATE_PER_SECOND)
 
@@ -391,6 +395,9 @@ class BitunixAdapter:
                     ping_timeout=20,
                     close_timeout=5,
                     max_queue=1024,
+                    # websockets also follows proxy variables by default;
+                    # the same rule as the REST client applies.
+                    proxy=None,
                 ) as socket:
                     attempt = 0
                     logger.info("bitunix_ws_connected", subscriptions=len(subscriptions))

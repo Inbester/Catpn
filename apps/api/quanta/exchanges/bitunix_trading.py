@@ -184,6 +184,9 @@ class BitunixTradingAdapter:
             base_url=self._rest_url,
             timeout=timeout,
             headers={"Content-Type": "application/json", "language": "en-US"},
+            # Orders leave from the static IP the key is pinned to (SPEC §9).
+            # httpx would otherwise follow HTTPS_PROXY from the environment.
+            trust_env=False,
         )
         self._throttle = AsyncRateLimiter(PRIVATE_RATE_PER_SECOND)
 
