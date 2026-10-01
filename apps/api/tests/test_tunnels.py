@@ -10,6 +10,7 @@ WireGuard handshake, when `WIREPROXY_TEST_BINARY` points at one.
 from __future__ import annotations
 
 import asyncio
+import base64
 import http.server
 import os
 import sys
@@ -18,6 +19,13 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+    PublicFormat,
+)
 
 from quanta.core.config import Settings
 from quanta.services import tunnels
@@ -346,14 +354,23 @@ class TestManager:
 
 REAL = os.environ.get("WIREPROXY_TEST_BINARY", "")
 
+
+def keypair() -> tuple[str, str]:
+    """A fresh WireGuard key pair, so no key ever sits in the repository."""
+    private = X25519PrivateKey.generate()
+    raw_private = private.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+    raw_public = private.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+    return base64.b64encode(raw_private).decode(), base64.b64encode(raw_public).decode()
+
+
 SERVER_PEER = """
 [Interface]
-PrivateKey = EGG3jJtkzn2Ni/upgdcus0y8cPH/hHqGINtZ/d6sBWs=
+PrivateKey = {server_private}
 Address = 10.77.0.1/24
 ListenPort = {listen}
 
 [Peer]
-PublicKey = U8JBacKgk2WroRc3A04k/2HZdpYCccvG1JkuZPjUESs=
+PublicKey = {client_public}
 AllowedIPs = 10.77.0.2/32
 
 [TCPServerTunnel]
@@ -363,12 +380,12 @@ Target = 127.0.0.1:{target}
 
 CLIENT_PEER = """
 [Interface]
-PrivateKey = UDkgSyS2XBDPbLNB25t2EDfNHgpdFIOrox+OLMXESVM=
+PrivateKey = {client_private}
 Address = 10.77.0.2/24
 PostUp = touch {marker}
 
 [Peer]
-PublicKey = c4AUBnSeY5IWA+Gx1vL/jULjQRtTFwg8+leKkxpb7RQ=
+PublicKey = {server_public}
 Endpoint = 127.0.0.1:{listen}
 AllowedIPs = 10.77.0.0/24
 PersistentKeepalive = 5
@@ -386,7 +403,16 @@ class TestRealWireproxy:
         target = int(trace_server.split(":")[2].split("/")[0])
         listen = tunnels._free_port()
         server_conf = tmp_path / "server.conf"
-        server_conf.write_text(SERVER_PEER.format(listen=listen, target=target))
+        server_private, server_public = keypair()
+        client_private, client_public = keypair()
+        server_conf.write_text(
+            SERVER_PEER.format(
+                listen=listen,
+                target=target,
+                server_private=server_private,
+                client_public=client_public,
+            )
+        )
         server = await asyncio.create_subprocess_exec(
             REAL,
             "-c",
@@ -398,7 +424,15 @@ class TestRealWireproxy:
         manager = TunnelManager(command=[REAL], runtime_dir=tmp_path / "run")
         try:
             await asyncio.sleep(0.5)
-            proxy = await manager.ensure("real", CLIENT_PEER.format(listen=listen, marker=marker))
+            proxy = await manager.ensure(
+                "real",
+                CLIENT_PEER.format(
+                    listen=listen,
+                    marker=marker,
+                    client_private=client_private,
+                    server_public=server_public,
+                ),
+            )
             result = await tunnels.probe(
                 proxy, url="http://10.77.0.1:8080/cdn-cgi/trace", attempts=3
             )

@@ -153,7 +153,12 @@ class TestDisplay:
         one = KeyVault(LocalMasterKey(SECRET), settings=SETTINGS)
         two = KeyVault(
             LocalMasterKey(SECRET),
-            settings=Settings(secret_key="another-deployment-secret-0123456789abcdef"),
+            # Both secrets differ, as they would at another deployment;
+            # which one keys the fingerprint is the vault's business.
+            settings=Settings(
+                secret_key="another-deployment-secret-0123456789abcdef",
+                vault_master_key="another-deployment-vault-key-0123456789abcdef",
+            ),
         )
         assert one.fingerprint("abc123") != two.fingerprint("abc123")
 

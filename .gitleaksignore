@@ -1,0 +1,5 @@
+# Throwaway WireGuard keys for a loopback-only test peer, committed once in
+# 791e40e and replaced by keys generated per run in the next commit. They
+# never protected anything; listed so a full-history scan does not stop on them.
+791e40ed23d63fb1863b567ee9bddfcaf22d0956:apps/api/tests/test_tunnels.py:generic-api-key:351
+791e40ed23d63fb1863b567ee9bddfcaf22d0956:apps/api/tests/test_tunnels.py:generic-api-key:366
