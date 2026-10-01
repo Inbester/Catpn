@@ -102,6 +102,7 @@ def enumerate_rules(
     *,
     max_filters: int = MAX_FILTERS,
     mix_indicators: bool = False,
+    require: frozenset[str] = frozenset(),
 ) -> Iterator[Rule]:
     """Every valid rule, in a stable order.
 
@@ -110,6 +111,11 @@ def enumerate_rules(
     indicator. Two lines of the same indicator are not a mix however many
     series they are, and neither is price plus a single indicator — the
     option exists to find rules that corroborate one source with another.
+
+    ``require`` keeps only rules that draw on every one of these sources:
+    "RSI and MACD together", asked for by name rather than hoped for. It
+    narrows the search, which also lowers the bar the correction sets —
+    fewer tests, less multiplicity to pay for.
     """
     triggers = [item for item in primitives if item.is_trigger]
     filters = [item for item in primitives if not item.is_trigger]
@@ -126,12 +132,30 @@ def enumerate_rules(
                 rule = Rule(trigger=trigger, filters=chosen)
                 if mix_indicators and len(rule.indicator_sources) < 2:
                     continue
+                if require and not require <= rule.sources:
+                    continue
                 yield rule
 
 
-def count_rules(primitives: list[Primitive], *, mix_indicators: bool = False) -> int:
-    """How many valid rules there are, without keeping them all."""
-    return sum(1 for _ in enumerate_rules(primitives, mix_indicators=mix_indicators))
+def count_rules(
+    primitives: list[Primitive],
+    *,
+    max_filters: int = MAX_FILTERS,
+    mix_indicators: bool = False,
+    require: frozenset[str] = frozenset(),
+    limit: int | None = None,
+) -> int:
+    """How many valid rules there are, without keeping them all.
+
+    With ``limit``, counting stops one past it: enough to say "too many"
+    without walking a space that may be in the hundreds of millions.
+    """
+    rules = enumerate_rules(
+        primitives, max_filters=max_filters, mix_indicators=mix_indicators, require=require
+    )
+    if limit is not None:
+        rules = itertools.islice(rules, limit + 1)
+    return sum(1 for _ in rules)
 
 
 def count_tests(rule_count: int) -> int:

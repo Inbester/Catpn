@@ -25,17 +25,31 @@ from typing import Literal
 # The scales a series can live on. Detection picks one of these, and only
 # series on the same scale may be compared to each other: "RSI above EMA20"
 # is a number the chart can compute and nobody can interpret.
-ScaleName = Literal["price", "bounded_100", "centered_0", "centered_1"]
+ScaleName = Literal[
+    "price", "bounded_100", "centered_0", "centered_1", "centered_100", "volatility", "volume"
+]
 
 # The levels that mean something on each scale. A price-like series has
 # none: there is no number that is "high" for BTC the way 70 is high for
-# RSI. SPEC §3.2 fixes 30/50/70 for the bounded scale.
+# RSI. SPEC §3.2 fixes 30/50/70 for the bounded scale; ±100 are CCI's.
+# Volatility and volume have no meaningful fixed level either — an ATR of
+# 300 is calm for BTC and wild for most altcoins.
 SCALE_LEVELS: dict[ScaleName, tuple[float, ...]] = {
     "price": (),
     "bounded_100": (30.0, 50.0, 70.0),
     "centered_0": (0.0,),
     "centered_1": (1.0,),
+    "centered_100": (-100.0, 0.0, 100.0),
+    "volatility": (),
+    "volume": (),
 }
+
+# Scales that oscillate around a level, which is what a divergence with
+# price is about. A divergence between price and volume or ATR has no
+# accepted reading, so those are not offered.
+OSCILLATOR_SCALES: frozenset[ScaleName] = frozenset(
+    {"bounded_100", "centered_0", "centered_1", "centered_100"}
+)
 
 
 class PrimitiveKind(Enum):
@@ -308,7 +322,7 @@ def build_primitives(series: list[Series]) -> list[Primitive]:
     price_series = [line for line in series if line.source.is_price]
     for price in price_series:
         for line in series:
-            if line.scale == price.scale:
+            if line.scale == price.scale or line.scale not in OSCILLATOR_SCALES:
                 continue
             pair = f"{price.key}|{line.key}"
             for kind in ("regular", "hidden"):

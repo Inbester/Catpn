@@ -46,13 +46,14 @@ Paths are from the repository root. `api/` means `apps/api/quanta/`,
 ### "Discover / research"
 | | |
 |---|---|
-| Primitive enumeration | `engine/discover/primitives.py`, `rules.py` |
+| Which indicators, their settings, "EMA of RSI" | `engine/discover/catalog.py` |
+| Primitive enumeration, scales | `engine/discover/primitives.py`, `rules.py` |
 | Signal evaluation | `engine/discover/signals.py` |
 | FDR and significance | `engine/discover/stats.py` |
 | The search driver | `engine/discover/search.py` |
 | Leverage, trade risk, robustness | `engine/research/` |
 | Jobs and progress | `api/services/jobs.py`, `api/models/job.py` |
-| UI | `web/features/research/` |
+| UI | `web/features/research/` (picker: `components/DiscoverPanel.tsx`, `lib/indicators.ts`) |
 
 ### "Alerts or notifications"
 | | |

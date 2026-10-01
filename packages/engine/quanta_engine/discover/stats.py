@@ -54,6 +54,9 @@ class Outcome:
     out_of_sample_mean_percent: float = 0.0
     out_of_sample_signals: int = 0
     passed_fdr: bool = False
+    # The rule in words, filled in for survivors only: half a million
+    # labels nobody reads would cost more than the tests themselves.
+    rule_label: str = ""
 
 
 @dataclass(frozen=True, slots=True)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -159,7 +160,11 @@ class TestDiscover:
         response = await client.post(
             f"{api_prefix}/research/discover/plan",
             headers=headers,
-            json={"symbol": "BTCUSDT", "interval": "1h", "sources": ["price", "rsi"]},
+            json={
+                "symbol": "BTCUSDT",
+                "interval": "1h",
+                "indicators": [{"key": "i1", "id": "rsi"}],
+            },
         )
         assert response.status_code == 200, response.text
         body = response.json()
@@ -178,7 +183,7 @@ class TestDiscover:
             json={
                 "symbol": "BTCUSDT",
                 "interval": "1h",
-                "sources": ["price", "rsi"],
+                "indicators": [{"key": "i1", "id": "rsi"}],
                 "cost_percent": 0.0,
             },
         )
@@ -210,7 +215,7 @@ class TestDiscover:
         started = await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "ema", "rsi"]},
+            json={"symbol": "BTCUSDT"},
         )
         job_id = started.json()["id"]
         polled = await client.get(f"{api_prefix}/jobs/{job_id}", headers=headers)
@@ -225,7 +230,14 @@ class TestDiscover:
         started = await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "ema", "rsi", "macd"]},
+            json={
+                "symbol": "BTCUSDT",
+                "indicators": [
+                    {"key": "i1", "id": "ema"},
+                    {"key": "i2", "id": "rsi"},
+                    {"key": "i3", "id": "macd"},
+                ],
+            },
         )
         job_id = started.json()["id"]
 
@@ -247,7 +259,7 @@ class TestDiscover:
         started = await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "rsi"]},
+            json={"symbol": "BTCUSDT", "indicators": [{"key": "i1", "id": "rsi"}]},
         )
         job_id = started.json()["id"]
 
@@ -272,12 +284,117 @@ class TestDiscover:
         assert "bars" in response.json()["detail"]
 
 
-class TestSources:
-    async def test_lists_the_chips_a_search_can_use(
+class TestIndicators:
+    async def test_lists_the_indicators_a_search_can_use_with_their_settings(
         self, client: AsyncClient, api_prefix: str
     ) -> None:
         headers = await auth(client, api_prefix)
-        response = await client.get(f"{api_prefix}/research/sources", headers=headers)
+        response = await client.get(f"{api_prefix}/research/indicators", headers=headers)
         assert response.status_code == 200
-        keys = {row["key"] for row in response.json()}
-        assert {"price", "ema", "rsi"} <= keys
+        rows = {row["id"]: row for row in response.json()}
+        assert {"ema", "sma", "rsi", "macd", "bb", "stoch", "atr", "volume"} <= set(rows)
+        assert rows["ema"]["params"][0]["name"] == "length"
+        assert rows["ema"]["takes_input"] is True
+
+    async def test_an_indicator_can_be_applied_to_another(
+        self, client: AsyncClient, api_prefix: str, db: AsyncSession
+    ) -> None:
+        headers = await auth(client, api_prefix)
+        await seed(db, days=60)
+        response = await client.post(
+            f"{api_prefix}/research/discover/plan",
+            headers=headers,
+            json={
+                "symbol": "BTCUSDT",
+                "indicators": [
+                    {"key": "i1", "id": "rsi", "params": {"length": 14}},
+                    {"key": "i2", "id": "ema", "params": {"length": 9}, "input": "i1.rsi"},
+                ],
+            },
+        )
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["labels"]["i2"] == "EMA 9 of RSI 14"
+        scales = {row["key"]: row["scale"] for row in body["series"]}
+        assert scales["i2.ema"] == "bounded_100"
+
+    async def test_requiring_indicators_narrows_the_search(
+        self, client: AsyncClient, api_prefix: str, db: AsyncSession
+    ) -> None:
+        headers = await auth(client, api_prefix)
+        await seed(db, days=60)
+        base = {
+            "symbol": "BTCUSDT",
+            "indicators": [
+                {"key": "i1", "id": "rsi"},
+                {"key": "i2", "id": "macd"},
+                {"key": "i3", "id": "ema"},
+            ],
+        }
+        url = f"{api_prefix}/research/discover/plan"
+        everything = (await client.post(url, headers=headers, json=base)).json()
+        required = (
+            await client.post(url, headers=headers, json={**base, "require": ["i1", "i2"]})
+        ).json()
+        single = (
+            await client.post(url, headers=headers, json={**base, "max_conditions": 1})
+        ).json()
+        assert 0 < required["rules"] < everything["rules"]
+        assert single["rules"] == single["triggers"]
+
+    async def test_a_bad_setting_is_refused_with_its_range(
+        self, client: AsyncClient, api_prefix: str, db: AsyncSession
+    ) -> None:
+        headers = await auth(client, api_prefix)
+        await seed(db, days=60)
+        response = await client.post(
+            f"{api_prefix}/research/discover/plan",
+            headers=headers,
+            json={
+                "symbol": "BTCUSDT",
+                "indicators": [{"key": "i1", "id": "rsi", "params": {"length": 1}}],
+            },
+        )
+        assert response.status_code == 422
+        assert "between 2 and 100" in response.json()["detail"]
+
+    async def test_requiring_an_indicator_that_is_not_chosen_is_refused(
+        self, client: AsyncClient, api_prefix: str, db: AsyncSession
+    ) -> None:
+        headers = await auth(client, api_prefix)
+        await seed(db, days=60)
+        response = await client.post(
+            f"{api_prefix}/research/discover/plan",
+            headers=headers,
+            json={
+                "symbol": "BTCUSDT",
+                "indicators": [{"key": "i1", "id": "rsi"}],
+                "require": ["i7"],
+            },
+        )
+        assert response.status_code == 422
+        assert "i7" in response.json()["detail"]
+
+    async def test_a_search_too_large_to_run_is_refused_before_it_starts(
+        self,
+        client: AsyncClient,
+        api_prefix: str,
+        db: AsyncSession,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from quanta.services import discover_service
+
+        monkeypatch.setattr(discover_service, "MAX_RULES", 50)
+        headers = await auth(client, api_prefix)
+        await seed(db, days=60)
+        plan = await client.post(
+            f"{api_prefix}/research/discover/plan",
+            headers=headers,
+            json={"symbol": "BTCUSDT"},
+        )
+        assert plan.json()["too_large"] is True
+        started = await client.post(
+            f"{api_prefix}/research/discover", headers=headers, json={"symbol": "BTCUSDT"}
+        )
+        assert started.status_code == 422
+        assert "fewer conditions" in started.json()["detail"]

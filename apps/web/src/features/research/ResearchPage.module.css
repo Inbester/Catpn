@@ -1,6 +1,9 @@
 .page {
   display: grid;
   grid-template-rows: var(--header-height) var(--tabstrip-height, 44px) minmax(0, 1fr);
+  /* Without this the column takes the header's full width, and on a
+     phone the whole page is wider than the screen and clipped. */
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
 }
 
@@ -17,6 +20,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -55,9 +59,16 @@
   gap: var(--space-1);
   padding: 0 var(--space-5);
   border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
+  flex: none;
   padding: 0 var(--space-3);
   background: none;
   border: none;

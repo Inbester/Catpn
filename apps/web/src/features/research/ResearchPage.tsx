@@ -69,6 +69,9 @@ export function ResearchPage() {
       .then((rows) => {
         setStrategies(rows);
         setStrategyId((current) => current ?? rows[0]?.id ?? null);
+        // Relationships needs no strategy, so an account without one
+        // lands on the tab it can use rather than on a dead end.
+        if (rows.length === 0) setTab('discover');
       })
       .catch(() => {
         // The picker stays empty; the message below explains why.
@@ -84,6 +87,7 @@ export function ResearchPage() {
     setIntervalValue(setup.interval);
   }, [setup]);
 
+  const hasStrategy = strategies.length > 0;
   const budgetValue = budget.trim() === '' ? null : Number(budget);
 
   const run = useCallback(
@@ -131,39 +135,27 @@ export function ResearchPage() {
     [strategyId, symbol, interval, config, budgetValue, strategies],
   );
 
-  if (strategies.length === 0) {
-    return (
-      <div className={styles.page}>
-        <header className={styles.header}>
-          <SetupPicker />
-        </header>
-        <p className={styles.placeholder}>
-          Research studies run against a saved strategy. Write one in the{' '}
-          <Link to="/test">Test menu</Link> and save it first.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <SetupPicker />
 
         <div className={styles.controls}>
-          <select
-            className={styles.select}
-            value={strategyId ?? ''}
-            onChange={(event) => {
-              setStrategyId(event.target.value);
-            }}
-          >
-            {strategies.map((strategy) => (
-              <option key={strategy.id} value={strategy.id}>
-                {strategy.name}
-              </option>
-            ))}
-          </select>
+          {hasStrategy ? (
+            <select
+              className={styles.select}
+              value={strategyId ?? ''}
+              onChange={(event) => {
+                setStrategyId(event.target.value);
+              }}
+            >
+              {strategies.map((strategy) => (
+                <option key={strategy.id} value={strategy.id}>
+                  {strategy.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <input
             className={styles.input}
             value={symbol}
@@ -206,6 +198,12 @@ export function ResearchPage() {
             key={key}
             type="button"
             className={`${styles.tab} ${tab === key ? styles.active : ''}`}
+            // On a phone the strip scrolls; keep the open tab in view.
+            ref={
+              tab === key
+                ? (node) => node?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+                : undefined
+            }
             onClick={() => {
               setTab(key);
             }}
@@ -222,7 +220,14 @@ export function ResearchPage() {
           </p>
         ) : null}
 
-        {tab === 'leverage' ? (
+        {!hasStrategy && tab !== 'discover' ? (
+          <p className={styles.placeholder}>
+            This study runs against a saved strategy. Write one in the{' '}
+            <Link to="/test">Test menu</Link> and save it first. Relationships needs none.
+          </p>
+        ) : null}
+
+        {hasStrategy && tab === 'leverage' ? (
           <LeverageTab
             study={leverage}
             picked={picked}
@@ -232,11 +237,11 @@ export function ResearchPage() {
           />
         ) : null}
 
-        {tab === 'risk' ? (
+        {hasStrategy && tab === 'risk' ? (
           <RiskTab study={risk} busy={busy} onRun={() => void run('risk')} />
         ) : null}
 
-        {tab === 'robustness' ? (
+        {hasStrategy && tab === 'robustness' ? (
           <RobustnessTab study={robustness} busy={busy} onRun={() => void run('robustness')} />
         ) : null}
 

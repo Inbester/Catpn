@@ -65,13 +65,41 @@ class RobustnessRequest(StudyRequest):
         return self
 
 
+class IndicatorChoice(BaseModel):
+    """One indicator added to a search. Validated in full by the catalog."""
+
+    # Chosen by the client and stable while it edits, so another indicator
+    # can be applied to this one by key.
+    key: str = Field(pattern=r"^[a-z][a-z0-9]{0,15}$")
+    id: str = Field(max_length=16)
+    params: dict[str, float] = Field(default_factory=dict, max_length=6)
+    # "close", or "<key>.<line>" of an indicator listed before this one.
+    input: str = Field(default="close", max_length=40)
+
+
+def _default_indicators() -> list[IndicatorChoice]:
+    return [
+        IndicatorChoice(key="i1", id="ema", params={"length": 20}),
+        IndicatorChoice(key="i2", id="ema", params={"length": 50}),
+        IndicatorChoice(key="i3", id="rsi", params={"length": 14}),
+    ]
+
+
 class DiscoverPlanRequest(BaseModel):
     symbol: str = Field(max_length=32)
     interval: str = Field(default="1h", max_length=8)
     start: int | None = Field(default=None, ge=0)
     end: int | None = Field(default=None, ge=0)
-    sources: list[str] = Field(default=["price", "ema", "rsi"], max_length=8)
+    indicators: list[IndicatorChoice] = Field(default_factory=_default_indicators, max_length=8)
+    # Only rules that draw on at least two different indicators.
     mix_indicators: bool = False
+    # Only rules that draw on every one of these indicators (by key).
+    require: list[str] = Field(default_factory=list, max_length=3)
+    # Conditions in one rule: a trigger plus up to two filters.
+    max_conditions: int = Field(default=3, ge=1, le=3)
+
+    def choices(self) -> list[dict[str, object]]:
+        return [item.model_dump() for item in self.indicators]
 
 
 class DiscoverRequest(DiscoverPlanRequest):
@@ -110,12 +138,6 @@ class JobHistoryEntry(BaseModel):
 
 class JobResultResponse(JobResponse):
     result: dict[str, Any] | None = None
-
-
-class SourceInfo(BaseModel):
-    key: str
-    label: str
-    lines: list[str]
 
 
 class StrategyRef(BaseModel):

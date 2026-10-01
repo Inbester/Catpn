@@ -127,16 +127,23 @@ export interface RobustnessStudy {
 
 export interface DiscoverPlan {
   series: { key: string; label: string; scale: string; source: string }[];
+  /** Indicator key → its label as the server builds it. */
+  labels: Record<string, string>;
   primitives: number;
   filters: number;
   triggers: number;
   raw_combinations: number;
   rules: number;
   tests: number;
+  /** More rules than one search may run; `rules` is then capped. */
+  too_large: boolean;
+  max_rules: number;
 }
 
 export interface DiscoverHit {
   rule_key: string;
+  /** The rule in words: "RSI 14 crosses above 30 while MACD 12/26/9 line above 0". */
+  rule_label: string;
   side: 'long' | 'short';
   horizon: number;
   signals: number;
@@ -173,10 +180,4 @@ export interface ServerJob {
   finished_at: string | null;
   error: string | null;
   result?: DiscoverResult | null;
-}
-
-export interface SourceInfo {
-  key: string;
-  label: string;
-  lines: string[];
 }

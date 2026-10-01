@@ -7,9 +7,9 @@ import type {
   LeverageStudy,
   RobustnessStudy,
   ServerJob,
-  SourceInfo,
   TradeRiskStudy,
 } from './types';
+import type { IndicatorChoice, IndicatorSpec } from './indicators';
 
 export interface Range {
   symbol: string;
@@ -18,7 +18,7 @@ export interface Range {
   end?: number | null;
 }
 
-export const listSources = () => api.get<SourceInfo[]>('/research/sources');
+export const listIndicators = () => api.get<IndicatorSpec[]>('/research/indicators');
 
 export const leverageStudy = (
   strategyId: string,
@@ -38,16 +38,18 @@ export const robustnessStudy = (
   request: Range & { grid: Record<string, number[]>; config: BacktestConfig },
 ) => api.post<RobustnessStudy>(`/research/${strategyId}/robustness`, request);
 
-export const discoverPlan = (request: Range & { sources: string[]; mix_indicators: boolean }) =>
+export interface DiscoverChoice {
+  indicators: IndicatorChoice[];
+  mix_indicators: boolean;
+  require: string[];
+  max_conditions: number;
+}
+
+export const discoverPlan = (request: Range & DiscoverChoice) =>
   api.post<DiscoverPlan>('/research/discover/plan', request);
 
 export const startDiscover = (
-  request: Range & {
-    sources: string[];
-    mix_indicators: boolean;
-    cost_percent: number;
-    max_hits?: number;
-  },
+  request: Range & DiscoverChoice & { cost_percent: number; max_hits?: number },
 ) => api.post<ServerJob>('/research/discover', request);
 
 export const listJobs = () => api.get<ServerJob[]>('/jobs');

@@ -100,6 +100,9 @@ class TestPlantedEdge:
         best = result.hits[0]
         assert best.side == "long"
         assert best.mean_return_percent > 0
+        # Every survivor carries the rule in words, for the results table.
+        assert all(hit.rule_label for hit in result.hits)
+        assert any("crosses above 0" in hit.rule_label for hit in result.hits)
 
     def test_the_held_out_stretch_is_scored_separately(self) -> None:
         rng = np.random.default_rng(23)

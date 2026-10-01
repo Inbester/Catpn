@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-import numpy as np
 import structlog
-from quanta_engine.discover.primitives import Series, Source, build_primitives
-from quanta_engine.discover.rules import count_raw_combinations, enumerate_rules
+from quanta_engine.backtest.types import Bars
+from quanta_engine.discover.catalog import Built, CatalogError, Choice, build
+from quanta_engine.discover.primitives import build_primitives
+from quanta_engine.discover.rules import count_raw_combinations, count_rules
 from quanta_engine.discover.search import SearchConfig, run_search
-from quanta_engine.series import ema, rsi, sma
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from quanta.exchanges.base import Interval
@@ -22,71 +22,40 @@ logger = structlog.get_logger(__name__)
 MAX_BARS = 200_000
 MIN_BARS = 200
 
-# The indicator chips a search can be built from. Each one publishes its
-# series and the scale they live on; the enumerator needs nothing else.
-# Adding a chip here is the only change a new source requires.
-SOURCE_LIBRARY: dict[str, dict[str, Any]] = {
-    "price": {"label": "Price", "is_price": True, "lines": [("close", "Price", "price")]},
-    "ema": {
-        "label": "EMA 20/50",
-        "lines": [("ema20", "EMA 20", "price"), ("ema50", "EMA 50", "price")],
-    },
-    "sma": {
-        "label": "SMA 50/200",
-        "lines": [("sma50", "SMA 50", "price"), ("sma200", "SMA 200", "price")],
-    },
-    "rsi": {"label": "RSI 14", "lines": [("rsi14", "RSI 14", "bounded_100")]},
-    "macd": {
-        "label": "MACD",
-        "lines": [
-            ("macd", "MACD", "centered_0"),
-            ("macd_signal", "MACD signal", "centered_0"),
-        ],
-    },
-}
+# The most rules one search may test (each is tried 8 ways). Half a million
+# tests run in about half a minute; this allows a few minutes, and a choice
+# that would go past it is refused with the size, before anything runs.
+MAX_RULES = 250_000
 
 
-def _compute(key: str, close: np.ndarray) -> dict[str, np.ndarray]:
-    if key == "price":
-        return {"close": close}
-    if key == "ema":
-        return {"ema20": ema(close, 20), "ema50": ema(close, 50)}
-    if key == "sma":
-        return {"sma50": sma(close, 50), "sma200": sma(close, 200)}
-    if key == "rsi":
-        return {"rsi14": rsi(close, 14)}
-    if key == "macd":
-        fast, slow = ema(close, 12), ema(close, 26)
-        line = fast - slow
-        return {"macd": line, "macd_signal": ema(line, 9)}
-    raise BacktestError(f"Unknown source {key!r}.")
+def build_series(
+    choices: list[dict[str, Any]], bars: Bars, *, require: list[str] | None = None
+) -> Built:
+    """The series for the chosen indicators, with request errors made readable."""
+    try:
+        built = build(
+            [
+                Choice(
+                    key=str(item["key"]),
+                    id=str(item["id"]),
+                    params=dict(item.get("params") or {}),
+                    input=str(item.get("input") or "close"),
+                )
+                for item in choices
+            ],
+            bars,
+        )
+    except CatalogError as exc:
+        raise BacktestError(str(exc)) from exc
+    missing = [key for key in require or [] if key not in built.labels]
+    if missing:
+        raise BacktestError(f"A required indicator ({missing[0]}) is not among the chosen ones.")
+    return built
 
 
-def build_series(source_keys: list[str], close: np.ndarray) -> tuple[list[Series], dict[str, Any]]:
-    """The series and their data for the chosen chips.
-
-    Price is always included: divergence is defined against it, and a
-    search with no price has no returns to explain.
-    """
-    keys = ["price", *[k for k in source_keys if k != "price"]]
-    unknown = [k for k in keys if k not in SOURCE_LIBRARY]
-    if unknown:
-        raise BacktestError(f"Unknown source(s): {', '.join(unknown)}.")
-
-    series: list[Series] = []
-    data: dict[str, Any] = {}
-    for key in keys:
-        entry = SOURCE_LIBRARY[key]
-        source = Source(key=key, label=str(entry["label"]), is_price=bool(entry.get("is_price")))
-        data.update(_compute(key, close))
-        for line_key, line_label, scale in entry["lines"]:
-            series.append(Series(line_key, line_label, source, scale))  # type: ignore[arg-type]
-    return series, data
-
-
-async def load_close(
+async def load_bars(
     db: AsyncSession, symbol: str, interval: str, start: int | None, end: int | None
-) -> np.ndarray:
+) -> Bars:
     try:
         parsed = Interval(interval)
     except ValueError as exc:
@@ -98,50 +67,76 @@ async def load_close(
             f"A search needs at least {MIN_BARS} bars; {symbol} {interval} has "
             f"{len(rows)}. Load more history first."
         )
-    return to_bars(rows).close
+    return to_bars(rows)
 
 
-def plan(source_keys: list[str], close: np.ndarray, *, mix_indicators: bool) -> dict[str, Any]:
+def plan(
+    choices: list[dict[str, Any]],
+    bars: Bars,
+    *,
+    mix_indicators: bool,
+    require: list[str] | None = None,
+    max_conditions: int = 3,
+) -> dict[str, Any]:
     """What a search would cost, without running it.
 
     Shown before the button is pressed, because "this will run 558,624
     tests" is the difference between a considered click and a surprise.
     """
-    series, _ = build_series(source_keys, close)
-    primitives = build_primitives(series)
+    built = build_series(choices, bars, require=require)
+    primitives = build_primitives(built.series)
     triggers = sum(1 for p in primitives if p.is_trigger)
-    rules = sum(1 for _ in enumerate_rules(primitives, mix_indicators=mix_indicators))
+    rules = count_rules(
+        primitives,
+        max_filters=max_conditions - 1,
+        mix_indicators=mix_indicators,
+        require=frozenset(require or []),
+        limit=MAX_RULES,
+    )
+    too_large = rules > MAX_RULES
     return {
         "series": [
             {"key": s.key, "label": s.label, "scale": s.scale, "source": s.source.key}
-            for s in series
+            for s in built.series
         ],
+        "labels": built.labels,
         "primitives": len(primitives),
         "filters": len(primitives) - triggers,
         "triggers": triggers,
-        "raw_combinations": count_raw_combinations(primitives),
-        "rules": rules,
-        "tests": rules * 8,
+        "raw_combinations": count_raw_combinations(primitives, max_size=max_conditions),
+        # Past the cap the exact figure is not worth computing; the flag
+        # and the cap say what the user needs to know.
+        "rules": min(rules, MAX_RULES),
+        "tests": min(rules, MAX_RULES) * 8,
+        "too_large": too_large,
+        "max_rules": MAX_RULES,
     }
 
 
 def search_work(
     *,
-    source_keys: list[str],
-    close: np.ndarray,
+    choices: list[dict[str, Any]],
+    bars: Bars,
     cost_percent: float,
     mix_indicators: bool,
+    require: list[str],
+    max_conditions: int,
     max_hits: int,
 ) -> Any:
     """The callable the job runs. Pure: no session, no request state."""
 
     def work(job: Job) -> dict[str, Any]:
-        series, data = build_series(source_keys, close)
+        built = build_series(choices, bars, require=require)
         result = run_search(
-            series,
-            data,
-            close,
-            config=SearchConfig(cost_percent=cost_percent, mix_indicators=mix_indicators),
+            built.series,
+            built.data,
+            bars.close,
+            config=SearchConfig(
+                cost_percent=cost_percent,
+                mix_indicators=mix_indicators,
+                max_filters=max_conditions - 1,
+                require=frozenset(require),
+            ),
             progress=progress_reporter(job),
         )
         return {
@@ -154,6 +149,7 @@ def search_work(
             "hits": [
                 {
                     "rule_key": hit.rule_key,
+                    "rule_label": hit.rule_label,
                     "side": hit.side,
                     "horizon": hit.horizon,
                     "signals": hit.signals,

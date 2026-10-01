@@ -111,7 +111,7 @@ class TestJobHistory:
         started = await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "rsi"]},
+            json={"symbol": "BTCUSDT", "indicators": [{"key": "i1", "id": "rsi"}]},
         )
         assert started.status_code == 202
 
@@ -133,7 +133,7 @@ class TestJobHistory:
         await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "ema", "rsi", "macd"]},
+            json={"symbol": "BTCUSDT"},
         )
 
         await jobs.mark_interrupted(db)
@@ -150,7 +150,7 @@ class TestJobHistory:
         await client.post(
             f"{api_prefix}/research/discover",
             headers=headers,
-            json={"symbol": "BTCUSDT", "sources": ["price", "rsi"]},
+            json={"symbol": "BTCUSDT", "indicators": [{"key": "i1", "id": "rsi"}]},
         )
         theirs = await other_user(client, api_prefix)
         assert (await client.get(f"{api_prefix}/jobs/history", headers=theirs)).json() == []

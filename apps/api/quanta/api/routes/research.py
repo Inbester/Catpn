@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
+from quanta_engine.backtest.types import Bars
+from quanta_engine.discover.catalog import describe
 
 from quanta.api.deps import CurrentUser, DbDep
 from quanta.models.strategy import StrategyRecord
@@ -18,7 +21,6 @@ from quanta.schemas.research import (
     JobResultResponse,
     LeverageRequest,
     RobustnessRequest,
-    SourceInfo,
     StudyRequest,
 )
 from quanta.services import compute_service, discover_service, jobs, research_service
@@ -40,17 +42,10 @@ def _fail(exc: BacktestError) -> HTTPException:
     return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc))
 
 
-@router.get("/sources", response_model=list[SourceInfo])
-async def list_sources(_user: CurrentUser) -> list[SourceInfo]:
-    """The indicator chips a Discover search can be built from."""
-    return [
-        SourceInfo(
-            key=key,
-            label=str(entry["label"]),
-            lines=[line[1] for line in entry["lines"]],
-        )
-        for key, entry in discover_service.SOURCE_LIBRARY.items()
-    ]
+@router.get("/indicators")
+async def list_indicators(_user: CurrentUser) -> list[dict[str, object]]:
+    """What a Discover search can be built from, with each one's settings."""
+    return describe()
 
 
 @router.post("/{strategy_id}/leverage")
@@ -125,12 +120,22 @@ async def discover_plan(payload: DiscoverPlanRequest, _user: CurrentUser, db: Db
     click and a surprise, so it is offered before the button.
     """
     try:
-        close = await discover_service.load_close(
+        bars = await discover_service.load_bars(
             db, payload.symbol.upper(), payload.interval, payload.start, payload.end
         )
-        return discover_service.plan(payload.sources, close, mix_indicators=payload.mix_indicators)
+        return _plan(payload, bars)
     except BacktestError as exc:
         raise _fail(exc) from exc
+
+
+def _plan(payload: DiscoverPlanRequest, bars: Bars) -> dict[str, Any]:
+    return discover_service.plan(
+        payload.choices(),
+        bars,
+        mix_indicators=payload.mix_indicators,
+        require=payload.require,
+        max_conditions=payload.max_conditions,
+    )
 
 
 @router.post("/discover", response_model=JobResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -142,14 +147,20 @@ async def discover(payload: DiscoverRequest, user: CurrentUser, db: DbDep) -> Jo
     tells the user nothing while it waits.
     """
     try:
-        close = await discover_service.load_close(
+        bars = await discover_service.load_bars(
             db, payload.symbol.upper(), payload.interval, payload.start, payload.end
         )
-        planned = discover_service.plan(
-            payload.sources, close, mix_indicators=payload.mix_indicators
-        )
+        planned = _plan(payload, bars)
     except BacktestError as exc:
         raise _fail(exc) from exc
+    if planned["too_large"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=(
+                f"This combination has more than {planned['max_rules']:,} rules to test. "
+                "Remove an indicator, require one, or allow fewer conditions per rule."
+            ),
+        )
 
     job = registry.start(
         user_id=user.id,
@@ -157,10 +168,12 @@ async def discover(payload: DiscoverRequest, user: CurrentUser, db: DbDep) -> Jo
         label=f"Discover · {payload.symbol.upper()} {payload.interval}",
         total=planned["rules"],
         work=discover_service.search_work(
-            source_keys=payload.sources,
-            close=close,
+            choices=payload.choices(),
+            bars=bars,
             cost_percent=payload.cost_percent,
             mix_indicators=payload.mix_indicators,
+            require=payload.require,
+            max_conditions=payload.max_conditions,
             max_hits=payload.max_hits,
         ),
         on_finish=jobs.record_finish,

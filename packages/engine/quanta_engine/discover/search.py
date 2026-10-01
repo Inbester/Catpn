@@ -48,6 +48,8 @@ class SearchConfig:
     horizons: tuple[int, ...] = HORIZONS
     mix_indicators: bool = False
     max_filters: int = 2
+    # Sources every rule must draw on (see rules.enumerate_rules).
+    require: frozenset[str] = frozenset()
 
 
 def run_search(
@@ -71,6 +73,7 @@ def run_search(
             primitives,
             max_filters=config.max_filters,
             mix_indicators=config.mix_indicators,
+            require=config.require,
         )
     )
 
@@ -129,6 +132,7 @@ def run_search(
         hits.append(
             replace(
                 outcome,
+                rule_label=by_key[outcome.rule_key].label,
                 out_of_sample_mean_percent=net,
                 out_of_sample_signals=n,
                 passed_fdr=True,
